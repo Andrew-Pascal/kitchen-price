@@ -10,6 +10,8 @@
   }
 
   table {
+    border-collapse: collapse;
+    /*убираем пустые промежутки между ячейками*/
     text-align: center;
     /*текст по центру*/
     width: auto;
@@ -17,19 +19,18 @@
     margin: auto;
     /*Выравниваем таблицу по центру окна*/
     border: 2px solid rgb(0, 0, 0);
-    /* Рамка вокруг таблицы */
+    /*Рамка вокруг таблицы*/
     font-size: 15px;
     /*размер текста*/
-    border-collapse: collapse;
-    /*убираем пустые промежутки между ячейками*/
+
   }
   
-  thead {
+  th {
     font-size: 25px;
     /*размер текста*/
   }
 
-  tbody {
+  td {
     border: 2px solid rgb(0, 0, 0);
     /* Рамка вокруг таблицы */
     font-size: 15px;
