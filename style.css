@@ -1,7 +1,9 @@
   body {
+    
     font-family: serif;
     text-align: center;
     background-color: #68f056;
+    background-image: url("Leroy_Merlin.png");
     color: #000000;
   }
 
