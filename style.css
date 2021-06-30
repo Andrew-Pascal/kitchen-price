@@ -1,6 +1,6 @@
   body {
     font-family: serif;
-    /*text-align: center;*/
+    text-align: center;
     background-color: #68f056;
     color: #000000;
   }
@@ -10,7 +10,7 @@
   }
 
   table {
-    border-collapse: collapse;
+    /*border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
     text-align: center;
     /*текст по центру*/
