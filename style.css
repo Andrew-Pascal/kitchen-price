@@ -6,16 +6,22 @@
   }
 
   table {
+    width: 300px; /* Ширина таблицы */
+    border: 1px solid green; /* Рамка вокруг таблицы */
+    margin: auto; /* Выравниваем таблицу по центру окна  */
+
     font-size: 20px;
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
-    border: 5px solid rgb(161, 15, 15);
-    /*устанавливаем для таблицы внешнюю границу серого цвета толщиной 1px*/
   }
   
   th {
     border: 3px solid grey;
     text-align: center;
-    font-size: 20px;
+    font-size: 25px;
     /*margin-bottom: 0;*/
   }
+
+  td {
+    border: 1px solid grey;
+ }
