@@ -6,22 +6,25 @@
   }
 
   table {
-    width: auto; /* Ширина таблицы */
-    border: 1px solid green; /* Рамка вокруг таблицы */
-    margin: auto; /* Выравниваем таблицу по центру окна  */
-
-    font-size: 20px;
+    width: auto;
+    /*Ширина таблицы*/
+    margin: auto;
+    /*Выравниваем таблицу по центру окна*/
+    border: 3px solid rgb(0, 0, 0);
+    /* Рамка вокруг таблицы */
+    font-size: 15px;
+    /*размер текста*/
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
   }
   
   th {
-    border: 3px solid grey;
+    font-size: 30px;
+    /*размер текста*/
     text-align: center;
-    font-size: 25px;
-    /*margin-bottom: 0;*/
   }
 
   td {
-    border: 1px solid grey;
- }
+    border: 3px solid rgb(0, 0, 0);
+    /* Рамка вокруг таблицы */
+  }
