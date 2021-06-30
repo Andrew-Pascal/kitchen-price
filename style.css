@@ -5,12 +5,18 @@
     color: #000000;
   }
 
+  h2 {
+    color: rgb(197, 41, 36);
+  }
+
   table {
+    text-align: center;
+    /*текст по центру*/
     width: auto;
     /*Ширина таблицы*/
     margin: auto;
     /*Выравниваем таблицу по центру окна*/
-    border: 3px solid rgb(0, 0, 0);
+    border: 2px solid rgb(0, 0, 0);
     /* Рамка вокруг таблицы */
     font-size: 15px;
     /*размер текста*/
@@ -18,14 +24,13 @@
     /*убираем пустые промежутки между ячейками*/
   }
   
-  th {
-    font-size: 30px;
+  thead {
+    font-size: 25px;
     /*размер текста*/
-    text-align: center;
   }
 
-  td {
-    border: 3px solid rgb(0, 0, 0);
+  tbody {
+    border: 2px solid rgb(0, 0, 0);
     /* Рамка вокруг таблицы */
     font-size: 15px;
   }
