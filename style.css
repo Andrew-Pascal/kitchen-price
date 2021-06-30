@@ -6,9 +6,10 @@ body {
   }
   
   th {
-    text-align: none;
-    font-size: 20px;
-    margin-bottom: 0;
+    border: 3px solid grey;
+    /*text-align: none;*/
+    /*font-size: 20px;*/
+    /*margin-bottom: 0;*/
   }
   
   table {
@@ -19,7 +20,3 @@ body {
     border: 5px solid rgb(161, 15, 15);
     /*устанавливаем для таблицы внешнюю границу серого цвета толщиной 1px*/
   }
-
-  th {
-    border: 1px solid grey;
- }
