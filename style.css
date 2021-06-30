@@ -1,9 +1,9 @@
   body {
-    
+    background-image: url("Leroy_Merlin.png");
     font-family: serif;
     text-align: center;
     background-color: #68f056;
-    background-image: url("Leroy_Merlin.png");
+    
     color: #000000;
   }
 
@@ -26,7 +26,7 @@
   }
   
   th {
-    font-size: 20px;
+    font-size: 15px;
     /*размер текста*/
     color: rgb(43, 43, 168);
   }
