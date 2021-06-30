@@ -20,7 +20,7 @@
     /*Выравниваем таблицу по центру окна*/
     border: 2px solid rgb(0, 0, 0);
     /*Рамка вокруг таблицы*/
-    font-size: 15px;
+    font-size: 20px;
     /*размер текста*/
 
   }
@@ -34,5 +34,5 @@
   td {
     border: 2px solid rgb(0, 0, 0);
     /* Рамка вокруг таблицы */
-    font-size: 15px;
+    font-size: 18px;
   }
