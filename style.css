@@ -1,0 +1,20 @@
+body {
+    font-family: sans-serif;
+  
+    background-color: #31d31c;
+    color: #2316da;
+  
+    width: 980px;
+    margin: 0 auto;
+  }
+  
+  th {
+    text-align: none;
+    font-size: 20px;
+    margin-bottom: 0;
+  }
+  
+  table {
+    text-align: none;
+    font-size: 20px;
+  }
