@@ -33,3 +33,10 @@
     font-size: 15px;
   }
   
+  .color-background {
+    background-color: #a71b1b;
+  }
+
+  .text-bold {
+    font-weight: bold;
+  }
