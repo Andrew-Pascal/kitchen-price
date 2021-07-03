@@ -22,10 +22,6 @@
     /*Рамка вокруг таблицы*/
 
   }
-  
-  tr {
-
-  }
 
   td {
     border: 2px solid rgb(0, 0, 0);
@@ -33,16 +29,9 @@
     font-size: 15px;
   }
   
-  .color-background {
-    background-color: #a71b1b;
-  }
-
-  .text-bold {
-    font-weight: bold;
-  }
 
   .button {
-    background-color: #6f4caf; /* Green */
+    background-color: #3ce919; /* Green */
     border: none;
     color: rgb(96, 149, 228);
     padding: 15px 32px;
@@ -50,4 +39,5 @@
     text-decoration: none;
     display: inline-block;
     font-size: 18px;
+    font-weight: bold;
 }
