@@ -4,11 +4,7 @@
     background-color: #aff8a6;
     color: #000000;
   }
-
-  h2 {
-    color: rgb(12, 7, 80);
-  }
-
+  
   table {
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
