@@ -1,12 +1,12 @@
   body {
     font-family: serif;
     text-align: center;
-    background-color: #45df31;
+    background-color: #38852e;
     color: #000000;
   }
 
   h2 {
-    color: rgb(216, 238, 23);
+    color: rgb(12, 7, 80);
   }
 
   table {
@@ -24,7 +24,7 @@
   }
   
   tr {
-    border:rgb(197, 41, 36);
+
   }
 
   td {
