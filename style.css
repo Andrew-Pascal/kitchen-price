@@ -1,12 +1,12 @@
   body {
     font-family: serif;
     text-align: center;
-    background-color: #68f056;
+    background-color: #45df31;
     color: #000000;
   }
 
   h2 {
-    color: rgb(197, 41, 36);
+    color: rgb(216, 238, 23);
   }
 
   table {
@@ -23,10 +23,8 @@
 
   }
   
-  th {
-    font-size: 15px;
-    /*размер текста*/
-    color: rgb(43, 43, 168);
+  tr {
+    border:rgb(197, 41, 36);
   }
 
   td {
@@ -34,7 +32,4 @@
     /* Рамка вокруг таблицы */
     font-size: 15px;
   }
-
-  .font {
-    background-image: url("Leroy_Merlin.png");
-  }
+  
