@@ -4,7 +4,7 @@
     background-color: #aff8a6;
     color: #000000;
   }
-  
+
   table {
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
@@ -30,9 +30,9 @@
     background-color: #3ce919; /* Green */
     border: none;
     color: rgb(15, 82, 182);
-    padding: 5px 5px;
+    padding: 15px 25px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 5px;
+    font-size: 20px;
 }
