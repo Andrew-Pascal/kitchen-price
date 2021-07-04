@@ -29,11 +29,11 @@
   .button {
     background-color: #3ce919; /* Green */
     border: none;
-    color: rgb(15, 82, 182);
-    padding: 15px 25px;
+    color: rgb(231, 25, 221);
+    padding: 0px 0px;
     text-align: center;
     display: inline-block;
-    font-size: 20px;
+    font-size: 10px;
 }
 
 .cd {
