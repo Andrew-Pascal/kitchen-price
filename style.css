@@ -24,23 +24,8 @@
     /* Рамка вокруг таблицы */
     font-size: 15px;
   }
-  
 
-  .button {
-    background-color: #3ce919; /* Green */
-    border: none;
-    color: rgb(231, 25, 221);
-    padding: 0px 0px;
-    text-align: center;
-    display: inline-block;
-    font-size: 10px;
-}
-
-.remove-underline {
+ .remove-underline {
   text-decoration: none;
   /*убирает подчёркивание*/
-}
-
-.caption {
-  font-variant-caps: inherit;
-}
+  }
