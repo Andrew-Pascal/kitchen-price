@@ -30,10 +30,10 @@
    font-weight: 700;
    background-color: #5048c4;
    border: none;
-   color: rgb(233, 163, 12);
-   padding: 15px 100px;
+   color: rgb(42, 190, 42);
+   padding: 30px 100px;
    text-align: center;
-   display: block;
+   display: contents;
    font-size: 30px;
    text-decoration: none;
   /*убирает подчёркивание*/
