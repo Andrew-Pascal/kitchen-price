@@ -28,10 +28,10 @@
 
  .remove-underline {
    font-weight: 700;
-   background-color: #98ecb9;
+   background-color: #5048c4;
    border: none;
-   color: rgb(5, 8, 175);
-   padding: 0px 100px;
+   color: rgb(218, 171, 70);
+   padding: 15px 100px;
    text-align: center;
    display: inline-block;
    font-size: 30px;
