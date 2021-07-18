@@ -5,45 +5,50 @@
   }
 
   .remove-underline {
+    font-family: Georgia, 'Times New Roman', Times, serif;
     border: none;
-    font-size: 30px;
-    -webkit-transition-duration: 0.2s;
-    transition-duration: 0.2s;
-    color: rgb(28, 15, 209);
-    text-shadow: 0px 3px 2px rgb(145, 145, 145);
-    background-color: #34e26e;
-    border: 4px solid #76f7e6c4;
-    border-radius: 20px;
+    font-size: 25px;
+    /*-webkit-transition-duration: 0.2s;*/
+    /*transition-duration: 0.2s;*/
+    color: rgb(58, 35, 187);
+    text-shadow: 0px 2px 3px rgb(145, 145, 145);
+    background-color: #64ff97;
+    border: 2px solid hsl(119, 63%, 84%);
+    border-radius: 30px;
     text-decoration: none;
     /*убирает подчёркивание*/
     font-weight: bolder;
-    padding: 5px 10px;
+    padding: 10px 50px;
     text-align: center;
     display: inline-block;
     /*vertical-align: inherit;*/
     margin: 0px 0px;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
   }
 
     .remove-underline:hover {
-      background-color: #5af7d5;
-      color: rgb(212, 103, 1);
+      box-shadow: 0 4px 12px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+     /* background-color: #1900ff;
+      color: rgb(0, 247, 255);*/
     }
 
   .text-h1 {
-    font-size: 50px;
-    text-shadow: 0px 3px 8px rgb(109, 109, 109);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 30px;
+    text-shadow: 0px 4px 10px rgba(95, 95, 95, 0.507);
   }
 
   .text-h2 {
-    font-size: 35px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
     color: black;
-    text-shadow: 0px 3px 8px rgb(78, 78, 78);
+    text-shadow: 0px 4px 10px rgb(153, 153, 153);
     text-decoration: none;
   }
 
   table {
-    font-weight: 700;
-    text-shadow: 0px 2px 4px rgb(179, 176, 176);
+    font-weight: 600;
+    text-shadow: 0px 2px 8px rgb(129, 129, 129);
     background: rgb(140, 192, 255);
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
@@ -58,8 +63,12 @@
   }
 
   td {
-    border: 3px solid rgb(0, 0, 0);
+    border: 2px solid rgb(0, 0, 0);
     /* Рамка вокруг таблицы */
-    font-size: 14px;
+    font-size: 23px;
+  }
+
+  .fontPrice {
+    
   }
 
