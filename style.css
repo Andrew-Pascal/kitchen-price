@@ -7,6 +7,7 @@
   .remove-underline {
     border: none;
     font-size: 30px;
+    -webkit-transition-duration: 0.2s;
     transition-duration: 0.2s;
     color: rgb(28, 15, 209);
     text-shadow: 0px 3px 2px rgb(145, 145, 145);
@@ -24,8 +25,8 @@
   }
 
     .remove-underline:hover {
-      background-color: #f75a5a;
-      color: rgb(47, 0, 177);
+      background-color: #5af7d5;
+      color: rgb(212, 103, 1);
     }
 
   .text-h1 {
