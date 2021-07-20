@@ -4,43 +4,60 @@
     text-align: center;
   }
 
-  .remove-underline {
+  .fontstyle-1 {
     font-family: Georgia, 'Times New Roman', Times, serif;
-    border: none;
-    font-size: 25px;
-    /*-webkit-transition-duration: 0.2s;*/
-    /*transition-duration: 0.2s;*/
+    font-size: 15px;
     color: rgb(58, 35, 187);
     text-shadow: 0px 2px 3px rgb(145, 145, 145);
     background-color: #64ff97;
     border: 2px solid hsl(119, 63%, 84%);
-    border-radius: 30px;
+    border-radius: 10px;
     text-decoration: none;
-    /*убирает подчёркивание*/
+    font-weight: bolder;
+    padding: 5px 10px;
+    text-align: center;
+    display: inline-block;
+    margin: 0px 0px;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    vertical-align: inherit;
+  }
+
+  .remove-underline {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 25px;
+    color: rgb(58, 35, 187);
+    text-shadow: 0px 2px 3px rgb(145, 145, 145);
+    background-color: #64ff97;
+    border: 2px solid hsl(119, 63%, 84%);
+    border-radius: 10px;
+    text-decoration: none;
     font-weight: bolder;
     padding: 10px 50px;
     text-align: center;
     display: inline-block;
-    /*vertical-align: inherit;*/
     margin: 0px 0px;
     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    /*transition-duration: 0.2s;*/
+    /*-webkit-transition-duration: 0.2s;*/
+    vertical-align: inherit;
   }
 
-    .remove-underline:hover {
-      box-shadow: 0 4px 12px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
-     /* background-color: #1900ff;
-      color: rgb(0, 247, 255);*/
-    }
+  .remove-underline:hover {
+    box-shadow: 0 4px 12px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    /* background-color: #1900ff;
+    color: rgb(0, 247, 255);*/
+  }
 
   .text-h1 {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 30px;
+    font-size: 25px;
+    color: rgb(255, 30, 30);
     text-shadow: 0px 4px 10px rgba(95, 95, 95, 0.507);
   }
 
   .text-h2 {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 20px;
+    font-size: 18px;
     color: black;
     text-shadow: 0px 4px 10px rgb(153, 153, 153);
     text-decoration: none;
@@ -53,7 +70,6 @@
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
     text-align: center;
-    /*текст по центру*/
     width: auto;
     /*Ширина таблицы*/
     margin: auto;
@@ -66,9 +82,5 @@
     border: 2px solid rgb(0, 0, 0);
     /* Рамка вокруг таблицы */
     font-size: 15px;
-  }
-
-  .fontPrice {
-    
   }
 
