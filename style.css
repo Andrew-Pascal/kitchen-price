@@ -5,7 +5,7 @@
   }
 
 
-  .remove-underline {
+  .fontstyle-1 {
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 25px;
     color: rgb(58, 35, 187);
@@ -17,23 +17,23 @@
     font-weight: bolder;
     padding: 5px 5px;
     text-align: center;
-    display: inline-block;
+    display: flow-root;
     margin: 0px 0px;
     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     /*transition-duration: 0.2s;*/
     /*-webkit-transition-duration: 0.2s;*/
   }
 
-  .remove-underline:hover {
+  .fontstyle-1:hover {
     box-shadow: 0 4px 12px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
     /* background-color: #1900ff;
     color: rgb(0, 247, 255);*/
   }
 
   
-  .fontstyle-1 {
+  .fontstyle-2 {
     font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 12px;
+    font-size: 18px;
     color: rgb(58, 35, 187);
     text-shadow: 0px 2px 3px rgb(145, 145, 145);
     background-color: #64ff97;
@@ -48,6 +48,10 @@
     box-shadow: 0 2px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
   }
 
+  .fontstyle-2:hover {
+    box-shadow: 0 4px 12px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+  }
+
   .text-h1 {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-size: 23px;
@@ -57,7 +61,7 @@
 
   .text-h2 {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     color: rgb(75, 75, 75);
     text-shadow: 0px 4px 10px rgb(153, 153, 153);
     text-decoration: none;
@@ -69,7 +73,7 @@
     background: rgb(193, 255, 217);
     border-collapse: collapse;
     /*убираем пустые промежутки между ячейками*/
-    text-align: center;
+    text-align: initial;
     width: auto;
     /*Ширина таблицы*/
     margin: auto;
