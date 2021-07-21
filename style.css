@@ -54,14 +54,14 @@
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: 13px;
     color: rgb(0, 0, 0);
-    text-shadow: 0px 4px 8px rgba(95, 95, 95, 0.507);
+    text-shadow: 0px 2px 20px rgb(75, 75, 75);
   }
 
   .text-h2 {
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    font-size: 10px;
-    color: rgb(196, 25, 25);
-    text-shadow: 0px 4px 10px rgb(153, 153, 153);
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 14px;
+    color: rgb(231, 14, 14);
+    text-shadow: 0px 2px 20px rgb(88, 88, 88);
 
   }
 
