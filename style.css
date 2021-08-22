@@ -83,3 +83,9 @@ td {
   /* Рамка вокруг таблицы */
   font-size: 15px;
 }
+
+th {
+  border: 2px solid rgb(0, 0, 0);
+  /* Рамка вокруг таблицы */
+  font-size: 18px;
+}
