@@ -16,7 +16,7 @@ body {
   font-weight: bolder;
   padding: 5px 30px;
   text-align: center;
-  display: flexbox;
+  display: flow-root;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   /*transition-duration: 0.2s;*/
   /*-webkit-transition-duration: 0.2s;*/
