@@ -1,0 +1,101 @@
+$(document).ready(function () {
+    /**
+     * Handle all annotated images on page and add annotations to them.
+     */
+    var initAnnotatiedImage = function (event, data) {
+
+        if (!bootstrapGridCheck.isXs()) {
+            // Remove all annotation-items that already added to the element.
+            $('.annotated-image .annotation-item').remove();
+
+            $('.annotated-image img').each(function (position, item) {
+                var $image = $(item),
+                    container = $image.parent();
+
+                $("<img/>") // Make in memory copy of image to avoid css issues
+                    .attr("src", $image.attr("src"))
+                    .load(function () {
+                        var img = this,
+                            annotations = $image.data('annotations');
+
+                        if (_.isNotUndefined(annotations) && _.isNotUndefined(annotations.areas)) {
+                            annotations.areas.forEach(function (annotation) {
+                                var replacements = annotations.replacements;
+                                if (annotation.metadata
+                                    && annotation.metadata.href
+                                    && (annotation.metadata.href_type !== 'anchor'
+                                        || $('div#anchor_'+annotation.metadata.href).length > 0)) {
+                                    var annBlock = $('<a>', {
+                                        "class": 'annotation-item',
+                                        "css": {
+                                            "left": annotation.left * 100.0 / img.width + "%",
+                                            "top": annotation.top * 100.0 / img.height + "%"
+                                        }
+                                    });
+
+                                    annBlock.append('<span>+</span>');
+                                    $.each(annotation.metadata, function (attributeName, attributeValue) {
+                                        var replacement;
+                                        if (replacements && replacements[attributeName]) {
+                                            //Apply replacement rule
+                                            attributeValue = attributeValue.replace(new RegExp(replacements[attributeName].pattern),
+                                                            replacements[attributeName].replacement);
+                                        }
+                                        annBlock.attr(attributeName, attributeValue);
+                                        if(attributeName.toLowerCase() === 'title'){
+                                            annBlock.attr('data-ga-title', attributeValue);
+                                        }
+                                    });
+                                    container.append(annBlock);
+                                }
+                            });
+
+                            //raise hashchange event to invoke utils-anchor-links.adjustAnchor function
+                            $(".annotation-item").click(function (anEvent) {
+                                var anchorTitle = anEvent.target.getAttribute('data-ga-title');
+                                globalConfig.aemServiceLayer.gtmEventPush('anchor-click',
+                                    {
+                                        root: {
+                                            title: anchorTitle
+                                        }
+                                    }
+                                );
+
+                                if (window.location.hash === anEvent.target.hash) {
+                                    $(window).trigger('hashchange');
+                                }
+                            });
+                        }
+                    });
+            });
+        }
+    };
+
+    $('.annotated-image').on('annotated-image:init', _.bind(initAnnotatiedImage));
+    $('.annotated-image').trigger('annotated-image:init');
+
+    var waitForEl = function (selector, callback) {
+            if (jQuery(selector).length) {
+                callback();
+            } else {
+                setTimeout(function () {
+                    waitForEl(selector, callback);
+                }, 100);
+            }
+        },
+        tooltipEl = '.annotation-item';
+
+    waitForEl(tooltipEl, function () {
+        TooltipUtils.init({
+            selector: tooltipEl,
+            position: {
+                my: 'bottom', at: 'center+10 top-15'
+            },
+            customClass: "project-tooltip"
+        });
+    });
+
+
+});
+
+!function(t){var n={};function e(a){if(n[a])return n[a].exports;var o=n[a]={i:a,l:!1,exports:{}};return t[a].call(o.exports,o,o.exports,e),o.l=!0,o.exports}e.m=t,e.c=n,e.d=function(t,n,a){e.o(t,n)||Object.defineProperty(t,n,{enumerable:!0,get:a})},e.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},e.t=function(t,n){if(1&n&&(t=e(t)),8&n)return t;if(4&n&&"object"==typeof t&&t&&t.__esModule)return t;var a=Object.create(null);if(e.r(a),Object.defineProperty(a,"default",{enumerable:!0,value:t}),2&n&&"string"!=typeof t)for(var o in t)e.d(a,o,function(n){return t[n]}.bind(null,o));return a},e.n=function(t){var n=t&&t.__esModule?function(){return t.default}:function(){return t};return e.d(n,"a",n),n},e.o=function(t,n){return Object.prototype.hasOwnProperty.call(t,n)},e.p="",e(e.s=5)}([function(t,n,e){},function(t,n){let e=document.querySelectorAll("[data-market-link]");if(e)for(let t=0;t<e.length;t++){let n=e[t];n.addEventListener("click",()=>{document.dispatchEvent(new CustomEvent("market-link-click",{detail:{context:n.dataset.marketLink}}))})}document.addEventListener("market-link-click",t=>{window.globalConfig.aemServiceLayer.gtmEventPush("market-link-click",{context:t.detail.context})}),document.addEventListener("show-market-advice",()=>{window.globalConfig.aemServiceLayer.gtmEventPush("show-market-advice")}),document.addEventListener("market-advice-popup-redirect",()=>{window.globalConfig.aemServiceLayer.gtmEventPush("market-advice-popup-redirect")}),document.addEventListener("close-market-advice",()=>{window.globalConfig.aemServiceLayer.gtmEventPush("close-market-advice")})},function(t,n){let e;window.captchaValid=!1;class a{verifyCallback(t){window.captchaValid&&document.dispatchEvent(new Event(t))}listenBtnClick(t,n){document.addEventListener("click",e=>{e.target.hasAttribute(t)&&n()})}createCaptcha(t,n){let a=this;e=window.globalConfig.recaptchaSiteKey,window.captchaValid=!1,window.CaptchaUtils.processToken((function(e){window.captchaValid=!!e,document.getElementById(t).value=e,a.verifyCallback(n)}),e)}init(t,n,e){this.listenBtnClick(t,this.createCaptcha.bind(this,n,e))}}const o=[{classMain:new a,btnShowPopup:"data-captcha-load-password",idCaptcha:"captcha_fogot_password",newEvent:"captcha_password_filled_right"},{classMain:new a,btnShowPopup:"data-captcha-load-shoplist",idCaptcha:"captcha_send-shoplist-email",newEvent:"captcha_shoplist_filled_right"}];window.onloadCaptcha=function(){o.forEach(t=>{t.classMain.init(t.btnShowPopup,t.idCaptcha,t.newEvent)})}},function(t,n){document.addEventListener("DOMContentLoaded",(function(){const t=function(){const t={};return window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,(function(n,e,a){t[e]=a})),t}().q,n=document.querySelector("[data-suggestion]"),e=n?n.dataset.suggestion:"";t&&sessionStorage.setItem("searchValue",e||decodeURIComponent(t))}))},function(t,n){},function(t,n,e){"use strict";e.r(n);e(0),e(1),e(2),e(3),e(4);const a=function(t,n){"function"==typeof r&&(r.prototype.initShoppilot=p(r.prototype.initShoppilot,(function(t,...e){l=t.bind(this,...e),window.plpExpVariantResolver(n).then(t=>{"1"!==t&&l()}).catch(()=>l())})))},o=function(){(function(){window.PlpUrlUtils.buildRequestParams=p(window.PlpUrlUtils.buildRequestParams,(function(t,...n){return[...t.apply(this,n),{name:"card-variant",value:"ab_plp_variant_b"}]})),window.PlpUrlUtils.buildLazyLoadParams=p(window.PlpUrlUtils.buildLazyLoadParams,(function(t,...n){const e=t.apply(this,n);return Object.assign({},e,{"card-variant":"ab_plp_variant_b"})})),window.PlpUrlUtils.buildLazyLoadParams=p(window.PlpUrlUtils.buildLazyLoadParams,(function(t,...n){const e=t.apply(this,n);return Object.assign({},e,{"card-variant":"ab_plp_variant_b"})})),"function"==typeof window.PlpPageController&&(window.PlpPageController.prototype.loadData=p(window.PlpPageController.prototype.loadData,(function(t,n,e){const a=Object.assign({},n,{"card-variant":"ab_plp_variant_b"});return t.call(this,a,e)})));"function"==typeof window.SrpPageController&&(window.SrpPageController.prototype.loadData=p(window.SrpPageController.prototype.loadData,(function(t,n,e){const a=Object.assign({},n,{"card-variant":"ab_plp_variant_b"});return t.call(this,a,e)})));window.PlpUrlUtils.buildPageLoadParams=p(window.PlpUrlUtils.buildPageLoadParams,(function(t,...n){const e=t.apply(this,n);return Object.assign({},e,{"card-variant":"ab_plp_variant_b"})})),window.PlpPaginationModule=p(window.PlpPaginationModule,(function(t,...n){var e=t.apply(this,n);return e.init=p(e.init,(function(t,...n){var e=t.apply(this,n);return u.call(this),e})),e}));const{SrpPageController:t,PlpPageController:n}=window;"function"==typeof t&&(t.prototype.changePlpCardView=p(t.prototype.changePlpCardView,e));"function"==typeof n&&(n.prototype.changePlpCardView=p(n.prototype.changePlpCardView,e));function e(t,...n){t.apply(this,n);const e=n[0]||"list";document.body.dispatchEvent(new CustomEvent("plp:change:card-view",{detail:{type:e},bubbles:!0,cancelable:!0}))}})(),u(),t=document.querySelectorAll(".ui-sorting-cards"),Array.from(t).forEach(t=>{if(null===t.querySelector("product-card")){const n=t.querySelector(".ui-product-card");if(n){const e=function(t){if(!(t instanceof HTMLElement))return;const n={productId:t.dataset.productId,productUrl:t.dataset.productUrl,modelid:t.dataset.modelId,productName:c.escape(t.dataset.productName),mainPrice:m(t,"mainPrice",0),mainPriceMeasurement:m(t,"mainPriceUnit","")||"",secondPrice:m(t,"secondPrice",0),secondPriceMeasurement:m(t,"secondPriceUnit","")||"",label:t.dataset.productDimension65||t.dataset.source,img0:`{"model": 0, "link": "${s(t)}"}`,img768:`{"model": 0, "link": "${s(t,"(min-width: 768px)")}"}`,img1200:`{"model": 0, "link": "${s(t,"(min-width: 1200px)")}"}`},e=document.createElement("template"),a=function(t){return n=>{const e=t.getAttribute(n);return"string"==typeof e?`${n}="${e}"`:""}}(t);return e.innerHTML=`\n            <product-card\n              productUrl="${n.productUrl}"\n              productid="${n.productId}"\n              productname="${n.productName}"\n              productprice="${n.mainPrice}"\n              mainPrice="${n.mainPrice}"\n              mainPriceMeasurement="${n.mainPriceMeasurement}"\n              secondPrice="${n.secondPrice}"\n              secondPriceMeasurement="${n.secondPriceMeasurement}"\n              img1200='${n.img1200}'\n              img768='${n.img768}'\n              img0='${n.img0}'    \n              modelid='${n.modelid}'          \n              \n            ${a("data-ga-root")}\n            ${a("data-element-id")}\n            ${a("data-rel")}\n            ${a("data-place")}\n            ${a("data-product-gamma")}\n            ${a("data-product-width")}\n            ${a("data-product-length")}\n            ${a("data-product-height")}\n            ${a("data-product-material")}\n            ${a("data-product-color")}\n            ${a("data-product-stock-value")}\n            ${a("data-product-web-saleable")}\n            ${a("data-product-has-linked-how-tos")}\n            ${a("data-product-id")}\n            ${a("data-product-name")}\n            ${a("data-product-price")}\n            ${a("data-product-location")}\n            ${a("data-product-category-id")}\n            ${a("data-product-weight")}\n            ${a("data-product-brand")}\n            ${a("data-product-dimension65")}\n            ${a("data-division-id")}\n            ${a("data-division")}\n            ${a("data-sub-division-id")}\n            ${a("data-sub-division")}\n            ${a("data-category-id")}\n            ${a("data-product-url")}\n            ${a("data-category")}\n            ${a("data-model-id")}\n            ${a("data-sub-category-id")}\n            ${a("data-unit")}\n            ${a("data-sub-category")}\n            ${a("data-source")}\n            ${a("isdisabled")}\n            ></product-card>\n    `,document.importNode(e.content,!0)}(n),a=n.parentElement;a.innerHTML="",a.appendChild(e),t.style.height="auto"}else t.style.display="none"}});var t},i=function(t){"function"==typeof l&&(l(),r.prototype.initShoppilot=d);!function(t){const n=document.head.querySelector(`style#${t}_antiflick`);null!=n&&document.head.removeChild(n)}(t)};const{PlpCardsController:r,_:c}=window,d=r&&r.prototype.initShoppilot;let l;function p(t,n){const e=t;return function(...t){return n.call(this,e,...t)}}function u(){$("[data-js-pagination-wrapper]").find("[data-js-pagination-page-btn], [data-js-pagination-next-btn], [data-js-pagination-prev-btn]").each((t,n)=>{const e=n.href;n.href=e+"&card-variant=ab_plp_variant_b"})}function s(t,n){let e;return e="string"==typeof n?t.querySelector(`.ui-product-card__img source[media="${n}"]`):t.querySelector(".ui-product-card__img source:not([media])"),e&&e.getAttribute("srcset")||""}function m(t,n,e=""){const a=t.querySelector(".prices-container");return a?a.dataset[n]:e}const{globalConfig:w}=window;let f=[];try{f=JSON.parse(w.optimizationExperiments)}catch(t){console.warn("Error with json recognition: "+t)}function g(t,n,e){const a=window.google_optimize&&window.google_optimize.get(t);if("string"==typeof a)return n(a);e()}function h(t,n,e){!function(t,n){v(t).resolve(n)}(n,e);const a=e;y("event","ab_plp_render",{ab_plp_variant:"1"===a?"b":"a"}),"1"===a?o(t,n):i(t,n)}!function(t){const n=f.find(n=>n.experimentLocalId===t);if(void 0!==n){a(t,n.experimentExternalId);const e=n.experimentExternalId;(function(t,n){const e=function(t,n){return new Promise(t=>{y("event","optimize.callback",{name:n,callback:n=>{t(n)}})})}(0,n),a=function(t,n){return new Promise((t,e)=>{window.addEventListener("load",()=>{"google_optimize"in window?g(this,n,t):setTimeout(g.bind(this,n,t,e),5e3)},{once:!0,passive:!0})})}(0,n);return Promise.race([e,a])})(0,e).then(h.bind(this,t,e)).catch(h.bind(this,t,e))}}("ab_plp");const b={};function v(t){let n=b[t];return null==n&&(n=(()=>{let t,n;return{promise:new Promise((e,a)=>{t=e,n=a}),reject:n,resolve:t}})(),b[t]=n),n}function y(){window.dataLayer=window.dataLayer||[],window.dataLayer.push(arguments)}window.plpExpVariantResolver=function(t){return v(t).promise}}]);

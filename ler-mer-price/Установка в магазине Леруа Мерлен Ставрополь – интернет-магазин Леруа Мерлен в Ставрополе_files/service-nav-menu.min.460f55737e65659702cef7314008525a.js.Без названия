@@ -1,0 +1,37 @@
+$(document).ready(function () {
+    var $window = $(window),
+        headerHeight = $('.header-inner').height(),
+        $navbar = $('.navbar'),
+        $navContainer = $navbar.find('.nav'),
+        $header = $('.header-row'),
+        scrollSpyParams = {};
+
+    $('.service-section-comp').each(function (i, el) {
+        var $el = $(el);
+        $navContainer
+            .append('<li class="nav-item"><a href="#' + $el.attr('id') + '">' + $el.data('navtitle') + '</a></li>');
+        $($navContainer.find("li")[$navContainer.find("li").length - 1]).find('a').click(function (e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            $('html, body').animate(
+                {scrollTop: $('.service-section-comp' + href).offset().top - headerHeight},
+                'fast'
+            );
+            history.pushState(null, null, href)
+        });
+    });
+
+    $window.scroll(function () {
+        var isFixedHeader = $window.scrollTop() > $navbar.parent().offset().top - headerHeight;
+        $navbar.toggleClass('nav-bar-fixed', isFixedHeader);
+        $navbar.width(isFixedHeader ? $navbar.parent().width() : "");
+
+        if ($navContainer.find("li.nav-item.active").length === 0 && $navContainer.find('li').length > 0) {
+            $navContainer.find('li').eq(0).addClass('active');
+        }
+    });
+
+    $navContainer.find('li').eq(0).addClass('active');
+    if ($header.length) scrollSpyParams = {offset: $header.height() + 10};
+    $('body').scrollspy(scrollSpyParams);
+});

@@ -1,0 +1,110 @@
+var ratingStarService = {
+
+    renderCards: function (data) {
+        var self = this;
+        if (data) {
+            var filteredArray = _.filter(data, function (item) {
+                return !_.isUndefined(item) && !_.isNull(item);
+            });
+            var ids = _.map(filteredArray, function (item) {
+                if (_.isObject(item)) {
+                    return item.article;
+                } else {
+                    return item;
+                }
+            });
+            if(window.ShoppilotAPI) {
+                window.ShoppilotAPI.then(function (Shoppilot) {
+                    ids.forEach(function (id) {
+                        self.renderCard(id, Shoppilot);
+                    });
+                });
+            }
+        }
+    },
+
+    renderCard: function (id) {
+        var MultiWidget = Shoppilot.require('multi_widget');
+        var ProductWidget = Shoppilot.require('product_widget');
+
+        var cards = Array.prototype.slice.call($('.sp-inline-rating-' + id));
+        var inlineRatings = cards.map(function (card) {
+            var el = $(card);
+            return new ProductWidget({
+                name: 'category-inline-rating',
+                product_id: id,
+                container: $(el)
+            });
+        });
+        MultiWidget.render(inlineRatings);
+    },
+    renderProductDetails: function (isQuickView) {
+        var id, $productContainer = $('[data-js-detailed-view]').find('.card-data');
+        if (!isQuickView) {
+            id = $productContainer.attr('data-product-id');
+            if(window.ShoppilotAPI){
+                window.ShoppilotAPI.then(function (Shoppilot) {
+                    var ProductWidget = Shoppilot.require('product_widget');
+                    var MultiWidget = Shoppilot.require('multi_widget');
+                    var widgets = [
+                        new ProductWidget({
+                            name: 'inline-rating',
+                            product_id: id,
+                            container: ".sp-inline-rating-container"
+                        }),
+                        new ProductWidget({
+                            name: 'product-reviews',
+                            product_id: id,
+                            container: "#sp-product-reviews-container",
+                            onDone: function() {
+                                $('.reviews-inner').show();
+                                checkReview();
+                            },
+                            onFail: function() {
+                                $('.reviews-inner-wrapper').remove();
+                            }
+                        })
+                    ];
+                    function checkReview() {
+                        var maxCount = 20,
+                            count = 0;
+                        function showAnchorReview() {
+                            var review = $('.anchor-reaper .reviews');
+                            if (review && review.length === 0) {
+                                count = count + 1;
+                                if (count < maxCount) {
+                                    setTimeout(showAnchorReview, 100);
+                                }
+                            } else {
+                                review.show();
+                            }
+                        }
+                        showAnchorReview();
+                    }
+                    MultiWidget.render(widgets);
+                });
+            }
+        } else {
+            id = $('.product-quick-view.card-data').attr('data-product-id');
+            var productLink = $('.product-quick-view.card-data').data('product-url');
+            if(window.ShoppilotAPI){
+                window.ShoppilotAPI.then(function (Shoppilot) {
+                    var ProductWidget = Shoppilot.require('product_widget');
+                    var MultiWidget = Shoppilot.require('multi_widget');
+                    var widgets = [
+                        new ProductWidget({
+                            name: 'inline-rating',
+                            product_id: id,
+                            container: ".product-quick-view .sp-inline-rating-container",
+                            onDone: function() {
+                                $('.product-quick-view .sp-inline-rating-label').attr('href', productLink + '#sp-product-reviews-widget');
+                            }
+                        })
+                    ];
+                    MultiWidget.render(widgets);
+
+                });
+            }
+        }
+    }
+};

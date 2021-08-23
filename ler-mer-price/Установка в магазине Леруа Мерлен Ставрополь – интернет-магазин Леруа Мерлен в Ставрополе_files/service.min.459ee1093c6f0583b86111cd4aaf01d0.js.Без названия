@@ -1,0 +1,27 @@
+$(document).ready(function () {
+    $('.tooltip-container').each(function () {
+        var elem = $(this);
+        if (elem.next('.service-popover').html()) {
+            elem.popover({
+                placement: 'top',
+                trigger: 'hover',
+                html: true,
+                container: elem,
+                animation: true,
+                content: elem.next('.service-popover').html().trim()
+            });
+        }
+    });
+
+    // make all labels after 'Установка' bold
+    var searchString = 'Установка';
+    var position = 10;
+    $('.service-block-table .title').each(function (i, elem) {
+        var $elem = $(elem),
+            txt = $elem.text().trim();
+        if (txt.indexOf(searchString) === 0) {
+            var boldText = [txt.slice(0, position), "<b>" + txt.slice(position) + "</b>"].join('');
+            $elem.html(boldText);
+        }
+    })
+});

@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[26],{162:function(n,c,t){"use strict";t.d(c,"a",(function(){return o})),t.d(c,"d",(function(){return i})),t.d(c,"c",(function(){return r})),t.d(c,"b",(function(){return u}));const o="plp:change:card-view",i="product:title:click",r="product:photo:click",u="product:viewport:visible"}}]);

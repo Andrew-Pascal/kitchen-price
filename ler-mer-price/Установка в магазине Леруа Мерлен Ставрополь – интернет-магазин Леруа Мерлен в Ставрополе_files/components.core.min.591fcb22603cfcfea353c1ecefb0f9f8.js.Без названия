@@ -1,0 +1,3508 @@
+/**
+ * Requirements for incoming components:
+ * - handleSuccessCmpResponse(markup)
+ * - handleErrorCmpResponse(markup)
+ */
+
+var AemComponentUpdater = (function(){
+    function controller() {
+        this.init();
+    }
+
+    controller.prototype.init = function(){
+        this.componentsMap = {
+            'productList': 'cards-view',
+            'searchProductList': 'search-cards-view',
+            'projectProductsList': '_jcr_content/products-list.cards'
+        };
+    };
+
+    controller.prototype.getMarkup = function(pagePath, cmpName, parameters, cmp){
+        var resultUrl = pagePath;
+
+        if (resultUrl.indexOf(globalConfig.pathSuffix) > 0) {
+            resultUrl = pagePath.replace(globalConfig.pathSuffix, '');
+
+            resultUrl += '/' + this.componentsMap[cmpName];
+            resultUrl += globalConfig.pathSuffix;
+        } else {
+            resultUrl += this.componentsMap[cmpName];
+        }
+
+        resultUrl += '/' + parameters;
+
+        this.requestCmp(resultUrl, cmp);
+    };
+
+    controller.prototype.requestCmp = function (path, cmp) {
+        var wait = true;
+        setTimeout(function() {
+            if (wait && cmp.elSettings.showLoadingMask) {
+                cmp.showCollectionMask();
+            }
+        }, 5000);
+        setTimeout(function() {
+            if (wait && cmp.elSettings.showLoadingMask) {
+                cmp.showCollectionTab();
+            }
+        }, 10000);
+
+        if (cmp.elSettings.allowComponentDirectCall) {
+            CookieUtils.set('waitCookie', true);
+            $.ajax({
+                url: path
+            }).done(function (data) {
+                wait = false;
+                CookieUtils.remove("waitCookie");
+                cmp.handleSuccessCmpResponse(data);
+            })
+            .fail(function (data) {
+                CookieUtils.remove("waitCookie");
+                wait = false;
+                cmp.handleErrorCmpResponse(data);
+            });
+        }
+    };
+
+    return controller;
+})();
+
+var AemServiceLayer = (function () {
+    "use strict";
+
+    var defaultValue = "not set"
+    var settings = {
+        regionNameSelector: '.region-name',
+        catProductItemSelector: '[data-rel=js-cat-product-item]',
+        profileAsync: '[rel=js-profile-sync]',
+        errorPage: '[rel=js-error]',
+        catProductItemSelectorComplementary: '[data-rel=js-complementary] [ data-js-complements="complements"] [data-rel=js-cat-product-item]',
+        catProductItemSelectorSimilar: '[data-rel="js-similar-products"] [data-rel="js-cat-product-item"]',
+        catProductItemSelectorViewed: '[data-rel=js-viewed] [data-rel=js-cat-product-item]',
+        detailProductPage: '[data-rel=js-detail-product-page]',
+        basketMinimizedProductItem: '[data-rel=js-basket-min-product-item]',
+        basketProductItemSubstitutes: '[data-rel=js-sub-product-item]',
+        shoplistMinimizedProductItem: '[data-rel=js-shoplist-min-product-item]',
+        searchResultsPage: '[rel=js-search-results-page]',
+        advicePage: '[rel=js-advice-page]',
+        adviceName: '[rel=js-advice-page] .howto-title',
+        productsUsedInAdviceSelector: '[data-rel=js-cat-product-item]',
+        divisionLevelSelector: '[rel=js-division-level]',
+        catalogProductList: '[data-js-catalog-product-list]',
+        productItemSelector: '[data-rel=product-item]',
+        emptyBasketSelector: '[data-rel=js-empty-basket]',
+        noSearchResultsSelector: '.no-results',
+        adviceEnabledSelector: '[data-js-advice]',
+        serviceEnabledSelector: '[data-js-service]',
+        shoppingListSelector: '[data-rel=js-shopping-list]',
+        shoppingListItemSelector: '[data-rel=js-shopping-list] [data-rel=js-cat-product-item]',
+        emptyShoppingListSelector: '[data-rel=js-empty-shopping-list]',
+        bannerSelector: '[data-adaptive-banner]',
+        owlCarouselSelector: '.owl-carousel',
+        elbrusCarouselSelector: '[data-js-elbrus-carousel]',
+        owlCarouselItemClonedSelector: '.owl-item.cloned',
+        totalWeightSelector: '.total-weight-val',
+        totalPriceSelector: '.products-price-val',
+        paginationSelector: '[rel=js-pagination]',
+        basketProductsVarName: 'basketProductsGTM',
+        listPropName: 'Catalog',
+        notHiddenClass: ':not(.hidden)',
+        basketPageItemsSelector: '[data-rel=product-item],[data-rel=js-empty-basket]:not(.hidden)',
+        similarProductsSelector: '[data-rel=js-similar-products]',
+        complementsSelector: '[data-rel=js-complementary]',
+        storeNameSelector: 'ga-store-name',
+        adviceProductsList: 'AdviceProducts',
+        communityBannerSliderSelector: '.community-banner-slider',
+        rootBannerSelector: '.root-banner_wrapper',
+        socialMediasFromDesignImporterSelector: '.socialmedia [shape=rect]',
+        mobileApplicationsStoresSelector: '.apps .mobile-app-store',
+        shoppilotInlineRating: '.sp-inline-rating-stars'
+    },
+        _whenDataLayerStageDeferred = null;
+
+    var defaultValue = 'not set',
+        promoRegexp = /\boffer\b/;
+
+    /**
+     *  Utility function for kg to gm conversion.
+     *  @param val - value for conversion
+     *  @returns { number } gramm
+     * */
+    function convertToGramm(val) {
+        return !_.isNaN(parseFloat(val)) ? parseFloat(val) * 1000 : null;
+    }
+
+    /**
+     *  Utility function for brand value filtering.
+     *  @param val - value for filtering
+     *  @returns { string } filteredValue
+     * */
+    function filterBrand(val) {
+        if (_.isUndefined(val)) {
+            return val
+        }
+
+        if (typeof val === 'number') {
+            return val.toString();
+        }
+
+        return val.toUpperCase() === "NO NAME" ? "not set" : val;
+    }
+
+    /**
+     *  Utility function for cm to mm conversion.
+     *  @param val - value for conversion
+     *  @returns {string} millimeters
+     * */
+    function convertToMillimeters(val) {
+        return !_.isNaN(parseFloat(val)) ? String(parseFloat(val) * 10) : null;
+    }
+
+    /**
+     *  Utility function for checking the value, if empty returns default value (could be any type).
+     *  @param val - value for verification
+     *  @param defaultVal - default value if val is empty
+     *  @returns value, if empty returns default value (could be any type)
+     * */
+    function notSet(val, defaultVal) {
+        return !isBlank(val) ? val : defaultVal;
+    }
+
+    /**
+     * Function which returns utility function for getting GTM property.
+     * @param {jQuery} $el - jQuery GTM element
+     * @return {function} function for getting GTM property
+     */
+    function getGTMPropertyFunction($el) {
+        return function (attr) {
+            return notSet($el.attr(attr), defaultValue);
+        }
+    }
+
+    /**
+     * Controller for aem service layer.
+     *
+     * @constructor
+     */
+    var controller = function () {
+        this.settings = settings;
+        this.init();
+
+        this.whenDataLayerStage('pre-init')
+            .done(function () {
+
+                /**
+                 * Подписка на ивенты по модели Event-Driven (от веб-компонентов)
+                 * evt.detail должен иметь следующий интерфейс
+                 *
+                 * detail: {
+                 *   eventMapper: 'wishlist-remove', // первый параметр функции gtmEventPush
+                 *   data: {                         // структура данных, передаваемая во 2-м параметре функции gtmEventPush
+                 *     root: dataContext,
+                 *     action: 'remove',
+                 *     count: inShoplistQty,
+                 *   },
+                 * }
+                 **/
+                document.body.addEventListener('gtm-event:push', function (evt) {
+                    var gtmEventMapper = evt.detail.eventMapper;
+                    var data = evt.detail.data;
+                    if(_.isNotUndefined(data.root)){
+                        data.root = $(data.root);
+                    }
+
+                    this.gtmEventPush(gtmEventMapper, data);
+                }.bind(this));
+
+            }.bind(this));
+    };
+
+    /**
+     * Initializer.
+     */
+    controller.prototype.init = function () {
+        var userData = CookieUtils.getUserData(),
+            userDataObj = _.isEmpty(userData) ? _.isEmpty(CookieUtils.getCustomerId()) ? {} : CookieUtils.getCustomerId() : JSON.parse(userData),
+            userId = notSet(userDataObj.customerNumber, defaultValue),
+            userEmailHash = notSet(userDataObj.userEmailHash, defaultValue),
+            loyaltyCardNumber = notSet(userDataObj.loyaltyCardNumber, defaultValue),
+            loyaltyCategory = notSet(userDataObj.loyaltyCategory, defaultValue),
+            clientType = CookieUtils.isUserAuth() ? getLkType(loyaltyCategory, 'client-type') : I18nUtils.get('gtm.client-type.notAuth'),
+            lkType = clientType === I18nUtils.get('gtm.client-type.notAuth') ? defaultValue : getLkType(loyaltyCategory, 'lk-type'),
+            $catalogProductList = $(this.settings.catalogProductList),
+            catalogProductListPath = $catalogProductList.data('path'),
+            pagePath = null,
+            self = this,
+            urlVars = globalConfig.getUrlVars();
+
+        if (urlVars) {
+            var paramDisplay = urlVars.display,
+                paramSortBy,
+                // paramSortBy = getSortByValue(urlVars.sortby), uncomment when fix bug with url and sort
+                paramPlpView = getPlpViewValue(urlVars.plpView);
+        }
+
+        this.settings.list = paramSortBy || paramDisplay || paramPlpView
+            ? 'Catalog / ' + (paramSortBy || paramDisplay || paramPlpView)
+            : 'Catalog';
+
+        this.serviceMap = {
+            'cardsRating': '/cards-rating'
+        };
+
+        function getPlpViewValue(label) {
+            switch (label) {
+                case 'largeCard':
+                    return 'tile';
+                default:
+                    return label;
+            }
+        }
+
+        function getSortByValue(label) {
+            switch (label) {
+                case 'currentStoreSellingPrice@Price_desc':
+                    return I18nUtils.get('search.sort-by-price-desc');
+            }
+        }
+
+        function getLkType(loyaltyCategory, type) {
+            switch (loyaltyCategory) {
+                case '1':
+                    return I18nUtils.get('gtm.' + type + '.service');
+                case '2':
+                    return I18nUtils.get('gtm.' + type + '.vendor');
+                case '3':
+                    return I18nUtils.get('gtm.' + type + '.prof');
+                default:
+                    return I18nUtils.get('gtm.' + type + '.auth');
+            }
+        }
+
+        function getCityName() {
+            var cityName = $('.region-name').text();
+            if (!isBlank(cityName)) {
+                return cityName;
+            }
+            if (!_.isUndefined(RegionUtils.getCurrentRegionProperties())) {
+                cityName = RegionUtils.getCurrentRegionProperties().regionName;
+            }
+            if (!isBlank(cityName)) {
+                return cityName;
+            }
+            return null;
+        }
+
+        // map of jQuery-deferred for layer stages
+        _whenDataLayerStageDeferred = Object.create({});
+
+        this.dataLayer = {
+            'event': 'LeroyMerlin_Pageview',
+            'businessModel': 'LM',
+            'userAuth': (CookieUtils.isUserAuth() ? '1' : '0'),
+            'userId': userId,
+            'userEmailHash': userEmailHash,
+            'loyaltyCardNumber': loyaltyCardNumber,
+            'clientType': clientType,
+            'lkType': lkType,
+            'cityName': getCityName(),
+            'cityId': globalConfig.cityId || defaultValue,
+            'favoriteStore': 'default',
+            'uccp': '0',
+            'geoLocation': CookieUtils.getUserGeolocation(),
+            'pageType': self.getEventLocationBase()
+        };
+
+        // promoView field shouldn't exist on checkout pages
+        if (globalConfig.pageType !== 'Checkout') {
+            this.createBannersForPromotion(this.settings.bannerSelector);
+        }
+
+        if (_.isNotUndefined(catalogProductListPath)) {
+            pagePath = catalogProductListPath.match(promoRegexp);
+        }
+
+        var asyncOperation = false,
+            waitingProductsInCatalog = false,
+            waitingProductsInProductPage = false,
+            waitingSearchResultsPage = false,
+            waitingComparisonListPage = false,
+            waitingShoppingListPage = false,
+            waitingProfilePage = false;
+
+        if (!_.isNull(pagePath)) {
+            $.extend(this.dataLayer, {'pageType': 'Promo'});
+            this.settings.listPropName = 'Promo';
+            asyncOperation = waitingProductsInCatalog = $(this.settings.catProductItemSelector).length > 0;
+            this.createCatCommonProps(this.settings.catalogProductList);
+            this.createDivSubObject(this.settings.divisionLevelSelector, 2);
+        }
+
+        switch (globalConfig.pageType) {
+            case 'Catalog':
+                asyncOperation = waitingProductsInCatalog = $(this.settings.catProductItemSelector).length > 0;
+                this.createCatCommonProps(this.settings.catalogProductList);
+                this.createDivSubObject(this.settings.divisionLevelSelector, 2);
+                break;
+            case 'ProductPage':
+                asyncOperation = waitingProductsInProductPage = true;
+                this.createDivSubObject(this.settings.divisionLevelSelector, 2);
+                addPropertiesTool.call(this, {
+                    'categoryId': 'data-sub-category-id',
+                    'productAvailability': 'data-product-is-available',
+                    'productId': 'data-product-id',
+                    'productName': 'data-product-name',
+                    'businessModel': 'data-business-model',
+                    'price': 'data-product-price',
+                    'variant': 'data-product-weight'
+                });
+                break;
+            case 'SearchResults':
+                asyncOperation = waitingSearchResultsPage = false;
+                this.settings.listPropName = 'SearchResults';
+                this.createSearchResultsCommonProps(this.settings.searchResultsPage);
+                break;
+            case 'ComparisonList':
+                asyncOperation = waitingComparisonListPage = true;
+                this.settings.listPropName = 'ComparisonList';
+                break;
+            case 'Advice':
+                this.createAdviceCommonProps(this.settings.advicePage);
+                break;
+            case 'WishList':
+                this.dataLayer.pageType = 'ShoppingList';
+                asyncOperation = waitingShoppingListPage = true;
+                this.settings.listPropName = 'ShoppingList';
+                break;
+            case 'Profile':
+                asyncOperation = $(this.settings.profileAsync).length > 0;
+
+                //previouslyViewed block loads asynchronously, in this case we should listen when this process has been finished
+                $(document).off('previouslyViewedLoaded').on('previouslyViewedLoaded', function (e) {
+                    self.settings.listPropName = 'previouslyViewed';
+                });
+                // shopping list in profile page
+                if ($('.shopping-list-page').length > 0) {
+                    this.dataLayer.pageType = 'Profile';
+                    waitingShoppingListPage = true;
+                    this.settings.listPropName = 'ShoppingList';
+                } else {
+                    waitingProfilePage = asyncOperation;
+                }
+
+                break;
+
+            case 'ErrorPage':
+                this.getErrorProp(this.settings.errorPage);
+                break;
+
+            case 'Checkout':
+                var step = globalConfig.step;
+                switch (step) {
+                    case 'success':
+                        asyncOperation = true;
+                        this.waitAsyncLoad('.checkout', 'createTransaction');
+                        break;
+                    case 'basket':
+                        this.createCheckoutStep(step);
+                        asyncOperation = true;
+                        this.settings.listPropName = 'Checkout';
+                        this.waitAsyncLoad(this.settings.basketPageItemsSelector,
+                            'createBasketProductsContainer', 'readBasketProducts');
+                        this.waitAsyncLoad(this.settings.basketPageItemsSelector, 'attachItemHandlers');
+                        break;
+                    default:
+                        this.createCheckoutStep(step);
+                        this.readBasketProducts();
+                        break;
+                }
+                break;
+            case 'Home':
+                this.configureCommunityDataLayer();
+                break;
+            case 'ShopPage':
+                this.configureShopPageDataLayer();
+                break;
+            case 'ServicePage':
+                this.configureServicePageDataLayer();
+                break;
+            case 'Main':
+                var $banner = $('.root-banner');
+                var bannerInfo = [];
+                if ($banner.length) {
+                    bannerInfo = $banner.map(function(id, el) {
+                        var $el = $(el);
+                        var $bannerWithPos = $el.find('[data-banner-position]');
+                        var $bannerInfo = $el.find('[rel="js-banner"]');
+                        return {
+                            position: $bannerWithPos && $bannerWithPos.attr('data-banner-position'),
+                            name: $bannerInfo && $bannerInfo.attr('data-banner-name'),
+                            creative: $bannerInfo && $bannerInfo.attr('data-banner-creative')
+                        };
+                    });
+                }
+                this.configureGalleryDataLayer(bannerInfo);
+                break;
+            case 'VendorPage':
+                this.configureMarketDataLayer();
+                break;
+            default:
+                break;
+        }
+
+        // ok: data layer stage: pre-init
+        this._resolveDataLayerStage('pre-init');
+
+        if (!asyncOperation) {
+            this.attachButtonHandlers();
+            // ok: data layer stage: initialized
+            this.gtmPush(this.dataLayer);
+            this._resolveDataLayerStage('initialized');
+        } else if (waitingProductsInCatalog || waitingComparisonListPage || waitingProfilePage) {
+            this.waitAsyncLoad(this.settings.catProductItemSelector, 'createCatalogProducts');
+        } else if (waitingSearchResultsPage) {
+            this.waitAsyncLoad(this.settings.catProductItemSelector + ','
+                + this.settings.noSearchResultsSelector + ',' + this.settings.adviceEnabledSelector + ',' + this.settings.serviceEnabledSelector, 'createSearchResults');
+        } else if (waitingShoppingListPage) {
+            this.waitAsyncLoad(this.settings.catProductItemSelector + ','
+                + this.settings.emptyShoppingListSelector, 'createShoppingListProducts');
+        } else if (waitingProductsInProductPage) {
+            var selectors = [this.settings.catProductItemSelectorComplementary,
+                this.settings.catProductItemSelectorSimilar,
+                this.settings.catProductItemSelectorViewed];
+            this.waitAsyncLoad(selectors.join(), 'createProductPage');
+            this.createProductPageImpressions();
+        }
+        // TODO: if asyncOperation === true and !(waitingProductsInCatalog || waitingComparisonListPage || waitingProfilePage || waitingSearchResultsPage || waitingShoppingListPage || waitingProductsInProductPage)
+
+        this.attachMobileAppsStoresHandlers();
+    };
+
+    controller.prototype.setCatalogList = function (currPage) {
+        return this.settings.list && (currPage === 'Catalog' || currPage === 'Promo')
+            ? this.settings.list
+            : currPage;
+    }
+
+    controller.prototype.attachMobileAppsStoresHandlers = function () {
+        var self = this;
+        $(this.settings.mobileApplicationsStoresSelector).each(function () {
+            $(this).click(function () {
+                self.gtmEventPush('mobile-app-store-open', {root: $(this)});
+            });
+        });
+    };
+
+    // Services Page
+    /**
+     */
+    controller.prototype.configureServicePageDataLayer = function () {
+
+        var $serviceName = $('.service-page .header');
+        if ($serviceName.length > 0) {
+            this.dataLayer.serviceName = $serviceName.text();
+        } else {
+            this.dataLayer.serviceName = null;
+        }
+    };
+
+    controller.prototype.configureGalleryDataLayer = function (bannerInfo) {
+        var self = this;
+        if (!self.isGalleryPage()) return;
+
+        var $cards = $('.project-card');
+        var $products = $('.product-item');
+
+        if ($cards.length) {
+            self.galleryOrDivisionLoad($cards, bannerInfo);
+        } else if ($products.length) {
+            self.galleryPageLoad($products);
+        }
+    };
+
+    /**
+     * Supplier for Marketplace page.
+     */
+    controller.prototype.configureMarketDataLayer = function () {
+        $.extend(this.dataLayer, {'businessModel': 'Market'});
+    };
+
+    controller.prototype.isGalleryPage = function () {
+        return window.location.href.includes('/proekty');
+    };
+
+    controller.prototype.getDivisionsFromBreadcrumbs = function () {
+        const links = document.querySelectorAll('.breadcrumbs [data-division]');
+        return Array.from(links).map(link => link.dataset.division);
+    };
+
+    controller.prototype._formatPath = function (arr) {
+        return arr.map(function (div) {
+            return div.replace(/\s+/g, '_');
+        })
+            .join('-');
+    };
+
+    controller.prototype.galleryPageLoad = function ($products) {
+        var self = this;
+        var dataLayer = {};
+
+        var productsArray = $products
+            .toArray()
+            .map(function (product, index) {
+                product.positionNumber = index + 1;
+                return product;
+            });
+
+        var productsChunks = _.chunk(productsArray, 10);
+
+        dataLayer['event'] = 'LeroyMerlin';
+        dataLayer['eventAction'] = 'show';
+        dataLayer['eventCategory'] = 'Non-Interactions';
+        dataLayer['eventLabel'] = 'products';
+        dataLayer['ecommerce'] = {
+            'impressions': self._impressionsFromProducts(productsChunks.shift())
+        };
+
+        self.gtmPush(dataLayer);
+
+        if (!productsChunks.length) return;
+
+        dataLayer['platform'] = 'aem';
+
+        _.each(productsChunks, function (products) {
+            dataLayer['ecommerce'] = {
+                'impressions': self._impressionsFromProducts(products)
+            };
+            self.gtmPush(dataLayer);
+        });
+    };
+
+    controller.prototype._impressionsFromProducts = function (arr) {
+        return arr.map(function (product) {
+            var productCard = $(product).find('[data-element-id="ui-product-card"]');
+
+            return {
+                'brand': productCard.data('product-brand') || 'not set',
+                'category': productCard.data('category'),
+                'dimension57': '0',
+                'dimension59': 'not set',
+                'dimension60': 'not set',
+                'dimension65': productCard.data('product-dimension65'),
+                'dimension77': productCard.data('product-web-saleable') === true ? "available" : "notAvailable",
+                'dimension61': productCard.data('product-length'),
+                'dimension62': productCard.data('product-width'),
+                'dimension63': productCard.data('product-height'),
+                'dimension64': productCard.data('product-material'),
+                'dimension55': productCard.data('product-color'),
+                'dimension9': productCard.data('product-gamma'),
+                'id': productCard.data('product-id'),
+                'metric1': productCard.data('product-price'),
+                'name': productCard.data('product-name'),
+                'price': productCard.data('product-price'),
+                'variant': productCard.data('product-weight'),
+                'list': 'SolutionsProjectGallery',
+                'position': product.positionNumber
+            }
+        })
+    };
+
+    controller.prototype.galleryOrDivisionLoad = function ($cards, bannerInfo) {
+        const self = this;
+        const noEmptyCards = $cards.length > 0;
+        let promotionsWithOutPosition = noEmptyCards ? this._promotionsFromCards($cards.toArray()) : [];
+        if (bannerInfo.length) {
+            promotionsWithOutPosition = $.merge(bannerInfo, promotionsWithOutPosition).toArray();
+        }
+        const promotionsWithPosition = this._addPositionToGalleryPromotions(promotionsWithOutPosition);
+        if (noEmptyCards) $cards.click(function (event) {self._onCardClick(event)});
+
+        this.dataLayer['event'] = 'LeroyMerlin_Pageview';
+        this.dataLayer['ecommerce'] = {
+            'promoView': {
+                'promotions': promotionsWithPosition
+            }
+        };
+    };
+
+    controller.prototype._onCardClick = function (event) {
+        event.preventDefault();
+
+        var self = this;
+        var $card = $(event.target).closest('.project-card');
+        var caption = $card.find('.project-card__caption');
+        var name = caption[0] && caption.text().trim();
+        var imageUrl = $card.find('.project-card__img').css('backgroundImage');
+        var imageName = imageUrl ? imageUrl
+                .split('/')
+                .pop()
+                .split('.')
+                .shift()
+            : 'creative not set';
+
+        var data = {
+            name: name || 'name not set',
+            position: $('.project-card').index($card) + 1,
+            creative: decodeURIComponent(imageName)
+        };
+
+        self.gtmEventPush('card-click', {root: data});
+        window.location.href = $card.find('.project-card__link').attr('href');
+    };
+
+    controller.prototype._addPositionToGalleryPromotions = function(arr) {
+        return arr.map(function (element, index) {
+           return {
+               name: element.name,
+               position: index + 1,
+               creative: element.creative
+           }
+        });
+    }
+
+    controller.prototype._promotionsFromCards = function (arr) {
+        return arr.map(function (card, index) {
+            var caption = $(card).find('.project-card__caption');
+            var name = caption[0] && caption.text().trim();
+            var imageUrl = $(card).find('.project-card__img').css('backgroundImage');
+            var imageName = imageUrl ? imageUrl
+                    .split('/')
+                    .pop()
+                    .split('.')
+                    .shift()
+                : 'creative not set';
+            return {
+                name: name || 'name not set',
+                creative: imageName
+            }
+        });
+    };
+
+    // Community Page
+    /**
+     */
+    controller.prototype.configureCommunityDataLayer = function () {
+        //function for ga phase 2
+    };
+
+    // ShopPage
+    /**
+     */
+    controller.prototype.configureShopPageDataLayer = function () {
+        var $gtmShopNameHolder = $('#ga-store-name');
+        if ($gtmShopNameHolder.length > 0) {
+            this.dataLayer.shopName = $gtmShopNameHolder.data(this.settings.storeNameSelector);
+        }
+    };
+
+    /**
+     * Add custom props to the root of dataLayer.
+     * @param {Object} obj
+     * @param {Object} me - context
+     */
+    function addPropertiesTool(obj) {
+        for (var property in obj) {
+            if (obj.hasOwnProperty(property)) {
+                this.setAdditionalProps(this.settings.detailProductPage, property, obj[property]);
+            }
+        }
+    }
+
+    /**
+     * Get ErrorPage props. (Uses in ErrorPage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getErrorProp = function (el) {
+        var params = {
+            'errorCode': '' + $(el).data('error')
+        };
+
+        this.extendDataLayer(params);
+    };
+
+    // Advice Page
+    /**
+     * @param {String} el - dom selector with data props
+     */
+    controller.prototype.createAdviceCommonProps = function (el) {
+        var params = {},
+            adviceType,
+            adviceName,
+            divisionName,
+            impressions;
+
+        adviceType = this.getAdviceTypeProp(el);
+        if (_.isNotEmpty(adviceType)) {
+            params.adviceType = adviceType;
+        }
+
+        adviceName = this.getAdviceName($(this.settings.adviceName));
+        if (_.isNotEmpty(adviceName)) {
+            params.adviceName = adviceName.trim();
+        }
+
+        divisionName = this.getAdviceDivisionName($(this.settings.divisionLevelSelector));
+        if (_.isNotEmpty(divisionName)) {
+            params.divisionName = divisionName.trim();
+        }
+        impressions = this.getProductsUsedInAdvice(this.settings.productsUsedInAdviceSelector);
+        if (_.isNotEmpty(impressions)) {
+            params.ecommerce = {
+                impressions: impressions
+            }
+        }
+        this.extendDataLayer(params);
+    };
+
+    controller.prototype.getAdviceName = function ($el) {
+        return $el.text();
+    };
+
+    controller.prototype.getProductsUsedInAdvice = function (el) {
+        return this.createCommonProductItem(el, this.settings.adviceProductsList);
+    };
+
+    /**
+     * Get division name from Breadcrumbs.
+     * for instance: ГЛАВНАЯ/СОВЕТЫ/ДЕКОР/КАК КЛЕИТЬ ОБОИ
+     * division is Декор
+     * @param $el jquery object with breadcrumbs selected
+     * */
+    controller.prototype.getAdviceDivisionName = function ($el) {
+        //Only get division when on advice page, not on advice list page
+        if ($el.length === 4) {
+            return $el.get(2).textContent;
+        }
+        return "";
+    };
+
+    /**
+     * Get successfulSearch props. (Uses in AdvicePage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getAdviceTypeProp = function (el) {
+        return $(el).data('advice-type');
+    };
+
+
+    // SearchResultPages
+    /**
+     * @param {String} el - dom selector with data props
+     */
+    controller.prototype.createSearchResultsCommonProps = function (el) {
+        var params = {
+            'searchKeyword': this.getSearchKeywordProps(el),
+            'productsQuantityAvailable': this.getProductsQuantityAvailableProps(el),
+            'productsQuantityTotal': this.getProductsQuantityTotalProps(el),
+            'advisesTotal': this.getAdvisesTotalProps(el),
+            'servicesTotal': this.getServicesTotalProps(el),
+            'successfulSearch': this.getSuccessfulSearchProps(el)
+        };
+        this.extendDataLayer(params);
+    };
+
+    /**
+     * Get successfulSearch props. (Uses in SearchResultPage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getSuccessfulSearchProps = function (el) {
+        var total = $(el).data('successful-search');
+
+        return total > 0 ? '1' : '0';
+    };
+
+    /**
+     * Get searchKeyword props. (Uses in SearchResultPage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getSearchKeywordProps = function (el) {
+        var $searchKeyword = $(el).data('search-keyword');
+        if (_.isNotUndefined($searchKeyword)) {
+            return Number.isInteger($searchKeyword) ? $searchKeyword : $searchKeyword.trim().toLowerCase();
+        }
+    };
+
+    /**
+     * Get advisesTotal props. (Uses in SearchResultPage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getAdvisesTotalProps = function (el) {
+        return $(el).data('advice-count');
+    };
+
+    /**
+     * Get servicesTotal props. (Uses in SearchResultPage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getServicesTotalProps = function (el) {
+        return $(el).data('service-count');
+    };
+
+    /**
+     * Get productsQuantityAvailable props. (Uses in Catalog and SearchResultPage)
+     * @param {String} el - dom selector with data props
+     * @returns {String} value from data attrs
+     */
+    controller.prototype.getProductsQuantityAvailableProps = function (el) {
+        var $catalogList = $(el),
+            $catalogListItems = $catalogList.find('[data-rel="js-cat-product-item"]');
+        return $catalogListItems.length;
+    };
+
+    /**
+     * Get productsQuantityTotal props. (Uses in Catalog and SearchResultPages)
+     * @param {String} el - dom selector with data props
+     * @returns {Number} value from data attrs
+     */
+    controller.prototype.getProductsQuantityTotalProps = function (el) {
+        var $el = $(el),
+            successfulSearch = $el.data('successful-search'),
+            totalProducts = $el.data('total-products');
+
+        return !_.isUndefined(successfulSearch) ? successfulSearch : totalProducts;
+    };
+
+    /**
+     * Creates checkout step.
+     *
+     * @param {string} step the checkout step number
+     */
+    controller.prototype.createCheckoutStep = function (step) {
+        var stepName;
+        var stepNumber;
+        switch (step) {
+            case 'basket':
+                stepName = 'Cart';
+                stepNumber = '1';
+                break;
+            case '4':
+                stepName = 'Personal Data';
+                stepNumber = '2';
+                break;
+            case 'delivery-option':
+                stepName = 'Delivery Method';
+                stepNumber = '3';
+                break;
+            case 'payment-type':
+                stepName = 'Payment';
+                stepNumber = '4';
+                break;
+            default:
+                break;
+        }
+        var actionField = {
+            step: parseInt(stepNumber, 10)
+        };
+        var params = {
+            pageType: 'Checkout',
+            checkoutStepName: stepName,
+            checkoutStepNumber: stepNumber,
+            ecommerce: {
+                checkout: {
+                    actionField: actionField
+                }
+            }
+        };
+        if (stepNumber === '1' && _.isNotUndefined(UrlUtils.getParameter(window.location.href, 'products'))) {
+            actionField.option = 'AbandonedBasket';
+        }
+        if (stepNumber === '2' && _.isNotUndefined(checkoutConfig) && checkoutConfig.disableCheckoutAuthorizationPage) {
+            params.AbTest = 'RegistrationAuthOff';
+        }
+        if (stepNumber === '3') {
+            actionField.option = CookieUtils.isUserAuth() ? 'auth' : 'notAuth';
+        }
+        if (step === 'payment-type') {
+            var selectedDeliveryMode = CookieUtils.getSelectedDeliveryMode();
+            if ('PICKUP' === selectedDeliveryMode) {
+                actionField.option = 'pickup';
+            } else if ('HOME_DELIVERY' === selectedDeliveryMode) {
+                actionField.option = 'delivery';
+            } else if ('PICKUP_POINT' === selectedDeliveryMode) {
+                actionField.option = 'distribution center';
+            }
+        }
+        this.extendDataLayer(params);
+    };
+
+    /**
+     * Creates checkout step.
+     *
+     */
+    controller.prototype.createTransaction = function () {
+        var transactionId = CookieUtils.getTransactionId(),
+            orderInfo = $('.order-info').data('order-info'),
+            params,
+            validOrderInfo = false;
+
+        if (_.isNotUndefined(transactionId) && checkObject(orderInfo) && checkObject(orderInfo.delivery)
+            && transactionId === orderInfo.transactionId
+            && orderInfo.statusCode === 200) {
+            validOrderInfo = true;
+        }
+
+        if (validOrderInfo) {
+            params = this.processOrderInfo(orderInfo);
+            this.extendDataLayer(params);
+            this.gtmPush(this.dataLayer);
+        }
+    };
+
+    controller.prototype.processOrderInfo = function (orderInfo) {
+        var products = TransactionalGAUtils.getFilteredProducts(_.map(orderInfo.products, function (product) {
+                return product.productId;
+            })),
+            affiliation = bootstrapGridCheck.isMobile() ? 'mobile' : 'desktop',
+            orderWeight = TransactionalGAUtils.getOrderWeight(products),
+            totalAmount = orderInfo.totalAmount,
+            amountDelivery = totalAmount && totalAmount.amountDelivery ? totalAmount.amountDelivery : 0,
+            amountLift = totalAmount && totalAmount.amountLift ? totalAmount.amountLift : 0,
+            shipping = amountDelivery + amountLift,
+            userData = CookieUtils.getUserData(),
+            userDataObj = _.isEmpty(userData) ? undefined : JSON.parse(userData),
+            deliveryTo = orderInfo.delivery && orderInfo.delivery.deliveryTo ? orderInfo.delivery.deliveryTo : '',
+            deliveryMode = orderInfo.delivery.deliveryMode;
+
+        var transactionShippingMethod = defaultValue;
+
+        if (_.isNotEmpty(deliveryMode)) {
+            switch (deliveryMode) {
+                case 'PICKUP':
+                    transactionShippingMethod = 'pickup';
+                    break;
+
+                case 'HOME_DELIVERY':
+                    if (deliveryTo === 'TO_ENTRANCE') {
+                        transactionShippingMethod = 'porch';
+                    } else if (deliveryTo === 'TO_LIFT') {
+                        transactionShippingMethod = 'lift';
+                    } else if (deliveryTo === 'room') {
+                        transactionShippingMethod = 'room';
+                    } else {
+                        transactionShippingMethod = defaultValue;
+                    }
+                    break;
+
+                case 'PICKUP_POINT':
+                    transactionShippingMethod = 'distribution center';
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        var paymentType = '';
+        if (_.isNotUndefined(orderInfo.paymentType)) {
+            switch (orderInfo.paymentType) {
+                case 'SBERBANK': {
+                    paymentType = 'card';
+                    break;
+                }
+                case 'CASH': {
+                    paymentType = 'CASH';
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        return {
+            pageType: 'ThankYouPage',
+            transactionPaymentType: paymentType,
+            transactionShippingMethod: transactionShippingMethod,
+            userPhoneHash: _.isEmpty(userDataObj) ? 'not set' : userDataObj.userPhoneHash,
+            userEmailHash: _.isEmpty(userDataObj) ? 'not set' : userDataObj.userEmailHash,
+            orderWeight: orderWeight,
+            ecommerce: {
+                purchase: {
+                    actionField: {
+                        id: $('[data-js-success-info-number]').text(),
+                        revenue: totalAmount ? totalAmount.amountProducts : '',
+                        shipping: shipping,
+                        affiliation: affiliation
+                    },
+                    products: products
+                }
+            }
+        };
+    };
+
+    controller.prototype.getBannersFromOwlCarouselsForPromotion = function () {
+        var owlCarouselSelectorWithElbrusJsCarousel = this.settings.owlCarouselSelector + this.settings.elbrusCarouselSelector,
+            $owlCarousels = $(owlCarouselSelectorWithElbrusJsCarousel),
+            self = this;
+
+        return $owlCarousels.map(function () {
+            return self.getBannersFromOwlCarousel(this);
+        }).get();
+    };
+
+    controller.prototype.getBannersFromOwlCarousel = function (owlCarousel) {
+        var self = this;
+        return $(owlCarousel).find(this.settings.bannerSelector).map(function (i) {
+            return self.getBannerDetails(this, ++i);
+        }).get();
+    };
+
+    controller.prototype.isUnderOwlCarousel = function (el) {
+        return $(el).parents(this.settings.owlCarouselSelector + this.settings.elbrusCarouselSelector).length > 0;
+    };
+
+    controller.prototype.tryToGuessUnderWhichBannerLocated = function ($el) {
+        if ($el.parents(this.settings.communityBannerSliderSelector).length > 0) {
+            return 'community-banner-slider';
+        } else if ($el.parents(this.settings.rootBannerSelector).length > 0) {
+            return 'root-banner';
+        }
+        return $el.data('banner-creative') || 'creative not set';
+    };
+
+    controller.prototype.getBannerDetails = function (el, index) {
+        var $el = $(el);
+        var self = this;
+
+        function _sendEvent() {
+            var gtmObj = _calculateEventAndBanner(self);
+            globalConfig.aemServiceLayer.gtmEventPush(gtmObj.event, {root: gtmObj.banner});
+        }
+
+        // tracking near every link click case for most relative analytics.
+        // but, there's no way to track following a link by a context menu
+        $el.click(_sendEvent)
+            .mouseup(function (e) {
+                // middle mouse click
+                if (e.which === 2) {
+                    _sendEvent();
+                }
+            })
+            .keydown(function (e) {
+                // keyboard click (focus => enter)
+                if (e.which === 13) {
+                    _sendEvent();
+                }
+            });
+
+        function _calculateEventAndBanner(self) {
+            var $elementWithBannerCreative = $el.closest('[data-banner-creative]'),
+                isPartnersCarousel = $el.closest(".partners-carousel").length !== 0 || $el.closest(".top-banner").length !== 0,
+                event = 'banner-adaptive-click',
+                position = self.calculatePosition($el.closest('[data-adaptive-banner]')),
+                creative = $elementWithBannerCreative.length > 0 ?
+                    $elementWithBannerCreative.data('banner-creative').toLowerCase()
+                    : 'creative not set',
+                name = isPartnersCarousel ?
+                    self.calculatePosition($el.closest('[data-adaptive-banner]')) + "_" + creative :
+                    $elementWithBannerCreative.data('banner-name');
+            // special logic for old banners.
+            if (!$el.data('adaptive-banner')) {
+                event = 'banner-click';
+                position = index;
+                name = $el.data('banner-name');
+                creative = self.tryToGuessUnderWhichBannerLocated($el);
+            }
+
+            if (!name) {
+                name = position ? position + '_' + creative : 'Name not set';
+            }
+
+            return {
+                banner: {
+                    'name': name,
+                    'creative': creative,
+                    'position': position ? position : 'Position not set'
+                },
+                event: event
+            };
+        }
+
+        return _calculateEventAndBanner(self).banner;
+    };
+
+    controller.prototype.isHidden = function (el) {
+        return el.offsetParent === null;
+    };
+
+    controller.prototype.createBannersForPromotion = function (el) {
+        var $banners = $(el), self = this;
+        var banners = $banners.map(function () {
+            if (self.isUnderOwlCarousel(this) || self.isHidden(this)) {
+                return;
+            }
+            return self.getBannerDetails(this, 1);
+        }).get();
+
+        var bannersFromOwlCarousels = self.getBannersFromOwlCarouselsForPromotion();
+        return banners.concat(bannersFromOwlCarousels);
+    };
+
+    /**
+     * Create DetailProductArray. (Uses in Product Page)
+     */
+    controller.prototype.DetailActionField = function (el) {
+        return {
+            'list': $(el).attr('data-product-location')
+        }
+    };
+
+    /**
+     * Create DetailProductArray. (Uses in Product Page)
+     */
+    controller.prototype.DetailProductArray = function (el) {
+        return this.createCommonProductItem(el, 'ProductPage');
+    };
+
+    /**
+     * Create DetailProduct. (Uses in Product Page)
+     */
+    controller.prototype.createDetailProduct = function (el) {
+        var detailProduct = {
+            'ecommerce': {
+                'detail': {
+                    'actionField': {},
+                    'products': this.DetailProductArray(el)
+                }
+            }
+        };
+        this.extendDataLayer(detailProduct);
+    };
+
+    /**
+     * Create categoryId. (Uses in Product Page)
+     * @param {String} el - selector path to target element
+     * @param {String} key - property name in dataLayer
+     * @param {String} key - name of attribute which value is requires
+     * @returns {undefined}
+     */
+    controller.prototype.setAdditionalProps = function (el, key, val) {
+        var $targetElem = $(el),
+            detailProduct = {};
+
+        detailProduct[key] = key === 'variant' ? String(convertToGramm($targetElem.attr(val))) : notSet($targetElem.attr(val));
+        this.extendDataLayer(detailProduct);
+    };
+
+    controller.prototype.createProductPageImpressions = function () {
+        var complements = this.createCommonProductItem(
+            this.settings.catProductItemSelectorComplementary, 'complements') || [],
+            similarProducts = this.createCommonProductItem(
+                this.settings.catProductItemSelectorSimilar, 'similarProducts') || [],
+            previouslyViewed = this.createCommonProductItem(
+                this.settings.catProductItemSelectorViewed, 'previouslyViewed') || [],
+            impressions = complements.concat(similarProducts, previouslyViewed),
+            position = function (t, i) {
+                return $.extend(t, {
+                    "position": ++i
+                });
+            },
+            products = {
+                'ecommerce': {
+                    'impressions': impressions.map(position)
+                }
+            },
+            data = {
+                event: 'LeroyMerlin',
+                eventAction: "show",
+                eventCategory: "Non-Interactions",
+                eventLabel: "products",
+                eventLocation: typeof impressions[0] === 'object' && impressions[0].list,
+            };
+
+        this.extendDataLayer(products);
+    }
+
+    /**
+     * Create createProductPage. (Uses in Catalog)
+     */
+    controller.prototype.createProductPage = function () {
+        this.createDetailProduct(this.settings.detailProductPage);
+        this.gtmPush(this.dataLayer);
+
+        $(this.settings.catProductItemSelectorComplementary + ' .card-picture:not(.card-picture-buttons), .card-name').click(function () {
+            self.gtmEventPush('product-open',
+                {
+                    root: $(this).closest(self.settings.catProductItemSelectorComplementary),
+                    count: 1,
+                    list: 'complements'
+                });
+        });
+        $(this.settings.catProductItemSelectorSimilar + ' .card-picture:not(.card-picture-buttons), .card-name').click(function () {
+            self.gtmEventPush('product-open',
+                {
+                    root: $(this).closest(self.settings.catProductItemSelectorSimilar),
+                    count: 1,
+                    list: 'similarProducts'
+                });
+        });
+        $(this.settings.catProductItemSelectorViewed + ' .card-picture:not(.card-picture-buttons), .card-name').click(function () {
+            self.gtmEventPush('product-open',
+                {
+                    root: $(this).closest(self.settings.catProductItemSelectorViewed),
+                    count: 1,
+                    list: 'previouslyViewed'
+                });
+        });
+    };
+
+    /**
+     *  Utility function for create common product item.
+     *  @param {jQuery} $el - jQuery object selector with data props
+     *  @param {Object} expansion - (optional) properties which needs to be included to the product item
+     *  @returns {Object} assigned properties from data attrs
+     * */
+    function commonProductFactory($el, expansion) {
+        var basePropsRating = _.partial(CommonGAUtils.getShoppilotProp, 'rating'),
+            basePropsReview = _.partial(CommonGAUtils.getShoppilotProp, 'review'),
+            baseProperties = {
+                'id': notSet($el.attr('data-product-id'), defaultValue),
+                'name': notSet($el.data('product-name'), defaultValue),
+                'category': notSet($el.data('category'), getCategory(defaultValue)),
+                'brand': notSet(filterBrand($el.data('product-brand')), defaultValue),
+                'variant': String(notSet(convertToGramm($el.data('product-weight')), defaultValue)),
+                'price': notSet($el.data('product-price'), defaultValue),
+                'metric1': notSet($el.data('product-price'), defaultValue),
+                'dimension9': notSet($el.data('product-gamma'), defaultValue),
+                'dimension55': notSet($el.data('product-color'), defaultValue),
+                'dimension57': notSet($el.attr('data-product-has-linked-how-tos'), defaultValue),
+                'dimension60': basePropsRating('data-sp-rating-value', $el),
+                'dimension59': basePropsReview('data-sp-review-count', $el),
+                'dimension61': notSet($el.attr('data-product-length'), defaultValue),
+                'dimension62': notSet($el.attr('data-product-width'), defaultValue),
+                'dimension63': notSet($el.attr('data-product-height'), defaultValue),
+                'dimension64': notSet($el.data('product-material'), defaultValue),
+                'dimension65': CommonGAUtils.getProductPriceCode($el.data('product-dimension65')),
+                'dimension77': CommonGAUtils.getProductAvailability($el.data('product-stock-value'), $el.data('product-web-saleable')),
+                'dimension110': '0',
+                'dimension113': CommonGAUtils.getProductSource($el.data('source')),
+                'position': notSet($el.index(), defaultValue)
+            };
+
+        if (!_.isEmpty(expansion)) {
+            baseProperties = $.extend({}, baseProperties, expansion);
+        }
+
+        return baseProperties;
+    }
+
+    function getCategory(defaultVal) {
+        return $(settings.divisionLevelSelector).last().data('division') || defaultVal;
+    }
+
+    function getList(self, data) {
+        return data.action === 'dropdownChange' && self.settings.list
+            ? self.settings.list
+            : data.eventLocation;
+    }
+
+    controller.prototype.createCommonProductItem = function (el, list, extParams) {
+        var $container = $(el),
+            pageNumber = 1,
+            prevLastItem = 1;
+
+        if (!_.isUndefined(extParams)) {
+            pageNumber = notSet(extParams.pageNumber, 1);
+            prevLastItem = parseInt(notSet(extParams.productAmount, 1), 10) * (parseInt(pageNumber, 10) - 1);
+        }
+
+        return $container.map(function (i) {
+            var $self = $(this),
+                position = ++i,
+                expansion = {
+                        'list': list !== 'ProductPage' ? list : undefined,
+                        'position': pageNumber === 1 ? position : prevLastItem + position
+                    };
+
+            return commonProductFactory($self, expansion);
+
+        }).get();
+    };
+
+    /**
+     * Create ShoppingList params.
+     * @param {String} el - dom selector with data props
+     */
+    controller.prototype.createShoppingListProducts = function (el) {
+        this.attachItemHandlers();
+
+        var element = $(el),
+            impressions = [],
+            emptyShoppingList = $(this.settings.emptyShoppingListSelector);
+
+        if (element.attr('data-rel') !== emptyShoppingList.attr('data-rel')) {
+            impressions = this.createShoppingListImpressions(el, this.settings.listPropName);
+        }
+
+        var products = {
+            ecommerce: {
+                impressions: impressions
+            }
+        };
+
+        this.extendDataLayer(products);
+        this.gtmPush(this.dataLayer, {
+            productsPath: 'ecommerce.impressions',
+            promotionsPath: 'ecommerce.promoView.promotions'
+        });
+    };
+
+    controller.prototype.createShoppingListImpressions = function (items, list) {
+        return $(items).map(function (index) {
+            var $self = $(this);
+            if (!$self.hasClass('sp-inline-rating-stars')) {
+                var extension = {
+                    'list': list,
+                    'position': ++index
+                };
+                return commonProductFactory($self, extension);
+            }
+        }).get();
+    };
+
+    controller.prototype.valueToString = function (val) {
+        return !_.isUndefined(val) ? val.toString() : null;
+    };
+
+    controller.prototype.notSetIfNull = function (val) {
+        return _.isUndefined(val) || (_.isString(val) && _.isEmpty(val))
+            ? '(not set)'
+            : val.toString();
+    };
+
+    /**
+     * Create CatalogProducts params.
+     * @param {String} el - dom selector with data props
+     */
+    controller.prototype.createCatalogProducts = function (el) {
+        var $catalogConteiner = $('[data-js-catalog-product-list]'),
+            $sortingFilter = $catalogConteiner.find('[data-js-shown-products-amount]'),
+            productAmount = $sortingFilter.find('option[selected="selected"]').attr('value'),
+            paramsObject = UrlUtils.getRequestParamsFromStr(window.location.href),
+            pageNumber = _.isUndefined(paramsObject) ? 1 : paramsObject['page'],
+            extParams = {
+                pageNumber: pageNumber,
+                productAmount: productAmount
+            };
+        var res = this.createCommonProductItem(el, this.settings.listPropName, extParams),
+            products = {
+                'ecommerce': {
+                    'impressions': res
+                }
+            };
+        this.extendDataLayer(products);
+        this.gtmPush(this.dataLayer);
+
+        this.attachItemHandlers();
+    };
+
+    /**
+     * Create SearchResults params.
+     * @param {String} el - dom selector with data props
+     */
+    controller.prototype.createSearchResults = function (el) {
+        var element = $(el),
+            impressions = [],
+            noSearchResults = $(this.settings.noSearchResultsSelector);
+
+        if (element.attr('class') !== noSearchResults.attr('class')) {
+            impressions = this.createCommonProductItem(el, this.settings.listPropName);
+        }
+        var params = {
+            'ecommerce': {
+                'impressions': impressions
+            }
+        };
+        this.extendDataLayer(params);
+        this.gtmPush(this.dataLayer);
+    };
+
+    controller.prototype.createBasketProductsContainer = function (el) {
+        this.createBasketProducts(el);
+    };
+
+    controller.prototype.createBasketProducts = function (el) {
+        var params = this.updateBasketProductsGTM(el);
+
+        this.extendDataLayer(params);
+        this.gtmPush(this.dataLayer);
+    };
+
+    /**
+     * Remove property from all objects in the specified array.
+     *
+     * @param {Array.<Object>} arrayOfObjects the array of objects
+     * @param {string} property the property name
+     * @returns {Array.<Object>} array of objects without specified property
+     */
+    controller.prototype.removePropertyFromObjectsArray = function (arrayOfObjects, property) {
+        return _.map(arrayOfObjects, function (obj) {
+            return _.omit(obj, property);
+        });
+    };
+
+    /**
+     * Formats string like "$1 000,00" or "0,65 kg" to 1000.00 and 0.65.
+     *
+     * @param {string} money or weight string
+     * @returns {Number} formatted number, e.g 1000.00
+     */
+    controller.prototype.formatStringToFloat = function (string) {
+        if (typeof string === 'string' && string) {
+            var pureFloat = string.replace(/[^0-9\,-\.]/g, "");
+            return Number(pureFloat.replace(/[\,]/g, "."));
+        } else {
+            return null;
+        }
+    };
+
+    /**
+     * reading basket products from LocalStorage if exists
+     */
+    controller.prototype.readBasketProducts = function (renameArray) {
+        var newproducts,
+            products = LocalStorageUtils.getJSON(this.settings.basketProductsVarName);
+        if (checkObject(products)) {
+            if (globalConfig.step !== 'basket') {
+                var ids = _.pluck(LocalStorageUtils.getCheckoutSessionCart(), 'productId');
+                products.ecommerce.checkout.products = TransactionalGAUtils.getFilteredProducts(ids);
+                products.orderWeight = TransactionalGAUtils.getOrderWeight(products.ecommerce.checkout.products);
+            }
+
+            if (checkObject(renameArray)) {
+                newproducts = this.renameProperties(products, renameArray);
+            } else {
+                newproducts = products;
+            }
+            this.extendDataLayer(newproducts);
+        }
+    };
+
+    /**
+     * Creates the division and subdivision object.
+     */
+    controller.prototype.createDivSubObject = function (el, start) {
+        var params = {},
+            divisionProps = ['division', 'subdivision', 'categoryName', 'subcategoryName'],
+            divisions = $(el).map(function () {
+                return $(this).data('division');
+            }).get();
+
+        for (var i = start; i < divisions.length; i++) {
+            params[divisionProps[i - start]] = divisions[i];
+        }
+
+
+        this.extendDataLayer(params);
+    };
+
+    /**
+     * Get pageNumber props. (Uses in Catalog)
+     */
+    controller.prototype.getPageNumProps = function (el) {
+        return $(el).data('current-page');
+    };
+
+    /**
+     * Creates Catalog common props.
+     */
+    controller.prototype.createCatCommonProps = function (el) {
+        var params = {
+            "categoryId": defaultValue,
+            "businessModel": "LM",
+            'productsQuantityTotal': this.getProductsQuantityTotalProps(el),
+            'productsQuantityAvailable': this.getProductsQuantityAvailableProps(el),
+            'pageNumber': this.getPageNumProps(el)
+        };
+
+
+        this.extendDataLayer(params);
+    };
+
+    /**
+     * Update basketProductsGTM in local storage.
+     *
+     * @param {string} selector basket page items selector
+     * @return {Array} data from basketProductsGTM
+     */
+    controller.prototype.updateBasketProductsGTM = function (selector) {
+        var self = this,
+            kgMultiplier = 1000,
+            $selector = $(selector),
+            $emptyBasket = $(this.settings.emptyBasketSelector + this.settings.notHiddenClass);
+
+        var products = $selector.attr('data-rel') === $emptyBasket.attr('data-rel')
+            ? []
+            : $selector.map(function (index, item) {
+                var $item = $(item);
+
+                return commonProductFactory($item, {
+                    quantity: self.nullIfEmpty($item.data('count')),
+                    metric2: self.nullIfEmpty($item.data('count')),
+                    metric3: 1,
+                    dimension5: notSet($item.data('division'), defaultValue),
+                    dimension6: notSet($item.data('subDivision'), defaultValue)
+                });
+            }).get();
+
+        var orderWeightText = $(this.settings.totalWeightSelector).text(),
+            params = {
+                orderWeight: this.formatStringToFloat(!_.isEmpty(orderWeightText) ? orderWeightText : '0') * kgMultiplier,
+                ecommerce: {
+                    checkout: {
+                        products: products
+                    }
+                }
+            };
+
+        LocalStorageUtils.setJSONParam(this.settings.basketProductsVarName, params);
+
+        return params;
+    };
+
+    /**
+     * Creates product objects.
+     *
+     * (Array, String) -> Array
+     */
+    controller.prototype.createProductObjects = function (products, name) {
+        return products.map(function (product, index) {
+            return {
+                'id': notSet(product.article, defaultValue),
+                'name': notSet(product.displayedName, defaultValue),
+                'category': notSet(product.category, defaultValue),
+                'brand': notSet(product.brand, defaultValue),
+                'variant': String(notSet(convertToGramm(product.weight), defaultValue)),
+                'price': notSet(product.price, defaultValue),
+                'metric1': notSet(product.price, defaultValue),
+                'position': ++index,
+                'dimension9': notSet(product.gamma, defaultValue),
+                'dimension55': notSet(product.color, defaultValue),
+                'dimension57': notSet(product.linkedHowTo && product.linkedHowTo.length ? '1' : '0', defaultValue),
+                'dimension59': '0',
+                'dimension60': '0',
+                'dimension61': notSet(product.length, defaultValue),
+                'dimension62': notSet(product.width, defaultValue),
+                'dimension63': notSet(product.height, defaultValue),
+                'dimension64': notSet(product.material, defaultValue),
+                'dimension65': CommonGAUtils.getProductPriceCode(product.productPriceCategory),
+                'dimension77': CommonGAUtils.getProductAvailability(product.stockValue, product.webSaleable)
+            }
+        });
+    };
+
+    /**
+     * Extends global dataLayer configuration.
+     *
+     * @param params - the key/value map that should be added to the dataLayer
+     */
+    controller.prototype.extendDataLayer = function (params) {
+        $.extend(true, this.dataLayer, params);
+    };
+
+    /**
+     * Send common ajax.
+     *
+     * @param serviceName - serviceName
+     * @param params - params
+     * @param cmp - current component
+     */
+    controller.prototype.controllerRequest = function (serviceName, params, cmp) {
+        var path = this.serviceMap[serviceName];
+
+        if (cmp.elSettings.allowComponentServiceRequest) {
+            $.ajax({
+                type: 'GET',
+                url: path,
+                data: params,
+                success: function (data) {
+                    cmp.handleSuccessResponse(data, params);
+                },
+                error: function (data) {
+                    cmp.handleErrorResponse(data, params);
+                }
+            });
+        }
+    };
+
+    /**
+     * Send gtm information.
+     *
+     * @param params - params
+     * @param options - additional options containing products and promotions path
+     * @param needToChunk need to chunk array
+     */
+    controller.prototype.gtmPush = function (params, options, needToChunk) {
+        needToChunk = needToChunk === undefined ? true : needToChunk;
+        if (globalConfig.wcmmodeDisabled === "true") {
+            if (!$.isEmptyObject(params)) {
+                var dataLayer = window.dataLayer = window.dataLayer || [],
+                    splitted = CommonGAUtils.splitParams(params, options, needToChunk);
+                for (var i = 0; i < splitted.length; i++) {
+                    dataLayer.push($.extend(true, {'platform': 'aem'}, splitted[i]));
+                }
+            }
+        }
+    };
+
+    /**
+     * Send additional products to gtm.
+     *
+     * @param products - products
+     */
+    controller.prototype.gtmPushRemainderProducts = function (products) {
+        while (products.length !== 0) {
+            var sendProducts = products.slice(0, 15),
+                params = {
+                    'event': 'LeroyMerlin',
+                    'eventCategory': 'Non-Interactions',
+                    'eventAction': 'show',
+                    'eventLabel': 'products',
+                    'ecommerce': {
+                        'impressions': sendProducts
+                    }
+                };
+            products = products.slice(15);
+            this.gtmPush(params);
+        }
+    };
+
+    /**
+     * Create gtm json and send additional products to gtm.
+     *
+     * (Object, String, Number) -> Void
+     */
+    controller.prototype.gtmCreateLazyProductsAndSend = function ($el, list, startIndex) {
+        var result = this.createLazyLoadingProducts($el, list, startIndex);
+        this.gtmPushRemainderProducts(result);
+    };
+    controller.prototype.createLazyLoadingProducts = function ($el, list, startIndex) {
+        return $el.map(function () {
+            var $self = $(this),
+                expansion = {
+                    'list': list,
+                    'position': startIndex++
+                };
+
+            return commonProductFactory($self, expansion);
+
+        }).get();
+    };
+
+    /**
+     * Create gtm json and send additional products to gtm.
+     *
+     * (Array, String) -> Void
+     */
+    controller.prototype.gtmCreateCommonAndSend = function (el, list) {
+        var result = this.createCommonProductItem(el, list);
+        this.gtmPushRemainderProducts(result);
+    };
+
+    /**
+     * Create gtm json and send additional products to gtm.
+     *
+     * (Array, String) -> Void
+     */
+    controller.prototype.gtmCreateAndSendProducts = function (products, name) {
+        var result = this.createProductObjects(products, name);
+        this.gtmPushRemainderProducts(result);
+    };
+
+    controller.prototype.addToCart = function (el, count, place, promo) {
+        this.gtmEventPush('add-to-cart',
+            {
+                root: $(el).closest(this.settings.productItemSelector
+                    + ", " + this.settings.catProductItemSelector
+                    + ", " + this.settings.detailProductPage
+                    + ", " + this.settings.basketMinimizedProductItem
+                    + ", " + this.settings.basketProductItemSubstitutes),
+                count: count,
+                place: place,
+                promo: promo,
+                disablePopup: BasketUtils.isDisablePopup('basket')
+            });
+    };
+
+    controller.prototype.removeFromCart = function (el, count, list) {
+        this.gtmEventPush('remove-from-cart',
+            {
+                root: $(el).closest(this.settings.productItemSelector
+                    + ", " + this.settings.catProductItemSelector
+                    + ", " + this.settings.detailProductPage
+                    + ", " + this.settings.basketMinimizedProductItem),
+                count: count,
+                list: list
+            });
+    };
+
+    /**
+     * Attaches button handlers for the page.
+     */
+    controller.prototype.attachButtonHandlers = function () {
+        var self = this;
+
+        $('#clearBasketPopup').find('.confirm-button').off('click').on('click', function () {
+            self.gtmEventPush('clear-cart');
+        });
+
+        $('.auth-form-wrapper .continue-without-regist').click(function () {
+            TransactionalGAUtils.continueCustomerInfoGAEventPush('notAuth');
+        });
+
+        $('.auth-form-wrapper .registration-submit').click(function () {
+            TransactionalGAUtils.continueCustomerInfoGAEventPush('auth');
+        });
+
+        $(self.settings.socialMediasFromDesignImporterSelector).each(function () {
+            $(this).click(function () {
+                self.gtmEventPush('social-click', {root: self.constructSocialObject($(this))});
+            });
+        });
+        $('.all-how-to').click(function () {
+            self.gtmEventPush('banner-how-to-click', {root: null});
+        })
+    };
+
+    /**
+     * Build array of complement products by filtering and mapping default complements array.
+     *
+     * @param {Array} complements - complement products
+     * @return {Array} array of complements
+     */
+    function buildComplements(complements) {
+        return _.chain(complements)
+            .filter(function (el) {
+                // filter cloned items of owl carousel
+                return $(el).closest('.owl-item.cloned').length === 0;
+            })
+            .map(function (el, index) {
+                var $el = $(el);
+                return commonProductFactory($el, {
+                    position: index + 1,
+                    list: 'complements'
+                })
+            })
+            .value();
+    }
+
+    controller.prototype.constructSocialObject = function ($el) {
+        return $el.attr('title', this.getSocialNetworkName($el));
+    };
+
+    controller.prototype.getSocialNetworkName = function ($el) {
+        switch ($el.attr('class')) {
+            case 'fb-sm':
+                return 'Facebook';
+            case 'vk-sm':
+                return 'Vkontakte';
+            case 'tw-sm':
+                return 'Twitter';
+            case 'ok-sm':
+                return 'Odnoklassniki';
+            case 'in-sm':
+                return 'Linkedin';
+            case 'inst-sm':
+                return 'Instagram';
+            case 'ourtube':
+                return 'Youtube';
+            default:
+                return 'Unknown network';
+        }
+    };
+
+    controller.prototype.attachItemHandlers = function () {
+        var self = this;
+
+        $(document).off('click', '[data-js-product-link]')
+                    .on('click', '[data-js-product-link]',
+                       function(){
+                           self.gtmEventPush('product-page-open', {root: $(this).closest('[data-ga-root]')});
+                       });
+    };
+
+
+    // Utility functions for exact event
+
+    function fastViewClickDetail(data, type, productExtended) {
+
+        return {
+            'actionField': {
+                'action': type,
+                'list': !isBlank(data.myParams.location) ? data.myParams.location : data.root.data('product-location')
+            },
+            'products': [commonProductFactory(data.root, productExtended)]
+        };
+    }
+
+    /**
+     * Create json for gtm.
+     *
+     * @param mapping - mapping value
+     * @param data - data
+     */
+    controller.prototype.setMapping = function (mapping, data) {
+        var self = this,
+            mappingArray = {},
+            productsPath,
+            promotionsPath,
+            ecomEvent,
+            breadDivision;
+        if (_.isUndefined(data)) data = {root: {}};
+        mappingArray['event'] = 'LeroyMerlin';
+        if (mapping) {
+            switch (mapping) {
+                case 'registration':
+                case 'signup':
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'signup';
+                    break;
+                case 'signin':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'signIn';
+                    mappingArray['eventContext'] = 'Form';
+                    break;
+                case 'signout':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'signOut';
+                    break;
+                case 'city-switch':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'switch';
+                    mappingArray['eventLabel'] = 'cityName';
+                    mappingArray['eventContent'] = isBlank(data.root.data && data.root.data('store-name')) ? data.root : data.root.data('store-name');
+                    break;
+                case 'subscribe-open':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'subscribe';
+                    break;
+                case 'subscribe-send':
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'subscribe';
+                    break;
+                case 'click-on-search':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'searchInput';
+                    break;
+                case 'search-value':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'search';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    break;
+                case 'search-hints-click':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'click-on-search-hints';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['hintKeyword'] = data.hintKeyword || defaultValue;
+                    mappingArray['hintNum'] = data.hintNum || defaultValue;
+                    mappingArray['hintType'] = data.type || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'search-hints-space':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'keypress';
+                    mappingArray['eventLabel'] = 'space-on-search-hints';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['hintKeyword'] = data.hintKeyword || defaultValue;
+                    mappingArray['hintNum'] = data.hintNum || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'search-hints-tab':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'tab';
+                    mappingArray['eventLabel'] = 'tab-on-search-hints';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['hintKeyword'] = data.hintKeyword || defaultValue;
+                    mappingArray['hintNum'] = data.hintNum || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'search-hints-arrows':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'keypress';
+                    mappingArray['eventLabel'] = 'keypress-on-arrows-on-search-hints';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['hintKeyword'] = data.hintKeyword || defaultValue;
+                    mappingArray['hintNum'] = data.hintNum || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'search-clear-input':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'before-click-on-clear-input-btn';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'search-to-catalog':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'click-on-catalog-from-search-popup';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'search-popup-close':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'close-popup';
+                    mappingArray['searchKeyword'] = data.searchValue || defaultValue;
+                    mappingArray['shownHints'] = data.hints.length > 0 ? data.hints : defaultValue;
+                    break;
+                case 'card-click':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'SolutionsProjectGallery';
+                    mappingArray['eventPosition'] = data.root.position;
+                    mappingArray['eventContext'] = data.root.name;
+                    mappingArray['platform'] = 'aem';
+                    mappingArray['ecommerce'] = {
+                        'promoClick': {
+                            'promotions': [{
+                                'name': data.root.name,
+                                'creative': data.root.creative,
+                                'position': data.root.position
+                            }]
+                        }
+                    };
+
+                    break;
+                case 'anchor-click':
+                    var divs = self.getDivisionsFromBreadcrumbs();
+
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLocation'] = 'SolutionsProjectGallery';
+                    mappingArray['platform'] = 'aem';
+                    mappingArray['eventDivision'] = divs[2];
+                    mappingArray['eventSubdivision'] = divs[3];
+                    mappingArray['eventLabel'] = data.root.title;
+
+                    break;
+                case 'banner-click':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'banner';
+                    mappingArray['ecommerce'] = {
+                        'promoClick': {
+                            'promotions': [{
+                                'id': data.root.id,
+                                'name': data.root.name,
+                                'creative': data.root.creative,
+                                'position': data.root.position
+                            }]
+                        }
+                    };
+
+                    promotionsPath = 'ecommerce.promoClick.promotions';
+
+                    break;
+                case 'banner-adaptive-click':
+                    mappingArray['event'] = 'promotionClick';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'banner';
+                    mappingArray['eventContext'] = window.location.href;
+                    mappingArray['eventPosition'] = data.root.position;
+                    mappingArray['platform'] = 'aem';
+                    mappingArray['ecommerce'] = {
+                        'promoClick': {
+                            'promotions': [{
+                                'name': data.root.name,
+                                'creative': data.root.creative,
+                                'position': data.root.position
+                            }]
+                        }
+                    };
+                    break;
+                case 'banner-view':
+                    var promotions = $.isArray(data.root) ? data.root : [{
+                        'name': data.root.name,
+                        'creative': data.root.creative,
+                        'position': data.root.position
+                    }];
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Non-Interactions';
+                    mappingArray['eventAction'] = 'show';
+                    mappingArray['eventLabel'] = 'banner';
+                    mappingArray['eventLocation'] = "Main";
+                    mappingArray['ecommerce'] = {
+                        'promoView': {
+                            'promotions': promotions
+                        }
+                    };
+                    break;
+                case 'banner-how-to-click':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'show';
+                    mappingArray['eventLabel'] = 'banner';
+                    mappingArray['eventContent'] = 'Все советы (ссылка с главной)';
+                    mappingArray['eventContext'] = 'mainHowToSlider';
+                    break;
+                case 'banner-arrow-click':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'banner';
+                    mappingArray['eventContext'] = _.isUndefined(data.root.data('banner-position')) ? "" : data.root.data('banner-position').substring(0, data.root.data('banner-position').length - 1);
+                    break;
+                case 'product-open':
+                    var cardAttr = TransactionalGAUtils.getAdditionalData(data);
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'open';
+                    mappingArray['eventLabel'] = 'productPage';
+                    mappingArray['eventPosition'] = cardAttr.position;
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventSubdivision'] = data.root.data('sub-division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventSubCategory'] = data.root.data('sub-category');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    mappingArray['ecommerce'] = {
+                        'click': {
+                            'actionField': {
+                                'action': 'click',
+                                'list': globalConfig.pageType
+                            },
+                            'products': [commonProductFactory(data.root, {
+                                    position: cardAttr.position
+                                })]
+                        }
+                    };
+                    break;
+                case 'product-img-click':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'image';
+                    mappingArray['eventPosition'] = null;
+                    mappingArray['eventLocation'] = data.root.data('product-location');
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventSubCategory'] = data.root.data('sub-category');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+                case 'comparison-add':
+                    additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'add';
+                    mappingArray['eventLabel'] = 'compare';
+                    mappingArray['eventPosition'] = notSet(additionalData.position, 0);
+                    mappingArray['eventLocation'] = notSet(
+                        !_.isUndefined(data.additionalParams) ?
+                            data.additionalParams.productRelationType : '', this.getEventLocationBase());
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventSubdivision'] = data.root.data('sub-division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+                case 'comparison-remove':
+                    additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'remove';
+                    mappingArray['eventLabel'] = 'compare';
+                    mappingArray['eventPosition'] = notSet(additionalData.position, 0);
+                    mappingArray['eventLocation'] = notSet(
+                        !_.isUndefined(data.additionalParams) ?
+                            data.additionalParams.productRelationType : '', this.getEventLocationBase());
+                    mappingArray['eventSubdivision'] = data.root.data('sub-division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+                case 'comparison-clear-all':
+                    mappingArray['eventAction'] = 'removeAll';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'compare';
+                    mappingArray['eventLocation'] = 'ComparisonList';
+                    break;
+                case 'wishlist-add':
+                    data.event = 'wishlist';
+                    var addData = TransactionalGAUtils.getAdditionalData(data),
+                        gtmProperty = getGTMPropertyFunction(data.root);
+
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'add';
+                    mappingArray['eventLabel'] = 'ShoppingList';
+                    mappingArray['eventPosition'] = addData.position;
+                    mappingArray['eventLocation'] = data.promo ? 'Promo' : addData.eventLocation || this.getEventLocationBase();
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    mappingArray['eventProductId'] = gtmProperty('data-product-id');
+                    mappingArray.eventContext = !_.isUndefined(data.count) ? data.count : 1;
+
+                    if (data.disablePopup) {
+                        mappingArray['AbTest'] = 'PopupShoppingListOff';
+                    }
+
+                    break;
+
+                case 'wishlist-remove':
+                    data.event = 'wishlist';
+                    additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'remove';
+                    mappingArray['eventLabel'] = 'ShoppingList';
+                    mappingArray['eventPosition'] = additionalData.position;
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductId'] = gtmProperty('data-product-id');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    mappingArray.eventContext = !_.isUndefined(data.count) ? data.count : 1;
+
+                    break;
+
+                case 'wishlist-clear':
+                    mappingArray.eventCategory = 'Interactions';
+                    mappingArray.eventAction = 'remove';
+                    mappingArray.eventLabel = 'AllShoppingList';
+                    mappingArray.eventLocation = globalConfig.pageType === 'Profile' ? 'Profile' : 'ShoppingList';
+
+                    break;
+
+                case 'social-click':
+                    mappingArray['eventCategory'] = 'Social';
+                    mappingArray['eventAction'] = 'share';
+                    if (!_.isUndefined(data.root)) {
+                        mappingArray['eventLabel'] = data.root instanceof jQuery ? notSet(data.root.attr('title'), defaultValue) : data.root.title;
+                        mappingArray['eventContext'] = data.root instanceof jQuery ? notSet(data.root.attr('href'), defaultValue) : data.root.href;
+                    }
+                    break;
+                case 'social-share':
+                    mappingArray['eventCategory'] = 'Social';
+                    mappingArray['eventAction'] = 'share';
+                    mappingArray['eventLabel'] = data.root;
+                    mappingArray['eventContext'] = window.location.href;
+                    mappingArray['eventContent'] = this.getAdviceName($(this.settings.adviceName));
+                    mappingArray['eventDivision'] = this.getAdviceDivisionName($(this.settings.divisionLevelSelector));
+                    break;
+                case 'social-like':
+                    mappingArray['eventCategory'] = 'Social';
+                    mappingArray['eventAction'] = 'like';
+                    mappingArray['eventLabel'] = 'comment';
+                    mappingArray['eventContext'] = window.location.href;
+                    break;
+                case 'howto-download':
+                case 'advice-download':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'download';
+                    mappingArray['eventLabel'] = 'advice';
+                    mappingArray['eventContent'] = this.getAdviceName($(this.settings.adviceName));
+                    mappingArray['eventDivision'] = this.getAdviceDivisionName($(this.settings.divisionLevelSelector));
+                    break;
+                case 'print':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'print';
+                    mappingArray['eventLabel'] = data.myParams.label;
+                    mappingArray['eventContent'] = notSet(this.getAdviceName($(this.settings.adviceName)), data.myParams.productName);
+                    mappingArray['eventDivision'] = notSet(this.getAdviceDivisionName($(this.settings.divisionLevelSelector)), data.myParams.division);
+                    break;
+                case 'wishlist-print':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'print';
+                    mappingArray['eventLabel'] = "ShoppingList";
+                    break;
+                case 'faq':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'question';
+                    mappingArray['eventContext'] = data.root.html();
+                    break;
+                case 'feedback':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'Feedback';
+                    break;
+                case 'job':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'Job';
+                    break;
+                case 'wishlist-send':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'send';
+                    mappingArray['eventLabel'] = 'ShoppingList';
+                    mappingArray['eventLocation'] = self.getEventLocationBase();
+                    break;
+                case 'fast-view-click':
+                case 'fast-view-details':
+                    var shopPilotSelector = '.sp-product-inline-rating-widget',
+                        basePropsRating = _.partial(CommonGAUtils.getShoppilotProp, 'rating'),
+                        basePropsReview = _.partial(CommonGAUtils.getShoppilotProp, 'review'),
+                        fastViewClickDetailEcommerce = _.partial(fastViewClickDetail, data),
+                        additionalData = TransactionalGAUtils.getAdditionalData(data),
+                        productExtendedProps = {
+                            'dimension60': basePropsRating('data-sp-rating-value', data.root, shopPilotSelector),
+                            'dimension59': basePropsReview('data-sp-review-count', data.root, shopPilotSelector)
+                        }, qvEvents = function (mapping, left, right) {
+                            return mapping === 'fast-view-click' ? left : right;
+                        };
+                    ecomEvent = qvEvents(mapping, 'click', 'detail');
+                    var productLocation = !isBlank(data.myParams.location) ? data.myParams.location : data.root.data('product-location');
+                    var ecommerce = fastViewClickDetailEcommerce(ecomEvent, productExtendedProps);
+
+                    if (self.isGalleryPage()) {
+                        productLocation = 'SolutionsProjectGallery';
+                        var divs = self.getDivisionsFromBreadcrumbs().slice(1);
+                        additionalData.list = self._formatPath(divs);
+                    }
+                    //additionalData.list = bread crumbs formatted "1-2-3" where 1 2 3 is lvl.
+                    //ecommerce.actionField.list = additionalData.list || this.setCatalogList(productLocation);
+                    ecommerce.actionField.list = this.setCatalogList(productLocation);
+                    mappingArray['ecommerce'] = $.extend({}, data.action);
+                    mappingArray['ecommerce'][ecomEvent] = ecommerce;
+                    mappingArray['eventCategory'] = mapping === 'fast-view-click' ? 'Interactions' : 'Non-Interactions';
+                    mappingArray['eventAction'] = qvEvents(mapping, 'click', 'open');
+                    mappingArray['eventLabel'] = data.myParams.label;
+                    mappingArray['eventLocation'] = additionalData.eventLocation || productLocation;
+                    mappingArray['eventPosition'] = data.myParams.id;
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventSubdivision'] = data.root.data('sub-division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventSubCategory'] = data.root.data('sub-category');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+                case 'quick-view-click-complementary':
+                    additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    mappingArray['eventAction'] = 'open';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventContent'] = 'success';
+                    mappingArray['eventPosition'] = additionalData.position;
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventLabel'] = 'ProductPage';
+                    mappingArray['eventLocation'] = additionalData.eventLocation || this.getEventLocationBase();
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    mappingArray['ecommerce'] = {
+                        detail: {
+                            actionField: {
+                                list: 'complements'
+                            },
+                            products: [commonProductFactory(data.root)]
+                        }
+                    };
+                    break;
+                case 'plp-pagination-click':
+                    var plpPaginationClickConteiner = data.root.find('[data-rel="js-cat-product-item"]'),
+                        plpPaginationConteinerFactory = function (product, i) {
+                            var expandProduct = {
+                                'list': 'Catalog',
+                                'position': ++i
+                            };
+                            return commonProductFactory($(product), expandProduct);
+                        },
+                        catalogProducts = _.map(plpPaginationClickConteiner, plpPaginationConteinerFactory);
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'switch';
+                    mappingArray['eventLabel'] = 'pageNumber';
+                    mappingArray['eventLocation'] = !isBlank(data.myParams.location) ? data.myParams.location : data.root.data('product-location');
+                    mappingArray['pageNumber'] = notSet(data.myParams.pageNumber, defaultValue);
+                    mappingArray['ecommerce'] = {
+                        'impressions': catalogProducts
+                    };
+                    break;
+
+                case 'add-review':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'add';
+                    mappingArray['eventLabel'] = 'review';
+                    mappingArray['eventContent'] = data.myParams.rating;
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventSubCategory'] = data.root.data('sub-category');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+                case 'click-review':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'writeReview';
+                    mappingArray['eventLocation'] = 'ProductPage';
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    mappingArray['eventSubCategory'] = data.root.data('sub-category');
+                    break;
+                case 'like-review':
+                    mappingArray['eventCategory'] = 'Social';
+                    mappingArray['eventAction'] = 'like';
+                    mappingArray['eventLabel'] = 'comment';
+                    mappingArray['eventLocation'] = 'ProductPage';
+                    mappingArray['eventContext'] = data.root.href;
+                    break;
+                case 'click-question':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'AskQuestion';
+                    mappingArray['eventLocation'] = 'ProductPage';
+                    mappingArray['eventContext'] = data.root.href;
+                    break;
+                case 'filters-actions':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = data.myParams.action;
+                    mappingArray['eventLabel'] = data.myParams.type;
+                    mappingArray['eventContext'] = data.myParams.title;
+                    mappingArray['eventContent'] = data.myParams.value;
+                    break;
+
+                case 'filters':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = data.root.action;
+                    mappingArray['eventLabel'] = 'filter';
+                    mappingArray['eventContext'] = data.root.title;
+                    mappingArray['eventContent'] = data.root.value;
+                    break;
+
+                case 'add-to-cart':
+                    data.action = 'add-to-cart';
+                    additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    if (additionalData.list === 'complements') {
+                        var $basketPopup = data.root.closest('.basket-popup'),
+                            $shopListPopup = data.root.closest('.shop-list-popup');
+                        if ($basketPopup.length > 0) {
+                            additionalData.parent.list = globalConfig.pageType;
+                            additionalData.parent.root = $basketPopup;
+                        } else if ($shopListPopup.length > 0) {
+                            additionalData.parent.list = globalConfig.pageType;
+                            additionalData.parent.root = $shopListPopup;
+                        }
+                    }
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'add';
+                    mappingArray['eventLabel'] = 'cart';
+                    mappingArray['eventPosition'] = additionalData.parent.position;
+                    mappingArray['eventLocation'] = data.promo ? 'Promo' : additionalData.eventLocation || this.getEventLocationBase();
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductId'] = gtmProperty('data-product-id');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+
+                    if (data.disablePopup) {
+                        mappingArray['AbTest'] = 'PopupCartOff';
+                    }
+
+                    var countNumeric = !_.isUndefined(data.count)
+                        ? (_.isString(data.count) ? parseInt(data.count, 10) : data.count)
+                        : data.root.data('count');
+
+                    mappingArray['ecommerce'] = {
+                        currencyCode: 'RUB',
+                        add: {
+                            products: [commonProductFactory(data.root, {
+                                dimension5: gtmProperty('data-division'),
+                                dimension6: gtmProperty('data-sub-division'),
+                                position: additionalData.position,
+                                quantity: additionalData.count ? additionalData.count : countNumeric
+                            })]
+                        }
+                    };
+
+                    if (additionalData.eventContext) {
+                        mappingArray['eventContext'] = additionalData.eventContext;
+                        mappingArray['ecommerce'].add.actionField = {
+                            action: 'add'
+                        };
+                    } else if(this.isGalleryPage()){
+                        mappingArray['ecommerce'].add.actionField = {
+                            action: 'add',
+                            list: this.getEventLocationBase()
+                        }
+                    } else if(mappingArray.eventLocation !== 'ProductPage'){
+                        mappingArray['ecommerce'].add.actionField = {
+                            action: 'add',
+                            list: this.setCatalogList(additionalData.list)
+                        }
+                    } else {
+                        mappingArray['ecommerce'].add.actionField = {
+                            action: 'add'
+                        };
+                    }
+
+                    if (_.isNotUndefined(additionalData.totalRevenue)) {
+                        mappingArray.totalRevenue = additionalData.totalRevenue;
+                    }
+
+                    break;
+
+                case 'remove-from-cart':
+                    data.action = 'remove-from-cart';
+                    additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'remove';
+                    mappingArray['eventLabel'] = 'cart';
+                    mappingArray['eventPosition'] = additionalData.parent.position;
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductId'] = gtmProperty('data-product-id');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    mappingArray['ecommerce'] = {
+                        currencyCode: 'RUB',
+                        remove: {
+                            products: [commonProductFactory(data.root, {
+                                dimension5: gtmProperty('data-division'),
+                                dimension6: gtmProperty('data-sub-division'),
+                                position: additionalData.position,
+                                quantity: data.count
+                            })]
+                        }
+                    };
+                    if (additionalData.eventContext) {
+                        mappingArray['eventContext'] = additionalData.eventContext;
+                    } else {
+                        mappingArray['ecommerce'].remove.actionField = {
+                            list: _.isNotUndefined(additionalData.list)
+                                ? additionalData.list
+                                : globalConfig.pageType
+                        }
+                    }
+                    break;
+
+                case 'remove-products-from-cart':
+                    var $productSelector = $(self.settings.productItemSelector),
+                        $basketItem = $('.basket-item');
+
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'remove';
+                    mappingArray['eventLabel'] = 'cart';
+                    mappingArray['eventContext'] = 'unavailableProductsPopup';
+                    mappingArray['eventContent'] = data.action === 'shop-list' ? 'addShoppingList' : 'continueWithout';
+                    mappingArray['eventLocation'] = 'Checkout';
+                    mappingArray['ecommerce'] = {
+                        remove: {
+                            actionField: {
+                                list: 'unavailableProductsPopup'
+                            },
+                            products: _.map(TransactionalGAUtils.getFilteredProducts(data.products), function (item) {
+                                item.position = $productSelector.index($basketItem.filter('.item-code-' + item.id)) + 1;
+                                item.list = 'unavailableProductsPopup';
+                                return item;
+                            })
+                        }
+                    };
+
+                    productsPath = 'ecommerce.remove.products';
+
+                    break;
+
+                case 'clear-cart':
+                    var cartInfo = CookieUtils.getBasketCookie(),
+                        cartProductIds = checkObjectKey(cartInfo, 'products') ? _.pluck(cartInfo.products, 'code') : [];
+
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'remove';
+                    mappingArray['eventLabel'] = 'allCart';
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['ecommerce'] = {
+                        currencyCode: 'RUB',
+                        remove: {
+                            actionField: {
+                                list: _.isNotUndefined(data.list) ? data.list : globalConfig.pageType
+                            },
+                            products: _.chain(LocalStorageUtils.getJSON(this.settings.basketProductsVarName).ecommerce.checkout.products)
+                                .filter(function (item) {
+                                    return _.contains(cartProductIds, item.id);
+                                })
+                                .map(function (elem, index) {
+                                    elem.position = index + 1;
+                                    delete elem.metric2;
+                                    delete elem.metric3;
+                                    return elem;
+                                })
+                                .value()
+                        }
+                    };
+
+                    productsPath = 'ecommerce.remove.products';
+
+                    break;
+
+                // basket page complements open event
+                case 'complements-open':
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'showComplements';
+                    mappingArray['eventPosition'] = $(this.settings.productItemSelector).index(data.root) + 1;
+                    mappingArray['eventLocation'] = 'Checkout';
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductId'] = gtmProperty('data-product-id');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    mappingArray['ecommerce'] = {
+                        impressions: buildComplements(data.complements)
+                    };
+
+                    break;
+
+                // popup complements load event
+                case 'load-popup-complements':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Non-Interactions';
+                    mappingArray['eventAction'] = 'show';
+                    mappingArray['eventLabel'] = data.eventLabel;
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['ecommerce'] = {
+                        impressions: buildComplements(data.complements)
+                    };
+
+                    break;
+
+                case 'initiate-checkout':
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'initiateCheckout';
+
+                    break;
+
+                case 'product-page-open':
+                    data.action = 'product-page-open';
+                    var additionalData = TransactionalGAUtils.getAdditionalData(data);
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    if (additionalData.eventContext === 'cartPreview') {
+                        additionalData.list = additionalData.eventContext;
+                    }
+
+                    // shopping list popup product
+                    if (data.root.is('.shop-list-popup')) {
+                        additionalData.list = 'ShoppingListPopup';
+                    }
+
+                    if (self.isGalleryPage()) {
+                        const spg = 'SolutionsProjectGallery';
+                        additionalData.list = spg;
+                    }
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'open';
+                    mappingArray['eventLabel'] = 'ProductPage';
+                    mappingArray['eventPosition'] = additionalData.position;
+                    mappingArray['eventLocation'] = additionalData.eventLocation || this.getEventLocationBase();
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    mappingArray['ecommerce'] = {
+                        click: {
+                            actionField: {
+                                list: this.setCatalogList(additionalData.list)
+                            },
+                            products: [commonProductFactory(data.root, {
+                                position: additionalData.position
+                            })]
+                        }
+                    };
+
+                    switch(additionalData.list){
+                        case 'Search_suggest':
+                            mappingArray.ecommerce.click.actionField.click = 'click';
+                            break;
+                        case 'SolutionsProjectGallery':
+                            mappingArray.ecommerce.click.actionField.action = 'click';
+                            break;
+                        default:
+                            break;
+                    }
+
+                    break;
+                case 'shipping-method':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'switch';
+                    mappingArray['eventLabel'] = 'shippingMethod';
+                    mappingArray['eventContent'] = data.root.eventContent;
+                    mappingArray['checkoutStepNumber'] = data.root.checkoutStepNumber;
+                    mappingArray['checkoutStepName'] = data.root.checkoutStepName;
+                    mappingArray['ecommerce'] = data.root.ecommerce;
+
+                    break;
+
+                case 'delivery-option-continue':
+                    productsPath = 'ecommerce.checkout.products';
+                case 'customer-info-continue':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'goAhead';
+                    mappingArray['eventContent'] = data.root.eventContent;
+
+                    mappingArray["checkoutStepNumber"] = data.root.checkoutStepNumber;
+                    mappingArray["checkoutStepName"] = data.root.checkoutStepName;
+                    mappingArray["ecommerce"] = data.root.ecommerce;
+
+                    break;
+
+                case 'payment-type-change':
+                    mappingArray['event'] = data.root.event;
+                    mappingArray['eventAction'] = data.root.eventAction;
+                    mappingArray['eventCategory'] = data.root.eventCategory;
+                    mappingArray['eventContent'] = data.root.eventContent;
+                    mappingArray['eventLabel'] = data.root.eventLabel;
+                    mappingArray['checkoutStepName'] = data.root.checkoutStepName;
+                    mappingArray['checkoutStepNumber'] = data.root.checkoutStepNumber;
+                    mappingArray['ecommerce'] = data.root.ecommerce;
+
+                    break;
+
+                case 'payment-continue':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Conversions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'makeOrder';
+                    mappingArray['eventContent'] = null;
+                    mappingArray["userPhoneHash"] = data.root.userPhoneHash;
+                    mappingArray["userEmailHash"] = data.root.userEmailHash;
+
+                    break;
+
+                case 'thank-you-page-continue':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'ContinueShopping';
+                    mappingArray['eventLocation'] = 'ThankYouPage';
+
+                    break;
+
+                case 'thank-you-page-subscribe':
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'subscribe';
+                    mappingArray['eventLocation'] = 'ThankYouPage';
+
+                    break;
+
+                case 'plp-show-more-btn':
+                    mappingArray['eventAction'] = 'switch';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'showMore';
+                    mappingArray['eventLocation'] = data.listName;
+                    mappingArray['pageNumber'] = data.pageNumber;
+                    mappingArray['ecommerce'] = {
+                        'impressions': this.createLazyLoadingProducts(data.$elements, data.listName, data.startPosition)
+                    };
+                    break;
+
+                case 'lk-switch-page':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'switch';
+                    var listName = null;
+                    switch (data.pageName) {
+                        case 'main-page':
+                            mappingArray['eventLabel'] = 'lkMain';
+                            break;
+                        case 'info-page':
+                            mappingArray['eventLabel'] = 'lkPersonalDataView';
+                            break;
+                        case 'editInfoPage':
+                            mappingArray['eventLabel'] = 'lkPersonalDataEdit';
+                            break;
+                        case 'change-pass':
+                            mappingArray['eventLabel'] = 'lkChangePassword';
+                            break;
+                        case 'change-mail-page':
+                            mappingArray['eventLabel'] = 'lkChangeEmail';
+                            break;
+                        case 'addressesPage':
+                            mappingArray['eventLabel'] = 'lkAddresses';
+                            break;
+                        case 'editAddressPage':
+                            mappingArray['eventLabel'] = 'lkAddressChange';
+                            break;
+                        case 'purchase-history':
+                            mappingArray['eventLabel'] = 'lkHistoryPurchasesByPurchase';
+                            listName = 'purchaseHistory';
+                            break;
+                        case 'purchase-history-product':
+                            mappingArray['eventLabel'] = 'lkHistoryPurchasesByProduct';
+                            listName = 'purchaseHistory';
+                            break;
+                        case 'history-returns':
+                            mappingArray['eventLabel'] = 'lkHistoryRefundsByRefund';
+                            listName = 'refundsHistory';
+                            break;
+                        case 'history-returns-product':
+                            mappingArray['eventLabel'] = 'lkHistoryRefundByProduct';
+                            listName = 'refundsHistory';
+                            break;
+                        case 'services':
+                            mappingArray['eventLabel'] = 'lkHistoryServices';
+                            break;
+                        case 'cost-analysis':
+                            mappingArray['eventLabel'] = 'lkCostAnalysisByCategory';
+                            listName = 'costAnalysisByCategories';
+                            break;
+                        case 'cost-analysis-goals':
+                            mappingArray['eventLabel'] = 'lkCostAnalysisByGoals';
+                            listName = 'costAnalysisByGoals';
+                            break;
+                        case 'nalog':
+                            mappingArray['eventLabel'] = 'lkTaxDeduction';
+                            break;
+                        case 'tool-rents':
+                            mappingArray['eventLabel'] = 'lkToolsRent';
+                            break;
+                        case 'shop-list-page':
+                            mappingArray['eventLabel'] = 'lkShopList';
+                            listName = 'ShoppingList';
+                            break;
+                        case 'viewed-page':
+                            mappingArray['eventLabel'] = 'lkViewedProducts';
+                            listName = 'previouslyViewed';
+                            break;
+                        default:
+                            mappingArray['eventLabel'] = null;
+                    }
+                    mappingArray['ecommerce'] = {
+                        'impressions': this.createCommonProductItem(this.settings.catProductItemSelector, listName)
+                    };
+                    break;
+
+                case 'calculator-open':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'openCalc';
+                    mappingArray['eventLocation'] = 'ProductPage';
+                    mappingArray['eventPosition'] = 1;
+                    mappingArray['eventContent'] = data.root.data('category');
+
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventDivisionId'] = data.root.data('division-id');
+                    mappingArray['eventSubdivision'] = data.root.data('sub-division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+
+                case 'calculator-execute':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'calculate';
+                    mappingArray['eventLocation'] = 'ProductPage';
+                    mappingArray['eventPosition'] = 1;
+
+                    mappingArray['eventDivision'] = data.root.data('division');
+                    mappingArray['eventDivisionId'] = data.root.data('division-id');
+                    mappingArray['eventSubdivision'] = data.root.data('sub-division');
+                    mappingArray['eventCategoryId'] = data.root.data('category-id');
+                    mappingArray['eventCategoryName'] = data.root.data('category');
+
+                    mappingArray['eventProductName'] = data.root.data('product-name');
+                    mappingArray['eventProductId'] = data.root.data('product-id');
+                    mappingArray['eventProductPrice'] = data.root.data('product-price');
+                    break;
+                case 'plp-data-change':
+                    switch (data.action) {
+                        case 'pagination':
+                            mappingArray['eventAction'] = 'switch';
+                            mappingArray['eventLabel'] = 'pageNumber';
+                            mappingArray['pageNumber'] = data.page;
+                            break;
+                        case 'pageView':
+                            this.settings.list = 'Catalog / ' + data.typePageView;
+
+                            mappingArray['eventAction'] = 'switch';
+                            mappingArray['eventLabel'] = 'displayType';
+                            mappingArray['eventContent'] = data.typePageView;
+                            mappingArray['eventLocation'] = 'Catalog';
+                            mappingArray['ecommerce'] = {
+                                'impressions': this.createCommonProductItem(this.settings.catProductItemSelector, this.settings.list)
+                            };
+                            break;
+                        case 'paginationPrev':
+                            mappingArray['eventAction'] = 'switch';
+                            mappingArray['eventLabel'] = 'pageNumber';
+
+                            var page = UrlUtils.getParameter(window.location.href, 'page');
+                            page = page ? page : 1;
+                            mappingArray['pageNumber'] = page;
+                            break;
+                        case 'paginationNext':
+                            mappingArray['eventAction'] = 'switch';
+                            mappingArray['eventLabel'] = 'pageNumber';
+
+                            var page = UrlUtils.getParameter(window.location.href, 'page');
+                            page = page ? page : 1;
+                            mappingArray['pageNumber'] = page;
+                            break;
+                        case 'dropdownChange':
+                            mappingArray['eventAction'] = 'choose';
+                            var sortType,
+                                sortName,
+                                label;
+                            if (data.paramName === 'sortby') {
+                                sortType = I18nUtils.get('product-list.dropdown-sortable-gtm');
+                                sortName = data.paramLocalizationName;
+                                label = 'sort';
+                            } else if (data.paramName === 'display') {
+                                sortType = I18nUtils.get('product-list.show-by-gtm');
+                                sortName = data.paramLocalizationName;
+                                label = 'quantity';
+                            }
+
+                            mappingArray['eventLabel'] = label;
+                            mappingArray['eventContext'] = sortType;
+                            mappingArray['eventContent'] = sortName;
+
+                            this.settings.list = data.eventLocation + ' / ' + data.paramLocalizationName;
+                            break;
+                    }
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+
+                    if (data.action !== 'pageView') {
+                        mappingArray['eventLocation'] = data.eventLocation;
+                        mappingArray['ecommerce'] = {
+                            'impressions': this.createCommonProductItem(this.settings.catProductItemSelector, getList(self, data), {
+                                pageNumber: data.page,
+                                productAmount: data.productAmount
+                            })
+                        };
+                    }
+                    break;
+                case 'howto-subscribe':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Social';
+                    mappingArray['eventAction'] = 'subscribe';
+                    mappingArray['eventLabel'] = 'email';
+
+                    mappingArray['eventContext'] = window.location.href;
+                    mappingArray['eventContent'] = this.getAdviceName($(this.settings.adviceName));
+                    mappingArray['eventDivision'] = self.getAdviceDivisionName($(this.settings.divisionLevelSelector));
+                    break;
+                case 'mobile-app-store-open':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'download';
+                    mappingArray['eventLabel'] = data.root.data('store-name');
+                    mappingArray['eventContext'] = window.location.href;
+                    break;
+                case 'market-link-click':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventLabel'] = 'goToLMM';
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['eventContext'] = data.context;
+                    break;
+                case 'show-market-advice':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventAction'] = 'show';
+                    mappingArray['eventCategory'] = 'Non-Interactions';
+                    mappingArray['eventLabel'] = 'GoToLMMPopUp';
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    if (this.getEventLocationBase() === 'Catalog') {
+                        breadDivision = $('[rel=js-division-level]');
+                        mappingArray['eventDivision'] = breadDivision.get(2).dataset.division;
+                        mappingArray['eventSubdivision'] = breadDivision.get(3).dataset.division;
+                    }
+                    break;
+                case 'market-advice-popup-redirect':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'GoToLMMPopUp';
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    if (this.getEventLocationBase() === 'Catalog') {
+                        breadDivision = $('[rel=js-division-level]');
+                        mappingArray['eventDivision'] = breadDivision.get(2).dataset.division;
+                        mappingArray['eventSubdivision'] = breadDivision.get(3).dataset.division;
+                    }
+                    break;
+                case 'close-market-advice':
+                    mappingArray['event'] = 'LeroyMerlin';
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'NotGoToLMMPopUp';
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    if (this.getEventLocationBase() === 'Catalog') {
+                        breadDivision = $('[rel=js-division-level]');
+                        mappingArray['eventDivision'] = breadDivision.get(2).dataset.division;
+                        mappingArray['eventSubdivision'] = breadDivision.get(3).dataset.division;
+                    }
+                    break;
+
+                case 'click-availability-in-stores':
+                    gtmProperty = getGTMPropertyFunction(data.root);
+
+                    mappingArray['eventAction'] = 'click';
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventLabel'] = 'availabilityInStores';
+                    mappingArray['eventLocation'] = this.getEventLocationBase();
+                    mappingArray['eventCategoryId'] = gtmProperty('data-category-id');
+                    mappingArray['eventCategoryName'] = gtmProperty('data-category');
+                    mappingArray['eventSubdivision'] = gtmProperty('data-sub-division');
+                    mappingArray['eventDivision'] = gtmProperty('data-division');
+                    mappingArray['eventProductId'] = gtmProperty('data-product-id');
+                    mappingArray['eventProductName'] = gtmProperty('data-product-name');
+                    mappingArray['eventProductPrice'] = gtmProperty('data-product-price');
+                    break;
+                case 'marketplace-supplier-form-success':
+                    mappingArray['eventCategory'] = 'Interactions';
+                    mappingArray['eventAction'] = 'Submit';
+                    mappingArray['eventLabel'] = 'sendForms';
+                    mappingArray['eventContent'] = 'Продавцам';
+                    break;
+                default:
+                    return mapping;
+            }
+        }
+
+        return {
+            params: mappingArray,
+            options: {
+                productsPath: productsPath,
+                promotionsPath: promotionsPath
+            }
+        }
+    };
+
+    /**
+     * Create json for gtm and send it.
+     *
+     * @param mapping - mapping value
+     * @param data - data
+     * @param needToChunk need to chunk array
+     */
+    controller.prototype.gtmEventPush = function (mapping, data, needToChunk) {
+        needToChunk = needToChunk === undefined ? true : needToChunk;
+        if (mapping) {
+            var params = this.setMapping(mapping, data);
+        }
+        if (_.isNotUndefined(params)) {
+            this.gtmPush(params.params, params.options, needToChunk);
+        }
+    };
+
+    /**
+     * Push events to local storage
+     * if parameter exists and it isn't array, it will be replaced
+     * @param events map of events
+     */
+    controller.prototype.localStoragePush = function (events) {
+        if (!events || events.size === 0) return;
+        events.forEach(function (value, key) {
+            var item = window.localStorage.getItem(key);
+            if (!item) {
+                _setItemToLocalStorage(key, value);
+            } else {
+                item = JSON.parse(item);
+                if ($.isArray(item)) {
+                    value.forEach(function (it) {
+                        item.push(it);
+                    });
+                    _setItemToLocalStorage(key, item);
+                } else {
+                    _setItemToLocalStorage(key, value);
+                }
+            }
+        });
+
+        function _setItemToLocalStorage(key, value) {
+            window.localStorage.setItem(key, JSON.stringify(value));
+        };
+    };
+
+    /**
+     *
+     * @param val
+     * @returns {null}
+     */
+    controller.prototype.nullIfEmpty = function (val) {
+        return (typeof val !== 'undefined') ? val : null
+    };
+
+    /**
+     *
+     * @param sourceObj
+     * @param replaceList
+     * @param destObj
+     * @returns {*|{}}
+     */
+    controller.prototype.renameProperties = function (sourceObj, replaceList, destObj) {
+        var self = this;
+        if (typeof sourceObj !== 'object' || !sourceObj) {
+            return {};
+        }
+        destObj = destObj || {};
+        $.each(sourceObj, function (key) {
+            if (sourceObj.hasOwnProperty(key)) {
+                var newName = replaceList[key];
+                if (sourceObj[key] instanceof Array) {
+                    if (replaceList[key]) {
+                        destObj[newName] = [];
+                        self.renameProperties(sourceObj[key], replaceList, destObj[newName]);
+                    } else if (!replaceList[key]) {
+                        destObj[key] = [];
+                        self.renameProperties(sourceObj[key], replaceList, destObj[key]);
+                    }
+                } else if (typeof sourceObj[key] === 'object') {
+                    if (replaceList[key]) {
+                        destObj[newName] = {};
+                        self.renameProperties(sourceObj[key], replaceList, destObj[newName]);
+                    } else if (!replaceList[key]) {
+                        destObj[key] = {};
+                        self.renameProperties(sourceObj[key], replaceList, destObj[key]);
+                    }
+                } else {
+                    if (replaceList[key]) {
+                        destObj[newName] = sourceObj[key];
+                    } else if (!replaceList[key]) {
+                        destObj[key] = sourceObj[key];
+                    }
+                }
+            }
+        });
+
+        return destObj;
+    };
+
+    /**
+     *
+     * @param selector - waiting selector
+     * @param success - function call on success
+     * @param error - function call on error
+     * @param count - count for timeout
+     * @returns {*} - function exec results
+     */
+    controller.prototype.waitAsyncLoad = function (selector, success, error, count) {
+        if (count === undefined) {
+            count = 60;
+        }
+        var self = this,
+            interval = 300;
+        if ($(selector).length > 0) {
+            self.attachButtonHandlers();
+            // return self[success](selector);
+            return successFn.call(self, selector, success);
+        }
+        setTimeout(function () {
+            if (!count) {
+                if (error !== undefined) {
+                    self.attachButtonHandlers();
+                    // return self[error](selector);
+                    return errorFn.call(self, selector, success);
+                } else {
+                    // return self[success]();
+                    return successFn.call(self, selector, success);
+                }
+            } else {
+                self.waitAsyncLoad(selector, success, error, --count);
+            }
+        }, interval);
+
+        function successFn(selector, fnKey){
+            // data layer stage: initialized
+            this._resolveDataLayerStage('initialized');
+            return this[fnKey](selector);
+        }
+
+        function errorFn(selector, fnKey){
+            return this[fnKey](selector);
+            // data layer stage: initializetion error
+            this._rejectDataLayerStage('initialized');
+        }
+    };
+
+    controller.prototype.getEventLocationBase = function () {
+        var pageType = globalConfig.pageType,
+            gtmPageType = '',
+            self = this;
+        switch (pageType) {
+            case 'WishList':
+                gtmPageType = 'ShoppingList';
+                break;
+            case 'Portal':
+                gtmPageType = 'Catalog';
+                break;
+            case 'Main':
+                var $catalogProductList = $('[data-js-catalog-product-list]');
+
+                if (CommonGAUtils.isPromo($catalogProductList, promoRegexp)) {
+                    gtmPageType = 'Promo';
+                } else if (self.isGalleryPage()) {
+                    gtmPageType = 'SolutionsProjectGallery';
+                } else if ($('[data-js-e-kitchen]').length > 0) {
+                    gtmPageType = 'E-Kitchen';
+                }  else {
+                    gtmPageType = pageType;
+                }
+                break;
+            case 'Catalog':
+                var $catalogProductList = $('[data-js-catalog-product-list]');
+                gtmPageType = CommonGAUtils.promoOrCatalog(CommonGAUtils.isPromo($catalogProductList, promoRegexp));
+                break;
+            default:
+                gtmPageType = pageType;
+        }
+        return gtmPageType;
+    };
+
+    controller.prototype.calculatePosition = function (elem, withoutSlideNum) {
+        if (!elem || elem.length === 0) return;
+        var position = elem.attr('data-banner-position') ||
+            elem.parents('.owl-carousel').attr('data-banner-position') ||
+            elem.parents('.banner-with-position').attr('data-banner-position');
+        if (_.isNotUndefined(position) && !withoutSlideNum) {
+            var $carousel = elem.closest('.owl-stage');
+            if ($carousel.length !== 0) {
+                var carouselElements = $carousel.find(".owl-item:not(.cloned)").map(function () {
+                    return $(this).find("[data-adaptive-banner]")[0]
+                });
+                if (carouselElements.length > 1) {
+                    carouselElements.each(function (num, val) {
+                        if (val === elem[0]) {
+                            position = position + "_" + (num + 1);
+                            return false;
+                        }
+                    });
+                }
+            }
+        }
+        return position;
+    };
+
+    var DATA_LAYER_INIT_STAGES = [
+        'pre-init',
+        'initialized'
+    ];
+
+    function buildInvalidStageKeyError(stageKey){
+        new SyntaxError(stageKey + ' is not valid dataLayer initialization stage')
+    }
+
+    /***
+     *  Returns jQuery-promise for stageKey, that will be resolved when data-layer enters in specified stage
+     *
+     * @param stageKey: String key-value of data-layer stage.
+     */
+    controller.prototype.whenDataLayerStage = function(stageKey){
+        if(DATA_LAYER_INIT_STAGES.indexOf(stageKey) < 0){
+            return $.Deferred().reject(
+                buildInvalidStageKeyError(stageKey)
+            )
+        }
+
+        var $stageDeferred = this._getStageDeferred(stageKey);
+
+        return  $stageDeferred.promise();
+    }
+
+    controller.prototype._getStageDeferred = function(stageKey){
+        if(DATA_LAYER_INIT_STAGES.indexOf(stageKey) < 0){
+            return $.Deferred().reject(
+                buildInvalidStageKeyError(stageKey)
+            )
+        }
+
+        var $stageDeferred = _whenDataLayerStageDeferred[stageKey];
+        if(!$stageDeferred){
+            $stageDeferred = $.Deferred();
+            _whenDataLayerStageDeferred[stageKey] = $stageDeferred;
+        };
+
+        return $stageDeferred;
+    }
+
+    controller.prototype._resolveDataLayerStage = function(stageKey){
+        var $stageDeferred = this._getStageDeferred(stageKey)
+
+        switch ($stageDeferred.state()) {
+            case 'pending':
+                $stageDeferred.resolve();
+                break;
+            case 'rejected':
+                throw new Error("Promise for stage '"+stageKey+"' was already rejected");
+                break;
+        }
+    }
+
+    controller.prototype._rejectDataLayerStage = function(stageKey){
+        var $stageDeferred = this._getStageDeferred(stageKey)
+
+        switch ($stageDeferred.state()) {
+            case 'pending':
+                $stageDeferred.reject();
+                break;
+            case 'resolved':
+                throw new Error("Promise for stage '"+stageKey+"' was already resolved");
+                break;
+        }
+    }
+
+
+
+    return controller;
+
+})
+();
+
+var BasicComponent = (function () {
+
+    function controller(settings, isGlobalConfig) {
+        var elProps;
+        isGlobalConfig = _.isUndefined(isGlobalConfig) ? false : isGlobalConfig;
+
+        if (!_.has(settings, "el")) {
+            this.el = $(settings.elSelector);
+        } else {
+            this.el = settings.el;
+        }
+
+        this.elSettings = settings;
+
+        elProps = isGlobalConfig ? settings : ObjectUtils.getObjectSettings(this.el);
+
+        _.extend(this, elProps);
+
+        this.aemComponentUpdater = new AemComponentUpdater();
+    }
+
+    /**
+     * Initializes AemServiceLayer by creating new instance if and
+     * only if it has not been already intialized.
+     */
+    controller.prototype.initAemServiceLayer = function () {
+        if (!this.aemServiceLayer) {
+            this.aemServiceLayer = new AemServiceLayer();
+        }
+    };
+
+
+    controller.prototype.getInnerEl = function (selector) {
+        var elSelector = this.elSettings[selector];
+
+        return this.el.find(elSelector);
+    };
+
+    controller.prototype.getParamsFromAnyUrl = function(url) {
+        var res = {}, hash, hashes;
+
+        if (url.indexOf('?') > -1) {
+            hashes = url.slice(url.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                res[hash[0]] = decodeURIComponent(hash[1]);
+            }
+        } else {
+            res = undefined;
+        }
+
+        return res;
+    }
+
+    controller.prototype.getUrlVars = function () {
+        var url = window.location.href.replace(window.location.hash, "").replace(/\+/g, '%20');
+
+        return this.getParamsFromAnyUrl(url);
+    };
+
+
+    controller.prototype.getUrlHash = function () {
+        var urlHash = window.location.hash.substr(1);
+
+        return urlHash;
+    };
+
+
+    controller.prototype.replaceUrlVar = function (paramName, newParamValue) {
+        var urlParams = this.getUrlVars();
+
+        if (_.has(urlParams, paramName)) {
+            urlParams[paramName] = newParamValue;
+        }
+
+        return urlParams;
+    };
+
+    return controller;
+})(),globalConfig;
+
+$(document).ready(function () {
+    if (!checkObject(globalConfig)) {
+        globalConfig = new BasicComponent(ObjectUtils.getConfigProps(), true);
+    }
+    globalConfig.initAemServiceLayer();
+});
+
+$(document).ready(function () {
+    function callback(entries, observerObj) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            observerObj.unobserve(entry.target);
+            positionCarousel($(entry.target));
+        });
+    }
+
+    function positionCarousel(elem) {
+        var partnersCarousel = $(".partners-carousel"),
+            isPartnersCarousel = elem[0] === partnersCarousel[0],
+            data = !isPartnersCarousel ? _parseBannerInfo(elem) :
+                partnersCarousel.find(".owl-item:not(.cloned)").map(function () {
+                    return _parseBannerInfo($(this).find(".banner"), true);
+                }).toArray();
+        setTimeout(function timeout() {
+            var serviceLayer = globalConfig.aemServiceLayer;
+            if (serviceLayer) {
+                if (isPartnersCarousel) {
+                    var communityBannerSliderFirstSlideElem = _parseFirstBannerSlider($, ".community-banner-slider"),
+                        $topBanner = $(".top-banner").find("[data-adaptive-banner]");
+                    if (communityBannerSliderFirstSlideElem) {
+                        var communityFirstBanner = _parseBannerInfo(
+                            $(communityBannerSliderFirstSlideElem).find("[data-adaptive-banner]")
+                        );
+                        if (communityFirstBanner) data.push(communityFirstBanner);
+                    }
+                    if ($topBanner.length !== 0) {
+                        var topBanner = _parseBannerInfo($topBanner, true);
+                        if (topBanner) data.push(topBanner);
+                    }
+                    serviceLayer.gtmEventPush('banner-view', {root: data}, !isPartnersCarousel);
+                } else {
+                    serviceLayer.localStoragePush(new Map([["promotions", [data]]]));
+                }
+            } else {
+                setTimeout(timeout, 500);
+            }
+        }, 500);
+
+        function _parseFirstBannerSlider($, carouselSelector) {
+            var $carousel = $(carouselSelector);
+            if ($carousel._length === 0) return;
+            return $carousel.find(".owl-item:not(.cloned)")[0];
+        }
+
+        function _parseBannerInfo(elem, oldBanner) {
+
+            var creative = elem.attr('data-banner-creative') ?
+                elem.attr('data-banner-creative').toLowerCase() :
+                "creative not set";
+            var position = globalConfig.aemServiceLayer.calculatePosition(elem) ?
+                globalConfig.aemServiceLayer.calculatePosition(elem) : 'Position not set';
+            var name = position && creative ?  position + '_' + creative : 'Name not set';
+
+            if (oldBanner) {
+                name = globalConfig.aemServiceLayer.calculatePosition(elem, true) + "_" + creative;
+            } else {
+                name = elem.attr('data-banner-name') ? elem.attr('data-banner-name') : name;
+            }
+            return {
+                'name': name,
+                'creative': creative,
+                'position': position
+            };
+        }
+    }
+
+    var target = $('[data-adaptive-banner]'),
+        filtredtarget = _.filter(target, function (item) {
+            return $(item).closest('.cloned').length === 0 &&
+                $(item).closest(".partners-carousel").length === 0 &&
+                !(
+                    $(item).closest(".community-banner-slider").length !== 0 &&
+                    $(item).closest(".community-banner-slider").find("[data-adaptive-banner]")[0] === item
+                ) &&
+                $(item).closest(".top-banner").length === 0;
+        }),
+        options = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.99
+        },
+        partnersCarousel = $(".partners-carousel");
+    if (
+        'IntersectionObserver' in window &&
+        'IntersectionObserverEntry' in window &&
+        'intersectionRatio' in window.IntersectionObserverEntry.prototype &&
+        'isIntersecting' in window.IntersectionObserverEntry.prototype
+    ) {
+        var observer = new IntersectionObserver(callback, options);
+        _.forEach(filtredtarget, function (item) {
+            observer.observe(item);
+        });
+
+        if (partnersCarousel.length !== 0) {
+            observer.observe(partnersCarousel[0])
+        }
+    } else {
+        _.forEach(filtredtarget, function (item) {
+            positionCarousel($(item));
+        })
+    }
+
+    $('[data-js-elbrus-carousel][data-banner-position]').find('button').not('.owl-dot').click(function () {
+        globalConfig.aemServiceLayer.gtmEventPush('banner-arrow-click', {root: $(this).parents('[data-js-elbrus-carousel]')});
+    })
+
+});
+
+
+
+

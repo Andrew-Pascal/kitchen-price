@@ -1,0 +1,5171 @@
+var dbBasketEvents = {
+    dispatchEvent: function (event, detail) {
+        document.body.dispatchEvent(new CustomEvent(event, {
+            detail: detail,
+            bubbles: true,
+            cancelable: false,
+            composed: true
+        }));
+    },
+    addDB: function(productId, modelId) {
+        this.dispatchEvent('db:basket:add', { 'productId': productId, 'modelId': modelId });
+    },
+    removeDB: function(productId, modelId) {
+        this.dispatchEvent('db:basket:remove', { 'productId': productId, 'modelId': modelId });
+    }
+};
+
+(function ($) {
+    $.fn.getAttributes = function () {
+        var attributes = {};
+
+        if (this.length) {
+            $.each(this[0].attributes, function (index, attr) {
+                attributes[attr.name] = attr.value;
+            });
+        }
+
+        return attributes;
+    };
+
+    /**
+     * Works the same way as $.toArray().reduce.
+     *
+     * @param callback reduce function
+     * @param initialValue initial value
+     * @returns {*} reduce value
+     */
+    $.fn.reduce = function (callback, initialValue) {
+        var values = this,
+            previousValue = initialValue;
+
+        values.each(function (index, currentValue) {
+            previousValue = callback.call(currentValue, previousValue, currentValue, index, values);
+        });
+
+        return previousValue;
+    };
+})(jQuery);
+
+
+String.prototype.trim = function () {
+    return this.replace(/^\s+|\s+$/g, "");
+};
+
+
+String.prototype.toCamel = function () {
+    return this.replace(/(\-[a-z])/g, function ($1) {
+        return $1.toUpperCase().replace('-', '');
+    });
+};
+
+// Is a given variable not undefined?
+_.isNotUndefined = function (a) {
+    return !_.isUndefined(a);
+};
+
+/**
+ *  Utility function for checking is a given variable is Undefined or Null or NaN?.
+ *  @param a - value for verification
+ *  @return {boolean} - true/false
+ * */
+_.isEmptyNumber = function (a) {
+    return isBlank(a) || isNaN(a);
+};
+
+// Is a given array, string, or object not empty?
+_.isNotEmpty = function (a) {
+    return !_.isEmpty(a);
+};
+
+// Is a given array, string, or object not null?
+_.isNotNull = function (a) {
+    return !_.isNull(a);
+};
+
+String.prototype.toDash = function () {
+    return this.replace(/([A-Z])/g, function ($1) {
+        return "-" + $1.toLowerCase();
+    });
+};
+
+
+String.prototype.toUnderscore = function () {
+    return this.replace(/([A-Z])/g, function ($1) {
+        return "_" + $1.toLowerCase();
+    });
+};
+
+String.prototype.format = function () {
+    var args = arguments;
+    return this.replace(/\{(\d+)\}/g, function (m, n) {
+        return args[n] ? args[n] : m;
+    });
+};
+
+String.prototype.replaceAll = function (search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+};
+
+if (!String.prototype.includes) {
+    String.prototype.includes = function (search, start) {
+        'use strict';
+        if (typeof start !== 'number') {
+            start = 0;
+        }
+
+        if (start + search.length > this.length) {
+            return false;
+        } else {
+            return this.indexOf(search, start) !== -1;
+        }
+    };
+}
+
+$.urlParam = function (name) {
+    var results = new RegExp('[\?&]' + name + '=([^]*)').exec(window.location.href);
+    if (results == null) {
+        return null;
+    }
+    else {
+        return results[1] || 0;
+    }
+};
+
+var isBlank = function (val) {
+    return (_.isUndefined(val) || _.isNull(val) || _.isString(val) && val.trim().length === 0);
+};
+
+var hasAttribute = function (selector, attribute) {
+    return typeof $(selector).attr(attribute) === 'undefined';
+};
+
+$.fn.hasAttr = function (name) {
+    return typeof this.attr(name) !== 'undefined';
+};
+
+$.fn.exists = function () {
+    return this.length !== 0;
+};
+
+$.fn.onAvailable = function (fn) {
+    var $sel = $(this.selector);
+    if (this.length > 0 && typeof (this.html()) !== 'undefined') {
+        fn.call(this);
+    } else {
+        var intervalAccum = 0,
+            timer = setInterval(function () {
+                intervalAccum++;
+                if ($sel.length > 0) {
+                    fn.call($sel);
+                    clearInterval(timer);
+                } else if (intervalAccum === 20) {
+                    clearInterval(timer);
+                }
+            }, 50);
+    }
+};
+
+/*
+ @description Used to toggle attribute: for example disabled="disabled"
+ */
+$.fn.toggleAttr = function (attribute, value) {
+    return this.each(function () {
+        var $this = $(this);
+        $this.attr(attribute) ? $this.removeAttr(attribute) : $this.attr(attribute, value);
+    });
+};
+
+/**
+ *
+ * @param {Object} obj
+ * @returns {boolean}
+ */
+var checkObject = function (obj) {
+    return _.isNotUndefined(obj) && _.isNotNull(obj) && _.isNotEmpty(obj);
+};
+
+/**
+ *
+ * @param {Object} obj
+ * @param {String} key
+ * @returns {boolean}
+ */
+var checkObjectKey = function (obj, key) {
+    return key.split(".").reduce(function (o, x) {
+        return (_.isUndefined(o) || _.isNull(o)) ? o : o[x];
+    }, obj);
+};
+
+/**
+ * Get value from object by given path.
+ *
+ * @param obj object
+ * @param path path to value like 'a.b.c'
+ * @return {*} value
+ */
+var getByPath = function (obj, path) {
+    if (_.isEmpty(path)) {
+        return;
+    }
+    var s = path.split('.');
+    while (!_.isUndefined(obj) && s.length) {
+        obj = obj[s.shift()];
+    }
+    return obj;
+};
+
+/**
+ * Set value to object by given path.
+ *
+ * @param obj - destination object
+ * @param path - path to value like 'a.b.c'
+ * @param value - source value
+ */
+var setByPath = function (obj, path, value) {
+    if (_.isEmpty(path)) {
+        return;
+    }
+    var stack = path.split('.');
+    while (!_.isUndefined(obj) && stack.length > 1) {
+        if (_.isUndefined(obj[stack[0]])) {
+            obj[stack[0]] = {};
+        }
+        obj = obj[stack.shift()];
+    }
+    obj[stack.shift()] = value;
+};
+
+/**
+ * Force to reload page with 'data-js-force-reload' attribute on 'pageshow' event.
+ */
+var forceReload = function () {
+    window.addEventListener("pageshow", function (evt) {
+        if (evt.persisted && $('[data-js-force-reload]').length > 0) {
+            setTimeout(function () {
+                window.location.reload();
+            }, 10);
+        }
+    }, false);
+};
+
+/**
+ * Utility tool to check if string matches regex expression
+ *
+ * @param {string} str - string for checking
+ * @param {RegExp} val - matching regex expression
+ * @return {boolean} - true/false
+ */
+function isMatch(str, val) {
+    return str.match(val);
+}
+
+/**
+ * Check mobile or desktop version is using and return event ('click' for desktop or 'touchstart' for mobile).
+ * @returns {string}
+ */
+function getClickOrTouchEvent() {
+    return bootstrapGridCheck.isMobile() ? 'touchstart' : 'click';
+}
+
+/**
+ * Get string from ru.json dictionary and cache it in variables.
+ * @param {string} message - string to take a value from ru.json dictionary
+ * @returns {string}
+ */
+var getDictMessage = _.memoize(function(key) {
+    return I18nUtils.get(key);
+});
+
+/**
+ * Toggle hidden class.
+ *
+ * @param {Object} $elements jquery object
+ * @param {boolean} status true or false
+ */
+function toggleHidden($elements, status) {
+    if (!checkObject($elements)) {
+        return;
+    }
+    $elements.each(function (j, el) {
+        $(el).toggleClass('hidden', status);
+    });
+}
+
+var CommonGAUtils = {
+    // max amount of products and promotions in one event
+    maxAmount: 10,
+    // all existing promotions paths
+    promotionsPaths: [
+        'ecommerce.promoView.promotions',
+        'ecommerce.promoClick.promotions'],
+    // all existing products paths
+    productsPaths: [
+        'ecommerce.impressions',
+        'ecommerce.detail.products',
+        'ecommerce.checkout.products',
+        'ecommerce.purchase.products',
+        'ecommerce.click.products',
+        'ecommerce.add.products',
+        'ecommerce.remove.products'],
+
+    /**
+     * Split GTM object for pushing.
+     *
+     * @param {object} params - object to split
+     * @param {object} objectsPaths - paths to objects which will be splitted
+     * @param {boolean} needToChunk need to chunk array
+     * @return {*[]} array of GTM events
+     */
+    splitParams: function (params, objectsPaths, needToChunk) {
+        var paths = this.findPaths(params, objectsPaths);
+
+        if (_.isUndefined(paths)) {
+            return [params];
+        }
+
+        var productsPath = paths.productsPath,
+            promotionsPath = paths.promotionsPath;
+
+        if (_.isUndefined(productsPath) && _.isUndefined(promotionsPath)) {
+            return [params];
+        }
+
+        var products = getByPath(params, productsPath),
+            promotions = getByPath(params, promotionsPath),
+            events = [$.extend(true, {}, params)],
+            baseEvent = {
+                event: 'LeroyMerlin'
+            };
+
+        switch (params.event) {
+            case 'LeroyMerlin':
+            case 'LeroyMerlin_Pageview':
+                baseEvent.eventAction = 'show';
+                baseEvent.eventCategory = 'Non-Interactions';
+                break;
+            default:
+                break;
+        }
+
+        var createGtmEvents = function (array, path, eventLabel) {
+            if (_.isUndefined(array)) {
+                return;
+            }
+            var chunks = _.chunk(array, needToChunk ? this.maxAmount : Number.MAX_SAFE_INTEGER);
+            setByPath(events[0], path, chunks.length > 0 ? chunks[0] : []);
+
+            for (var i = 1; i < chunks.length; i++) {
+                var event = $.extend(true, {
+                    eventLabel: eventLabel
+                }, baseEvent);
+                setByPath(event, path, chunks[i]);
+                events.push(event);
+            }
+        };
+
+        createGtmEvents.call(this, promotions, promotionsPath, 'promotions');
+        createGtmEvents.call(this, products, productsPath, 'products');
+
+        return events;
+    },
+
+    /**
+     * Get shoppilot prop value.
+     *
+     * @param propCode  property code
+     * @param dataAttr  html data attr
+     * @param $el       card
+     * @param selector  string additional target DOM selector
+     * @returns {*}
+     */
+    getShoppilotProp: function (propCode, dataAttr, $el, selector) {
+        var customSelector = isBlank(selector) ? '.sp-product-inline-rating-widget:first' : selector,
+            $shoppilotRoot = $el.find(customSelector);
+        if ($shoppilotRoot.length === 0) {
+            return '0';
+        } else {
+            var elSelector = propCode === 'rating' ? '.sp-inline-rating-stars' : '.sp-inline-rating-label',
+                $target = $shoppilotRoot.find(elSelector);
+            return _.isUndefined($target.attr(dataAttr)) ? '0' : $target.attr(dataAttr);
+        }
+    },
+
+    /**
+     * Find paths to products and promotions objects.
+     *
+     * @param {object} params - GTM params
+     * @param {object} paths - existing paths (optional)
+     * @return {object} paths to objects
+     */
+    findPaths: function (params, paths) {
+        var pths = {};
+
+        var findPath = function (paths, key, pathsArray) {
+            if (_.isNotUndefined(paths) && _.isNotUndefined(paths[key])) {
+                pths[key] = paths[key];
+                return;
+            }
+
+            for (var i = 0; i < pathsArray.length; i++) {
+                if (checkObjectKey(params, pathsArray[i])) {
+                    pths[key] = pathsArray[i];
+                    break;
+                }
+            }
+        };
+
+        findPath(paths, 'promotionsPath', this.promotionsPaths);
+        findPath(paths, 'productsPath', this.productsPaths);
+
+        return pths;
+    },
+
+    getProductPriceCode: function (priceCategory) {
+        switch (priceCategory) {
+            case I18nUtils.get('product-price.limited'):
+            case 'LOF':
+                return 'offerLimited';
+            case I18nUtils.get('product-price.best'):
+            case 'BPR':
+                return 'bestPrice';
+            default:
+                return 'not set';
+        }
+    },
+
+    getProductSource: function (productSourceCode) {
+        var defaultValue = 'not set';
+        switch (String(productSourceCode).toUpperCase()) {
+            case 'PIM':
+                return 'LeroyMerlinMarketplace';
+            case 'STEP':
+                return 'LeroyMerlin';
+            default:
+                return defaultValue;
+        }
+    },
+
+    /* GA Utility tools*/
+    /**
+     * gtmEventObserver generate events
+     * @param {Array} events - list of events
+     * @param {Object} params - base properties common for all events in array
+     * @param {Array} extension - array of unique properties specified for concretely event in array
+     * @returns {undefined}
+     */
+    gtmEventObserver: function gtmEventObserver(events, params, extension) {
+        _.each(events, function (evt, i) {
+            var props = $.extend(params, extension[i]);
+            globalConfig.aemServiceLayer.gtmEventPush(evt, props);
+        });
+    },
+
+    /**
+     * Get GTM product availability (dimension77) depending on <code>stock</code> and <code>webSaleable</code>
+     * parameters of product.
+     *
+     * @param {float} stock product`s stock.
+     * @param {boolean} webSaleable product`s saleability ("add to basket" button activity status).
+     * @return {string} product availability (dimension77)
+     */
+    getProductAvailability: function (stock, webSaleable) {
+        if (_.isUndefined(stock) || _.isUndefined(webSaleable)) {
+            return 'not set'
+        }
+
+        if (stock > 0) {
+            return webSaleable
+                ? 'available'
+                : 'notAvailableStore';
+        }
+
+        return !webSaleable
+            ? 'notAvailable'
+            : 'not set';
+    },
+
+    /**
+     * Send complements.
+     *
+     * @param gaEvent     gaEvent
+     * @param eventLabel  eventLabel
+     * @param $complements $complements
+     * @param interval     interval
+     */
+    sendComplements: function (gaEvent, eventLabel, $complements, interval) {
+        setTimeout(function () {
+            globalConfig.aemServiceLayer.gtmEventPush(gaEvent, {
+                complements: $complements,
+                eventLabel: eventLabel
+            });
+        }, interval);
+    },
+
+    isPromo: function ($catalogProductList, regexprule) {
+        var catalogProductListPath = $catalogProductList.data('path');
+
+        return !isBlank(catalogProductListPath) && !isBlank(isMatch(catalogProductListPath, regexprule));
+    },
+
+    promoOrCatalog: function (isPromo) {
+        return !isPromo ? 'Catalog' : 'Promo';
+    }
+};
+
+var siteLocale = I18nUtils.get('SiteLocale'),
+    mainConfigPopUp = {
+        width: 'auto',
+        margin: 30,
+        openEffect: 'none',
+        closeEffect: 'none',
+        autoMediaPlay: false,
+        scrolling: 'no',
+        lang: siteLocale,
+        touch : false,
+        fullScreen : false,
+        i18n: {
+            'ru': {
+                CLOSE: I18nUtils.get('Close')
+            },
+            'en': {
+                CLOSE: I18nUtils.get('Close')
+            }
+        }
+    };
+
+$(document).ready(function () {
+    $(document).on('click', '.fancybox', function (e) {
+        e.preventDefault();
+        if ($(this).attr('href') === '#changeRegion' || $(this).attr('href') === '#filterChooseRegion') {
+            var event = 'GA:clickButton';
+            var params = {
+                elementType: 'button',
+                elementBlock: 'header',
+                elementName: 'changeRegion',
+                elementText: e.target.textContent ? e.target.textContent.trim() : 'not set'
+            };
+
+            var hasFlagLogAnalytics = localStorage.getItem('enabledLogAnalytics');
+            if (hasFlagLogAnalytics) {
+                console.info(event, params);
+            }
+
+            document.dispatchEvent(new CustomEvent(event, { detail: params}));
+            document.dispatchEvent(new CustomEvent('regions:overlay:open'));
+        } else {
+            oldOpenPopUp($(this).attr('href'));
+        }
+    });
+});
+
+function oldOpenPopUp(id, type, settings) {
+    var configPopUp = _.extend({}, mainConfigPopUp);
+
+    configPopUp.src = id;
+    configPopUp.type =  type;
+
+    if (_.isFunction(settings)) {
+        configPopUp.afterShow = settings;
+    }
+
+    $.fancybox.open(configPopUp);
+}
+
+function openPopUp(id, type, settings) {
+    var configPopUp = _.extend({}, mainConfigPopUp);
+    configPopUp.src = id;
+    configPopUp.type =  type;
+
+    if (_.isFunction(settings)) {
+        configPopUp.afterShow = settings;
+    }
+
+    $.fancybox.open(configPopUp);
+}
+
+function showLoadingCircle() {
+    $('body').append(
+        '<div class="page-overlay-loading-circle">' +
+        '<div class="fancybox-overlay fancybox-overlay-fixed">' +
+        '</div>' +
+        '<div id="fancybox-loading">' +
+        '<div></div>' +
+        '</div>' +
+        '</div>');
+}
+
+function hideLoadingCircle() {
+    $('body .page-overlay-loading-circle').remove();
+}
+
+function closePopup(selector) {
+    if ($(selector).length > 0) {
+        $.fancybox.close(selector);
+    }
+}
+
+var ObjectUtils = {
+    getObjectSettings: function (el) {
+        if (_.isUndefined(el)) {
+            return {};
+        }
+        var attrs = el.getAttributes(),
+            result = {},
+            newKey;
+
+        _.mapObject(attrs, function (val, key) {
+            newKey = key.toCamel();
+            result[newKey] = val;
+        });
+        return result;
+    },
+
+    getShortStoreId: function(storeId) {
+        var id,
+            reg = '(.+-)([0-9]+)(_Entity_pointOfSale)',
+            match = storeId && storeId.match(new RegExp(reg));
+        if (match) {
+            id = match[2];
+        }
+        return id;
+    },
+
+    getConfigProps: function () {
+        var attrs = $('.config').getAttributes(),
+            result = {};
+
+        for (var prop in attrs) {
+            if (attrs.hasOwnProperty(prop)) {
+                result[prop.replace('data-', '').toCamel()] = attrs[prop];
+            }
+        }
+
+        return result;
+    }
+};
+
+var CookieUtils = {
+    COUNT_DAY: 9999,
+    REGION_COOKIE_EXPIRES_DAY: 365,
+    LAST_CONFIRMED_REGION_COOKIE_EXPIRES_DAY: 365,
+    STANDARD_PATH: '/',
+    REGION_COOKIE_NAME: '_regionID',
+    LAST_CONFIRMED_REGION_ID: 'lastConfirmedRegionID',
+    STORE_COOKIE_ID: 'FAV_SHOP',
+    STORE_COOKIE_NAME: 'storeName',
+    CARTS_WERE_MERGED: 'cartsWereMerged',
+    COMPARISON_COOKIE_NAME: 'comparison',
+    SHOP_LIST_COOKIE_NAME: 'shoppingList',
+    RECENTLY_VIEWED_COOKIE_NAME: 'recently_viewed',
+    USER_AUTH: 'user-auth',
+    ACCESS_TOKEN_LIFE_COOKIE_NAME: 'access-token-life',
+    ID_TOKEN_COOKIE_NAME: 'id-token',
+    ID_TOKEN_EXIST_COOKIE_NAME: 'id-token-exist',
+    CD_TOKEN_COOKIE_NAME: 'cd-token',
+    USER_DATA_COOKIE_NAME: 'userData',
+    CUSTOMER_ID_COOKIE_NAME: 'customerId',
+    TEST_MODE_MESSAGE_COOKIE_NAME: 'testModeMessage',
+    CHANGE_SHOP_MESSAGE_COOKIE_NAME: 'changeShopMessage',
+    TRANSACTION_ID_COOKIE_NAME: 'transactionId',
+    DELIVERY_AVAILABLES: 'deliveryAvailables',
+    SERVICE_LEVEL_AVAILABLES: 'serviceLevelAvailables',
+    REMOVE_CART_NUMBER_COOKIE_ACTION: 'REMOVE_CART_NUMBER_COOKIE',
+    CREATE_CART_NUMBER_COOKIE_ACTION: 'CREATE_CART_NUMBER_COOKIE',
+    UNAVAILABLE_PRODUCTS: 'unavailableProducts',
+    TOTAL_PRICE_DELIVERY: 'totalPriceDelivery',
+    TOTAL_PRICE_INCLUDING_VAT: 'totalPriceIncludingVAT',
+    SELECTED_DELIVERY_MODE: 'selectedDeliveryMode',
+    SELECTED_SERVICE_LEVEL: 'selectedServiceLevel',
+    SELECTED_STORE_ID: 'selectedStoreId',
+    SELECTED_DATE: 'selectedDate',
+    SELECTED_ADDRESS: 'selectedAddress',
+    SELECTED_TIME: 'selectedTime',
+    CHECKOUT_PRODUCTS: 'checkoutProducts',
+    CART_INFO: 'cartInfo',
+    ABANDONED_CART: 'abandonedCart',
+    CART_MERGED_FLAG: 'cartMergedFlag',
+    SHOW_AUTH_POPUP: 'showAuthPopup',
+    CART_INFO_LIFE_TIME: 30,
+    COOKIE_CHUNK: 200,
+    DIGIT_ONLY_REGEXP: new RegExp('[0-9]'),
+    COLON_SEPARATOR: ':',
+    COMMA_SEPARATOR: ',',
+    SEMICOLON_SEPARATOR: ';',
+    ABANDONED_CART_LIFE_TIME: 1,
+    COOKIE_ACCEPTED: 'cookie_accepted',
+    AUTO_LOGIN_AUTHENTICATION_TOKEN_COOKIE_NAME: 'autologin.jwt',
+    STORAGE_FOR_SHOP_LIST_ACTUAL: 'storageForShopListActual',
+    USER_GEOLOCATION_COOKIE_NAME: 'user-geolocation',
+    CHECKOUT_REGION_CHANGED: 'checkoutRegionChanged',
+    SELECTED_PAYMENT_TYPE: 'selectedPaymentType',
+    CHECKOUT_VERSION: '_checkoutVersion',
+
+
+    /**
+     * Get recently viewed product.
+     *
+     * @returns {Array<String>} array of recently viewed products.
+     */
+    getRecentlyViewed: function () {
+        return this.getAsArray(this.RECENTLY_VIEWED_COOKIE_NAME);
+    },
+
+    /**
+     * Set recently viewed product.
+     *
+     * @param {String} productId product id.
+     */
+    setRecentlyViewed: function (productId) {
+        this.setProductId(this.RECENTLY_VIEWED_COOKIE_NAME, productId, globalConfig.recentlyViewedQuantity);
+    },
+
+    /**
+     * Set comparison.
+     *
+     * @param {String} productId product id.
+     */
+    setComparison: function (productId) {
+        this.setProductId(this.COMPARISON_COOKIE_NAME, productId, globalConfig.comparisonQuantity);
+        if (!_.isUndefined(ComparePanel)) {
+            ComparePanel.reinit();
+        }
+    },
+
+    /**
+     * Remove transactionId.
+     */
+    removeTransactionId: function () {
+        this.remove(this.TRANSACTION_ID_COOKIE_NAME);
+    },
+
+    /**
+     * Get domain.
+     *
+     * @returns {String} domain.
+     */
+    getDomain: function () {
+        var hostname = window.location.hostname,
+            separator = '.',
+            start = hostname.indexOf(separator);
+        if (start === -1 || hostname.match(/^[0-9.]+$/)) {
+            return '';
+        } else {
+            var split = hostname.split(separator);
+            return split.slice(split.length - 2).join(separator);
+        }
+    },
+
+    /**
+     * Get region id.
+     *
+     * @returns {String} region id.
+     */
+    getRegionId: function () {
+        return $.cookie(this.REGION_COOKIE_NAME);
+    },
+
+    /**
+     * Get last confirmed region id.
+     *
+     * @returns {String} last confirmed region id.
+     */
+    getLastConfirmedRegionId: function () {
+        return $.cookie(this.LAST_CONFIRMED_REGION_ID);
+    },
+
+    /**
+     * Set last confirmed region id.
+     *
+     * @param {String}  value         last confirmed region id.
+     * @param {Boolean} hideInfoBlock flag if need hide info block.
+     */
+    setLastConfirmedRegionId: function (value, hideInfoBlock) {
+        if (_.isUndefined(value)) {
+            return;
+        }
+        $.cookie(this.LAST_CONFIRMED_REGION_ID, value, {
+            expires: this.LAST_CONFIRMED_REGION_COOKIE_EXPIRES_DAY,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+        if (hideInfoBlock) {
+            $('.change-region-info').addClass('hidden');
+        }
+    },
+
+    /**
+     * Set region id.
+     *
+     * @param {String} regionId region id.
+     */
+    setRegionId: function (regionId) {
+        if (_.isUndefined(regionId)) {
+            return;
+        }
+        $.cookie(this.REGION_COOKIE_NAME, regionId, {
+            expires: this.REGION_COOKIE_EXPIRES_DAY,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Set boolean flag storageForShopListActual to <code>true</code>.
+     */
+    setStorageForShopListActual: function () {
+        var time = new Date().getTime() + (60 * 60 * 1000);
+        $.cookie(this.STORAGE_FOR_SHOP_LIST_ACTUAL, 'true', {
+            expires: new Date(time),
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get boolean flag storageForShopListActual.
+     *
+     * @returns {Boolean} flag.
+     */
+    isStorageForShopListActual: function () {
+        return _.isNotUndefined(this.get(this.STORAGE_FOR_SHOP_LIST_ACTUAL));
+    },
+
+    /**
+     * Set test mode message.
+     */
+    setTestModeMessage: function () {
+        $.cookie(this.TEST_MODE_MESSAGE_COOKIE_NAME, true, {
+            expires: 3654,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get test mode message.
+     *
+     * @returns {String} message.
+     */
+    getTestModeMessage: function () {
+        return $.cookie(this.TEST_MODE_MESSAGE_COOKIE_NAME);
+    },
+
+    /**
+     * Set change shop message.
+     */
+    setChangeShopMessage: function () {
+        $.cookie(this.CHANGE_SHOP_MESSAGE_COOKIE_NAME, true, {
+            expires: 3654,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get change shop message.
+     *
+     * @returns {String} change shop message.
+     */
+    getChangeShopMessage: function () {
+        return $.cookie(this.CHANGE_SHOP_MESSAGE_COOKIE_NAME);
+    },
+
+    /**
+     * Set cartsWereMerged cookie.
+     *
+     * @param {String} value cookie value.
+     */
+    setCartsWereMerged: function (value) {
+        $.cookie(this.CARTS_WERE_MERGED, value, {
+            expires: this.COUNT_DAY,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get cartsWereMerged cookie.
+     *
+     * @returns {String} cartsWereMerged cookie.
+     */
+    getCartsWereMerged: function () {
+        return $.cookie(this.CARTS_WERE_MERGED);
+    },
+
+    /**
+     * Remove cartsWereMerged cookie.
+     */
+    removeCartsWereMerged: function () {
+        this.remove(this.CARTS_WERE_MERGED);
+    },
+
+    /**
+     * Set cookie.
+     *
+     * @param {String} key   cookie key.
+     * @param {String} value cookie value.
+     */
+    set: function (key, value) {
+        $.cookie(key, value, {
+            expires: parseInt(globalConfig.cookieKeepingPeriod, 10),
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Create spu cookie.
+     *
+     * @param {String} name  name.
+     * @param {String} value value.
+     * @param {String} hours hours.
+     */
+    spuCreateCookie: function (name, value, hours) {
+        var expires;
+        if (hours) {
+            var date = new Date();
+            date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+            expires = '; expires=' + date.toGMTString();
+        } else {
+            expires = '';
+        }
+
+        document.cookie = name + '=' + value + expires + '; path=' + this.STANDARD_PATH + '; domain=' + this.getDomain();
+    },
+
+    /**
+     * @return {boolean} <code>true</code> if user authorized, <code>false</code> otherwise.
+     */
+    isUserAuth: function () {
+        return _.isNotUndefined(this.get(this.USER_AUTH));
+    },
+
+    removeUserAuth: function () {
+        return this.remove(this.USER_AUTH);
+    },
+
+    /**
+     * Get id-token-exist.
+     *
+     * @returns {String} id-token-exist.
+     */
+    getIdTokenExist: function () {
+        return this.get(this.ID_TOKEN_EXIST_COOKIE_NAME);
+    },
+
+    /**
+     * Get user data.
+     *
+     * @returns {String} user data.
+     */
+    getUserData: function () {
+        return this.get(this.USER_DATA_COOKIE_NAME);
+    },
+
+    /**
+     * Logout user.
+     */
+    logoutUser: function() {
+        this.removeUserAuth();
+        this.removeIdTokenExist();
+        this.removeCdToken();
+        this.removeUserData();
+        this.remove(this.CART_INFO);
+        this.remove(this.TRANSACTION_ID_COOKIE_NAME);
+        this.remove(this.SELECTED_DELIVERY_MODE);
+    },
+
+    /**
+     * Remove id-token-exist.
+     */
+    removeIdTokenExist: function () {
+        this.remove(this.ID_TOKEN_EXIST_COOKIE_NAME);
+    },
+
+    /**
+     * Remove CD-token.
+     */
+    removeCdToken: function () {
+        this.remove(this.CD_TOKEN_COOKIE_NAME);
+    },
+
+    /**
+     * Remove user data.
+     */
+    removeUserData: function () {
+        this.remove(this.USER_DATA_COOKIE_NAME);
+    },
+
+    /**
+     * Get Customer Id
+     */
+    getCustomerId: function () {
+        return this.get(this.CUSTOMER_ID_COOKIE_NAME);
+    },
+
+    /**
+     * Set user geolocation.
+     *
+     * @param {String} value geolocation.
+     */
+    setUserGeolocation: function (value) {
+        $.cookie(this.USER_GEOLOCATION_COOKIE_NAME, value, {
+            expires: 30,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get user geolocation.
+     *
+     * @returns {String} geolocation.
+     */
+    getUserGeolocation: function () {
+        return this.get(this.USER_GEOLOCATION_COOKIE_NAME);
+    },
+
+    /**
+     * Get value
+     *
+     * @param {String} key
+     * @returns {String}
+     */
+    get: function (key) {
+        return $.cookie(key);
+    },
+
+    /**
+     * Add all values from array
+     *
+     * @param {String} key
+     * @param {Array<String>} values
+     */
+    addAll: function (key, values) {
+        var self = this,
+            ids = [];
+        if (!values || values.length === 0) {
+            return;
+        }
+        for (var j = 0; j < values.length; j++) {
+            var value = $.trim(values[j]);
+            if (_.indexOf(ids, value) === -1) {
+                ids.push(value);
+            }
+        }
+        $.cookie(key, ids.join(self.COMMA_SEPARATOR), {
+            expires: parseInt(globalConfig.cookieKeepingPeriod, 10),
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Set productId.
+     *
+     * @param {String} key       cookie name.
+     * @param {Object} value     productId.
+     * @param {Number} quantity  quantity.
+     */
+    setProductId: function (key, value, quantity) {
+        if (checkObject(value)) {
+            var stringValue = value.toString(),
+                ids = $.cookie(key);
+            if (_.isUndefined(ids)) {
+                ids = stringValue;
+            } else {
+                var list = ids.split(this.COMMA_SEPARATOR),
+                    index = _.indexOf(list, stringValue);
+                if (index === -1) {
+                    list.unshift(stringValue);
+                    if (list.length > quantity) {
+                        list.pop();
+                    }
+                } else {
+                    list.splice(index, 1);
+                    list.unshift(stringValue);
+                }
+
+                ids = list.join(this.COMMA_SEPARATOR);
+            }
+
+            $.cookie(key, ids, {
+                expires: parseInt(globalConfig.cookieKeepingPeriod, 10),
+                path: this.STANDARD_PATH,
+                domain: this.getDomain()
+            });
+        }
+    },
+
+    /**
+     * Set auto login authentication token.
+     *
+     * @param {String} autoLoginToken token.
+     */
+    setAutoLoginAuthenticationToken: function (autoLoginToken) {
+        $.cookie(this.AUTO_LOGIN_AUTHENTICATION_TOKEN_COOKIE_NAME, autoLoginToken, {
+            expires: 3654,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get auto login authentication token.
+     *
+     * @returns {String} autoLoginToken token.
+     */
+    getAutoLoginAuthenticationToken: function () {
+        return this.get(this.AUTO_LOGIN_AUTHENTICATION_TOKEN_COOKIE_NAME);
+    },
+
+    /**
+     * Remove value from comparison
+     *
+     * @param {String} value
+     */
+    removeComparison: function (value) {
+        var self = this,
+            arr = this.getAsArray(this.COMPARISON_COOKIE_NAME);
+        if (arr.length) {
+            arr.remove(value);
+            var expires = arr.length > 0 ? parseInt(globalConfig.cookieKeepingPeriod, 10) : 0;
+            $.cookie(this.COMPARISON_COOKIE_NAME, arr.join(self.COMMA_SEPARATOR), {
+                path: this.STANDARD_PATH,
+                expires: expires,
+                domain: this.getDomain()
+            });
+        }
+
+        if (!_.isUndefined(ComparePanel)) {
+            ComparePanel.reinit();
+        }
+    },
+
+    /**
+     * Get as array
+     *
+     * @param {String} key cookie key.
+     * @returns {Array<String>} products.
+     */
+    getAsArray: function (key) {
+        var item = $.cookie(key);
+        return item && _.isNotEmpty(item) ? item.split(this.COMMA_SEPARATOR) : [];
+    },
+
+    /**
+     * Removes cookie.
+     *
+     * @param {String} key
+     */
+    remove: function (key) {
+        $.removeCookie(key, {
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Set transaction id.
+     *
+     * @param {String} transactionId transaction id.
+     */
+    setTransactionId: function (transactionId) {
+        var time = new Date().getTime() + (300 * 60 * 1000);
+        $.cookie(this.TRANSACTION_ID_COOKIE_NAME, transactionId, {
+            expires: new Date(time),
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get transaction id.
+     *
+     * @returns {String} transaction id.
+     */
+    getTransactionId: function () {
+        return $.cookie(this.TRANSACTION_ID_COOKIE_NAME);
+    },
+
+    /**
+     * Get cookie life-time.
+     *
+     * @returns {String} cookie life-time.
+     */
+    getCookieAccepted: function () {
+        return this.get(this.COOKIE_ACCEPTED);
+    },
+
+    /**
+     * Set cookie life-time.
+     */
+    setCookieAccepted: function () {
+        this.spuCreateCookie(this.COOKIE_ACCEPTED, true, 876000);
+    },
+
+    /**
+     * Get total price delivery.
+     *
+     * @returns {String} total price delivery.
+     */
+    getTotalPriceDelivery: function () {
+        return this.get(this.TOTAL_PRICE_DELIVERY);
+    },
+
+    /**
+     * Set selected delivery mode.
+     *
+     * @param {String} value selected delivery mode.
+     */
+    setSelectedDeliveryMode: function (value) {
+        $.cookie(this.SELECTED_DELIVERY_MODE, value, {
+            expires: this.COUNT_DAY,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get checkout version.
+     *
+     * @returns {String} checkout version.
+     */
+    getCheckoutVersion: function () {
+        return this.get(this.CHECKOUT_VERSION);
+    },
+
+    /**
+     * Get selected delivery mode.
+     *
+     * @returns {String} selected delivery mode.
+     */
+    getSelectedDeliveryMode: function () {
+        return this.get(this.SELECTED_DELIVERY_MODE);
+    },
+
+    /**
+     * Split cookie product's into chunk's.
+     *
+     * @param {String} key cookie name.
+     * @param {Array<String>} cookieProducts cookie product's obj
+     */
+    splitAndSetTransitCookie: function (key, cookieProducts) {
+        var self = this,
+            productsChunks = _.chunk(cookieProducts, self.COOKIE_CHUNK);
+
+        _.each(productsChunks, function (cartInfoChunk) {
+            var cookieString = self.getTransitCookieString(cartInfoChunk, key),
+                chunkIndex = _.indexOf(productsChunks, cartInfoChunk),
+                cookieName = chunkIndex === 0 ? key : key + chunkIndex;
+
+            self.setCookie(cookieName, cookieString);
+        });
+    },
+
+    /**
+     * Get cookie string of cookie chunk.
+     *
+     * @param {Array.<object>}  productsChunk cookie product chunk.
+     * @param {String} key      cookie name.
+     * @returns {String} of cookie chunk.
+     */
+    getTransitCookieString: function (productsChunk, key) {
+        var self = this;
+        return productsChunk.filter(function (product) {
+            return _.isNotUndefined(product);
+        }).map(function (product) {
+            if (key.includes(self.CART_INFO) && _.isNotEmpty(product.code || product.id) && _.isNotUndefined(product.quantity)) {
+                return (product.code || product.id) + self.COLON_SEPARATOR + product.quantity;
+            } else if (key.includes(self.SHOP_LIST_COOKIE_NAME)
+                && _.isNotEmpty(product.article) && _.isNotUndefined(product.count)) {
+                return product.article + self.COLON_SEPARATOR + product.count;
+            } else {
+                return null;
+            }
+        }).join(self.SEMICOLON_SEPARATOR);
+    },
+
+    /**
+     * Set cartInfo or shoppingList cookie.
+     *
+     * @param {String} key name of cookie.
+     * @param {Object} obj cartInfo or shoppingList which includes products array.
+     */
+    setTransitCookie: function (key, obj) {
+        var cookieProducts = obj.products;
+
+        this.removeAllTransitCookie(key);
+        if (cookieProducts.length > this.COOKIE_CHUNK) {
+            this.splitAndSetTransitCookie(key, cookieProducts);
+        } else {
+            var cartInfoString = this.getTransitCookieString(cookieProducts, key);
+            this.setCookie(key, cartInfoString);
+        }
+    },
+
+    /**
+     * Set cartInfo cookie.
+     *
+     * @param {Object} basketCookie cartInfo cookie.
+     */
+    setBasketCookie: function (basketCookie) {
+        this.setTransitCookie(this.CART_INFO, basketCookie);
+    },
+
+    /**
+     * Set shoppingList cookie.
+     *
+     * @param {Object} shoppingListCookie shoppingList cookie.
+     */
+    setShoppingListCookie: function (shoppingListCookie) {
+        this.setTransitCookie(this.SHOP_LIST_COOKIE_NAME, shoppingListCookie);
+    },
+
+    /**
+     * Set cookie by key and value.
+     *
+     * @param {String} key   cookie key.
+     * @param {String} value cookie value.
+     */
+    setCookie: function (key, value) {
+        $.cookie(key, value, {
+            expires: this.CART_INFO_LIFE_TIME,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Remove all cookies by key.
+     *
+     * @param {String} key cookie name.
+     */
+    removeAllTransitCookie: function (key) {
+        var self = this;
+        if (checkObject(key)) {
+            _.each($.cookie(), function (cookieValue, cookieKey) {
+                if (cookieKey.includes(key)) {
+                    self.remove(cookieKey);
+                }
+            });
+        }
+    },
+
+    /**
+     * Get product cookie by key.
+     *
+     * @param {String} key   cookie name.
+     * @returns {Object} product's obj
+     */
+    getTransitCookie: function (key, format) {
+        var self = this,
+            transitCookieObject = {};
+        transitCookieObject.products = [];
+
+        _.each($.cookie(), function (cookieValue, cookieKey) {
+            if (cookieKey.includes(key)) {
+                if (cookieValue.includes('products')) {
+                    transitCookieObject.products = JSON.parse(cookieValue).products;
+                    self.setTransitCookie(key, transitCookieObject);
+                } else {
+                    if (transitCookieObject.products.length > 0) {
+                        transitCookieObject.products = transitCookieObject.products.concat(self.transformTransitCookieString(cookieValue, key, format));
+                    } else {
+                        transitCookieObject.products = self.transformTransitCookieString(cookieValue, key, format);
+                    }
+                    if (cookieValue.includes(self.COMMA_SEPARATOR)) {
+                        self.setTransitCookie(key, transitCookieObject);
+                    }
+                }
+            }
+        });
+        return transitCookieObject;
+    },
+
+    /**
+     * Get cartInfo cookie object.
+     *
+     * @returns {Object} cartInfo object.
+     */
+    getBasketCookie: function (format) {
+        return this.getTransitCookie(this.CART_INFO, format);
+    },
+
+    /**
+     * Get shoppingList cookie object.
+     *
+     * @returns {Object} shoppingList object.
+     */
+    getShoppingListCookie: function () {
+        return this.getTransitCookie(this.SHOP_LIST_COOKIE_NAME);
+    },
+
+    /**
+     * Transform cookie string to array of products.
+     *
+     * @param {String} cookieValue cookie string.
+     * @param {String} cookieKey   cookie key.
+     * @returns {Array<Object>} array of products.
+     */
+    transformTransitCookieString: function (cookieValue, cookieKey, format) {
+        var self = this,
+            filteredTransitCookieObject;
+
+        if (cookieValue.includes(self.COMMA_SEPARATOR)) {
+            filteredTransitCookieObject = cookieValue.split(self.COMMA_SEPARATOR).filter(Boolean);
+        } else {
+            filteredTransitCookieObject = cookieValue.split(self.SEMICOLON_SEPARATOR).filter(Boolean);
+        }
+        return _.map(filteredTransitCookieObject, function (productsValue) {
+            var splittedProductsValue = productsValue.split(self.COLON_SEPARATOR),
+                productArticle = splittedProductsValue[0],
+                productCount = splittedProductsValue[1];
+
+            if (_.isNotUndefined(productArticle) && productArticle.match(self.DIGIT_ONLY_REGEXP)
+                && _.isNotUndefined(productCount) && productCount.match(self.DIGIT_ONLY_REGEXP)) {
+                if (cookieKey.includes(self.CART_INFO)) {
+                    return $.extend({}, (format === 'id' ? {id: productArticle} : {code: productArticle}), {quantity: Number(productCount)});
+                } else if (cookieKey.includes(self.SHOP_LIST_COOKIE_NAME)) {
+                    return {article: productArticle, count: Number(productCount)};
+                }
+            }
+        });
+    },
+
+    /**
+     * Set abandoned cart.
+     *
+     * @param {String} abandonedCart
+     * example 123456:1,123457:3,321654:8
+     */
+    setAbandonedCart: function (abandonedCart) {
+        $.cookie(this.ABANDONED_CART, abandonedCart, {
+            expires: this.ABANDONED_CART_LIFE_TIME,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Set cartMerge flag.
+     */
+    setCartMergeFlag: function () {
+        $.cookie(this.CART_MERGED_FLAG, true, {
+            expires: 1,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Get cartMerge flag.
+     *
+     * @returns {String} cartMerge flag
+     */
+    getCartMergeFlag: function () {
+        return this.get(this.CART_MERGED_FLAG);
+    },
+
+    isShowAuthPopup: function () {
+        return 'true' === this.get(this.SHOW_AUTH_POPUP);
+    },
+
+    /**
+     * Get selected payment type.
+     *
+     * @return {String} selected payment type
+     */
+    getSelectedPaymentType: function () {
+        return this.get(this.SELECTED_PAYMENT_TYPE);
+    },
+
+    /**
+     * Set selected payment type.
+     *
+     * @param value payment type
+     */
+    setSelectedPaymentType: function (value) {
+        $.cookie(this.SELECTED_PAYMENT_TYPE, value, {
+            expires: this.COUNT_DAY,
+            path: this.STANDARD_PATH,
+            domain: this.getDomain()
+        });
+    },
+
+    /**
+     * Merge carts from 'cartInfo' cookie and 'products' from remote basket and returns array.
+     * @param {arr} localBasket - array of local product objects.
+     * @param {arr} remoteBasket - array of remote product objects.
+     * @return {arr} array of merged local and remote product objects.
+     */
+    mergeCarts: function (localBasket, remoteBasket) {
+
+        return _.chain([localBasket, remoteBasket])
+            .flatten()
+            .reduce(function (acc, product) {
+                var mergedProduct = acc[product.id];
+                if (_.isUndefined(mergedProduct)) {
+                    acc[product.id] = [product.quantity];
+                } else {
+                    mergedProduct.push(product.quantity);
+                }
+                return acc;
+            }, {})
+            .reduce(function (acc, value, key) {
+                acc.push({id: key, quantity: _.max(value)});
+                return acc;
+            }, [])
+            .value();
+    }
+
+};
+
+
+{
+    // for bugfix AEM-15935
+    // TODO: delete after 135 version
+    const cart_info = $.cookie(CookieUtils.CART_INFO);
+    if(cart_info && cart_info.includes('undefined')) {
+        CookieUtils.setCookie(CookieUtils.CART_INFO, '');
+    }
+}
+
+
+var RegionUtils = {
+
+    SHOP_LIST_PAGE: 'shopping-list-page',
+    SHOP_LIST_LK_PAGE: 'account-shop-list',
+    BASKET_PAGE: 'basket-page',
+
+    changeRegionFromRegionLink: function ($regionLink, e) {
+
+        e.preventDefault();
+
+        var regionId = $regionLink.data('region-id'),
+            isActiveRegion = $regionLink.hasClass('active');
+        if (isActiveRegion) {
+            $.fancybox.close();
+            return;
+        }
+
+        var bitrixDomain = $('#bitrixDomain').data('bitrix-domain'),
+            aemDomain = $('#aemDomain').data('aem-domain'),
+            regionUrl = $regionLink.data('region-link'),
+            legacyCode = $regionLink.data('legacy-code'),
+            regionCode = $regionLink.data('region-code'),
+            legacyPath = $('#legacyPath').data('legacy-path');
+
+        var currentUrl = document.location.href,
+            params = {
+                regionId: regionId,
+                bitrixDomain: bitrixDomain,
+                aemDomain: aemDomain,
+                url: regionUrl,
+                regionCode: regionCode,
+                legacyCode: legacyCode,
+                legacyPath: legacyPath,
+                needReload: true
+            },
+            self = this;
+
+            if (currentUrl.indexOf('checkout') > -1) {
+                $.extend(params, {checkoutRegionChange: true, redirectToPage: self.getBasePagePath(RegionUtils.BASKET_PAGE)});
+            }
+
+        CookieUtils.removeTransactionId();
+
+        RegionUtils.changeRegion(params);
+    },
+
+    changeRegion: function (params) {
+        var regionId = params.regionId,
+            url = params.url,
+            bitrixDomain = params.bitrixDomain,
+            legacyCode = params.legacyCode || false,
+            regionCode = params.regionCode,
+            legacyPath = params.legacyPath,
+            needReload = params.needReload,
+            newParametrizedUrl = '',
+            newUrlParams,
+            newUrlHash,
+            redirectToPage = params.redirectToPage,
+            checkoutRegionChange = params.checkoutRegionChange;
+
+        if (needReload == false) {
+            return;
+        }
+
+        newUrlParams = globalConfig.replaceUrlVar('availableFilter', 'inAllStores');
+        newUrlHash = globalConfig.getUrlHash();
+
+        if (!_.isEmpty(url)) {
+            var pathName = window.location.pathname,
+                replacedStore = (new RegExp(/shop\/(.*)\/service/).exec(window.location.pathname) || [])[1];
+            if (!_.isEmpty(replacedStore)) {
+                var $regionStoreLinks = $('#regionStores div[data-region-code=' + regionCode + ']');
+
+                pathName = $regionStoreLinks.length > 0
+                    ? pathName.replace(replacedStore, $regionStoreLinks.attr('data-store-name'))
+                    : pathName.replace('shop/' + replacedStore + '/', '');
+            } else {
+                pathName = pathName.replace (/shop\/([\w|\d|-]*)\/$/, 'shop/');
+            }
+
+            var protocol = window.location.protocol + '//',
+                regionParams = 'REGION_ID=' + regionId + '&PREV_REGION_ID=' + globalConfig.regionId;
+            newParametrizedUrl = protocol;
+
+            if (legacyCode === true) {
+                CookieUtils.remove(CookieUtils.REGION_COOKIE_NAME);
+                newParametrizedUrl += bitrixDomain;
+                var productIndex = pathName.indexOf('product'),
+                    searchQuery = '';
+                if (productIndex !== -1) {
+                    var path = pathName.substring(productIndex, window.location.pathname.length),
+                        arr = path.split('/');
+                    if (arr.length > 1) {
+                        legacyPath = '/product/' + arr[1].replace('html', '').replace('.', '');
+                    }
+                }
+                var searchParam = $.urlParam('q');
+
+                if (!_.isNull(searchParam)) {
+                    searchQuery = 'q=' + searchParam + '&';
+                    //on bitrix search is under /catalogue/search?
+                    //on aem it is just under /search , so need to add /catalogue
+                    pathName = '/catalogue' + pathName;
+                }
+                newParametrizedUrl += legacyPath ? legacyPath : pathName;
+                newParametrizedUrl += '?' + searchQuery + regionParams;
+            } else {
+                newParametrizedUrl += url;
+                newParametrizedUrl += pathName;
+
+                if (!_.isEmpty(newUrlParams)) {
+                    newParametrizedUrl += "?" + $.param(newUrlParams);
+                }
+            }
+
+            if (!_.isEmpty(newUrlHash)) {
+                newParametrizedUrl += "#" + newUrlHash;
+            }
+
+            if (checkoutRegionChange === true) {
+               window.location.href = legacyCode
+                    ? protocol + bitrixDomain + redirectToPage + '?' + regionParams
+                    : protocol + url + redirectToPage;
+            } else {
+                window.location.href = newParametrizedUrl;
+            }
+        } else {
+            window.location.reload();
+        }
+    },
+    
+    checkCurrentRegion: function (regionId) {
+        if (_.isUndefined(regionId)) {
+            var $document = $(document);
+            $document.ready(function() {
+                var $confirmRegion = $('.confirm-region');
+                $confirmRegion.removeClass('hidden');
+            
+                $('.confirm-region-link').on('click', function () {
+                    $confirmRegion.addClass('hidden');
+                });
+            
+                $document.click(function (e) {
+                    if (($confirmRegion.has(e.target).length === 0) || $(e.target).is($confirmRegion)) {
+                        $confirmRegion.addClass('hidden');
+                    }
+                });
+            });
+            CookieUtils.setRegionId(globalConfig.regionId);
+            CheckoutUtils.invalidateCheckoutSession();
+        } else if (regionId !== globalConfig.regionId && window.location.hostname !== globalConfig.communityHost) {
+            // The condition "&& window.location.hostname !== globalConfig.communityHost" have to be removed (with all
+            // depended objects from this file) as soon as community page will be region depended (potentially when all
+            // regions will be moved to Elbrus from Bitrix)
+            CheckoutUtils.invalidateCheckoutSession();
+            CookieUtils.setRegionId(globalConfig.regionId);
+        }
+    },
+
+    convertStoreIdToBitrixId: function (storeId) {
+        if (_.isEmpty(storeId)) {
+            return storeId;
+        }
+        var newId = parseInt(storeId, 10);
+
+        if (newId === 3) {
+            return 10;
+        }
+
+        if (newId >= 4) {
+            return newId + 10;
+        }
+
+        return newId;
+    },
+
+    /**
+     * Get region properties by given region ID.
+     *
+     * @param {string} regionId - region ID
+     * @return {object} properties of region.
+     */
+    getRegionProperties: function (regionId) {
+        var $region = $('[data-js-region-link]').filter('[data-region-id="{0}"]'.format(regionId));
+        return $region.data();
+    },
+
+    /**
+     * Get current region properties.
+     *
+     * @return {object} properties of current region.
+     */
+    getCurrentRegionProperties: function () {
+        return this.getRegionProperties(CookieUtils.getRegionId());
+    },
+
+    /**
+     * Get page base path.
+     *
+     * @param pageType page type
+     * @return {string}
+     */
+    getBasePagePath: function (pageType) {
+        var result = '',
+            lk = false,
+            $changeRegionConfig = $('[data-js-change-region-config]');
+      
+        switch (pageType) {
+            case RegionUtils.BASKET_PAGE :
+                result = $changeRegionConfig.attr('data-basket-page-path');
+                break;
+            case RegionUtils.SHOP_LIST_PAGE :
+                result = $changeRegionConfig.attr('data-shopping-list-page-path');
+                break;
+            case RegionUtils.SHOP_LIST_LK_PAGE :
+                result = $changeRegionConfig.attr('data-lk-page-path');
+                lk = true;
+                break;
+            default:
+                break;
+        }
+
+        var suffixIndex = result.indexOf('.html');
+        if (suffixIndex > 0) {
+            result = result.replace('.html', '');
+            result = '/' + _.last(result.split('/'));
+        }
+        result = result.replace(/\/+$/, '');
+        result = lk ? result + '/shop-list' : result;
+
+        return result;
+    }
+};
+
+var scrollToPositionController;
+
+$(document).ready(function () {
+    var scrollToPosition = (function () {
+        function Controller() {
+            this.targetAttr = "scroll-target";
+            this.anchorAttr = "scroll-anchor";
+
+            this.initScrollAnchorAttrName = "init-scroll-anchor='true'";
+
+            this.topLocationPadding = -100;
+            this.afterloadingDelay = 1000;
+            this.enableHashHandling = true;
+
+            this.targetSelector = "[" + this.targetAttr + "]";
+            this.anchorSelector = "[" + this.anchorAttr + "]";
+
+            this.initScrollAnchor = "[" + this.initScrollAnchorAttrName + "]";
+
+            this.init();
+        }
+
+        Controller.prototype.init = function () {
+            this.bindClickAction();
+            this.processUrlHash();
+        };
+
+        Controller.prototype.bindClickAction = function () {
+            els = $(this.targetSelector);
+            els.off("click").on("click", _.bind(this.onTargetClick, this));
+        };
+
+        Controller.prototype.onTargetClick = function (event) {
+            var el = $(event.target);
+            var targetLabel = el.attr(this.targetAttr);
+            var anchorSelector = "[" + this.anchorAttr + "=" + targetLabel + "]";
+            var anchor = $(anchorSelector);
+            this.addHashToUrl(targetLabel);
+            this.scrollToElement(anchor);
+        };
+
+        Controller.prototype.scrollToElement = function (anchor) {
+            var position = anchor.offset().top + this.topLocationPadding;
+
+            $('html, body').animate({
+                scrollTop: position
+            }, 500);
+        };
+
+        Controller.prototype.addHashToUrl = function (hash) {
+            if (this.enableHashHandling) {
+                window.location.hash = hash;
+            }
+        };
+
+        Controller.prototype.processUrlHash = function () {
+            var hash = window.location.hash;
+            var selector;
+            var targetEl;
+
+            if (!(_.isUndefined(hash))) {
+                selector = hash.substring(1);
+                targetSelector = "[" + this.anchorAttr + "='" + selector + "']";
+                targetEl = $(targetSelector);
+
+                if ((targetEl.length > 0) && (this.enableHashHandling)) {
+                    this.delayedScrollToPosition(targetEl);
+                }
+            }
+        };
+
+        Controller.prototype.delayedScrollToPosition = function (targetEl) {
+            var scrollFunction = _.bind(this.scrollToElement, this, targetEl);
+
+            _.delay(scrollFunction, this.afterloadingDelay, targetEl);
+        };
+
+        return Controller;
+    })();
+
+    scrollToPositionController = new scrollToPosition();
+});
+
+Array.prototype.remove = function (value) {
+    var idx = this.indexOf(value);
+    if (idx != -1) {
+        return this.splice(idx, 1);
+    }
+    return false;
+};
+
+if (!Array.prototype.includes) {
+    Array.prototype.includes = function (searchElement /*, fromIndex*/) {
+        'use strict';
+        if (this == null) {
+            throw new TypeError('Array.prototype.includes called on null or undefined');
+        }
+
+        var O = Object(this);
+        var len = parseInt(O.length, 10) || 0;
+        if (len === 0) {
+            return false;
+        }
+        var n = parseInt(arguments[1], 10) || 0;
+        var k;
+        if (n >= 0) {
+            k = n;
+        } else {
+            k = len + n;
+            if (k < 0) {
+                k = 0;
+            }
+        }
+        var currentElement;
+        while (k < len) {
+            currentElement = O[k];
+            if (searchElement === currentElement ||
+                (searchElement !== searchElement && currentElement !== currentElement)) { // NaN !== NaN
+                return true;
+            }
+            k++;
+        }
+        return false;
+    };
+}
+
+Array.prototype.max = function() {
+    return Math.max.apply(null, this);
+};
+
+Array.prototype.min = function() {
+    return Math.min.apply(null, this);
+};
+
+var NumberUtils = {
+    formatSum: function (sum) {
+        sum = parseInt(sum,10);
+        if (_.isUndefined(sum) || !_.isNumber(sum) || _.isNaN(sum)) {
+            return '';
+        }
+        return sum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    },
+
+    /**
+     * Get decimal count of number.
+     *
+     * @param number
+     * @returns {int}
+     */
+    getDecimalCount: function (number) {
+        if (!_.isNumber(number)) {
+            return 0;
+        }
+        var value = number.toString();
+        if (value.indexOf('.') === -1) {
+            return 0;
+        } else {
+            return value.split('.')[1].length;
+        }
+    },
+
+    /**
+     * Truncate decimal part of number.
+     * truncate(41.114, 1) -> 41.1
+     *
+     * @param number
+     * @param digits
+     * @returns {number}
+     */
+    truncate: function(number, digits) {
+        if (!_.isNumber(number) || _.isUndefined(digits)) {
+            return number;
+        }
+        var shift = Math.pow(10, digits);
+        return ((number * shift) | 0) / shift;
+    },
+
+    max: function(numberA, numberB) {
+        var arr = [numberA, numberB];
+        return arr.max();
+    },
+
+    min: function(numberA, numberB) {
+        var arr = [numberA, numberB];
+        return arr.min();
+    },
+
+    subtract: function (a, b) {
+        var places = Math.max(NumberUtils.getDecimalCount(a), NumberUtils.getDecimalCount(b));
+        return Number((a - b).toFixed(places));
+    }
+};
+
+var TooltipUtils = {
+    init: function (settings) {
+        var position = settings.position,
+            selector = settings.selector;
+        $(selector).tooltip({
+            content: function () {
+                return $(this).prop('title');
+            },
+            open: function (event, ui) {
+
+                if (settings.customClass) {
+                    $('.ui-tooltip').addClass(settings.customClass);
+                }
+            },
+            tooltipClass: settings.tooltipClass ? settings.tooltipClass : '',
+            position: position
+        });
+    }
+};
+
+var ShopListUtils = (function () {
+
+    var debounceSynchronizeShopList = $.debounce(1000, function () {
+        CustomerSyncUtils().synchronizeShopListRun();
+    });
+
+    return {
+        unparsedSumSelector: '[data-js-shopping-list-sum]',
+
+        synchronizeShopList: function (withoutWaiting) {
+            if (withoutWaiting) {
+                CustomerSyncUtils().synchronizeShopListRun();
+            } else {
+                debounceSynchronizeShopList();
+            }
+        },
+
+        removeFromShopList: function (productId) {
+            StorageUtils.removeByIds(CookieUtils.SHOP_LIST_COOKIE_NAME, productId);
+            this.synchronizeShopList(true);
+        },
+
+        clearAll: function () {
+            CookieUtils.remove(CookieUtils.SHOP_LIST_COOKIE_NAME);
+            ShopListStorageUtils.clearAll();
+            ShopListUtils.synchronizeShopList(true);
+            CookieUtils.setLastConfirmedRegionId(CookieUtils.getRegionId(), true);
+        },
+
+        myAccountUpdateShopList: function () {
+            var $shopListWrapper = $('[data-js-lk-shoplist]');
+            if (!$shopListWrapper || $shopListWrapper.length === 0) {
+                return;
+            }
+            $.ajax({
+                    url: globalConfig.shoppingListAjaxHref,
+                    context: this,
+                    success: function (model) {
+                        var resultHtml = '';
+                        var products = model.products.slice(0, 3);
+                        if (products && products.length !== 0) {
+                            products = products.slice(0, 3);
+                            products.forEach(function (product) {
+                                var photoUrl = ProductPictureUtils.getUrl(product, 48, 48);
+                                resultHtml += '<div class="lk-main-menu__products-item">';
+                                resultHtml += '<div class="lk-main-menu__products-picture-container">';
+                                resultHtml += '<img class="lk-main-menu__products-picture" src="' + photoUrl + '" ';
+                                if (product.displayedName) {
+                                    resultHtml += 'alt="' + product.displayedName + '" ';
+                                    resultHtml += 'title="' + product.displayedName + '"';
+                                }
+                                resultHtml += '></div></div>';
+                            });
+                            globalConfig.aemServiceLayer.gtmCreateAndSendProducts(products, 'ShoppingList');
+                        }
+                        $shopListWrapper.html(resultHtml);
+                        $shopListWrapper.find('.lk-main-menu__products-picture').tooltip({});
+                        $shopListWrapper.parent().find('.spinner-ajax').removeClass('loading');
+                    }
+                }
+            );
+        },
+
+        addToShopList: function(product, count) {
+            /* Update in cookie */
+            var oldCount = StorageUtils.getStorageItemCount(CookieUtils.SHOP_LIST_COOKIE_NAME, product.article);
+            StorageUtils.updateStorage(CookieUtils.SHOP_LIST_COOKIE_NAME, product.article, oldCount + count);
+
+            /* Update in local storage */
+            var storedProduct = ShopListStorageUtils.getProduct(product.article);
+            if(!storedProduct) {
+                ShopListStorageUtils.addProduct(product);
+                storedProduct = product;
+            }
+            if (!storedProduct.familyIds && product.familyIds) {
+                ShopListStorageUtils.updateProductFamily(product.article, product.familyIds, product.familyNames);
+            }
+            if (product.priceTypeModel) {
+                ShopListStorageUtils.updatePriceTypeModel(product.article, product.priceTypeModel);
+            }
+        },
+
+        setShoppingListTotalPrice: function (price) {
+            $(this.unparsedSumSelector).attr('data-unparsed-sum', PriceUtils.getPriceData(price).join('.'));
+        },
+
+        getShoppingListTotalPrice: function () {
+            return $(this.unparsedSumSelector).attr('data-unparsed-sum');
+        }
+    };
+})();
+
+var jQueryDataUtils = {
+
+    exclude: function (elementSelector, key, productId) {
+        var data = $(elementSelector).data(key),
+            filteredData = _.filter(data, function (item) {
+                return item.article != productId;
+            });
+        $(elementSelector).data(key, filteredData);
+    }
+};
+var UrlUtils = {
+    getParameter: function (url, name) {
+        if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(url))
+            return decodeURIComponent(name[1]);
+    },
+
+    getParameters: function () {
+        var url = location.href;
+        if (!url.includes('?')) {
+            return [];
+        }
+        var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+        queryString = decodeURIComponent(queryString);
+        var paramsMap = queryString.replace(/(^\?)/, '').split("&")
+            .map(function (n) {
+                if (n !== 'undefined')
+                return n = n.split("="), this[n[0]] = n[1], this
+            }.bind({}))[0];
+
+        var result = [];
+
+        _.mapObject(paramsMap, function (val, key) {
+            result.push({name: key, value: val});
+        });
+
+        return result;
+    },
+
+    getRequestParamsFromStr: function (url) {
+        var res = {}, hash, hashes;
+
+        if (_.isNotUndefined(url) && url.indexOf('?') > -1) {
+            hashes = url.slice(url.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                res[hash[0]] = decodeURI(hash[1]);
+            }
+        } else {
+            res = undefined;
+        }
+
+        return res;
+    }
+};
+
+var StorageUtils = {
+
+    /**
+     * Parse and split storage item by separator (:).
+     *
+     * @param {String} str storage item string.
+     * @returns {Object} product object.
+     */
+    parseStorageItem: function (str) {
+        var array = str.split(':');
+        return {article: array[0], count: parseFloat(array[1])};
+    },
+
+    /**
+     * Check exist product in storage.
+     *
+     * @param {String} key     storage key.
+     * @param {String} article product article.
+     * @returns {boolean} flag exists or not.
+     */
+    isObjectInStorage: function (key, article) {
+        var item = this.getStorageItem(key, article);
+        return _.isNotUndefined(item);
+    },
+
+    /**
+     * Get cookie product obj by key and article.
+     *
+     * @param {String} key       cookie name.
+     * @param {String} article   product article.
+     * @returns {Object|undefined} return product obj if item exists in storage by key or it's doesn't exists,
+     * return undefined.
+     */
+    getStorageItem: function (key, article) {
+        var storage;
+        if (key.includes(CookieUtils.SHOP_LIST_COOKIE_NAME) || key.includes(CookieUtils.CART_INFO)) {
+            storage = this.getTransitStorage(key);
+        } else {
+            storage = this.getCommonStorage(key);
+        }
+        if (_.isNotUndefined(storage)) {
+            return _.find(storage, function (obj) {
+                return obj.article === article;
+            });
+        } else {
+            return undefined;
+        }
+    },
+
+    /**
+     * Get simple cookie product's obj by key.
+     *
+     * @param {String} key       cookie name
+     * @returns {Array<Object>} array of products.
+     */
+    getCommonStorage: function (key) {
+        var storage = CookieUtils.getAsArray(key),
+            self = this;
+        return _.map(storage, function (item) {
+            return self.parseStorageItem(item);
+        });
+    },
+
+    /**
+     * Get cartInfo or shoppingList cookie.
+     *
+     * @param {String} key cookie name.
+     * @returns {Array<Object>} products array.
+     */
+    getTransitStorage: function (key) {
+        var storage = CookieUtils.getTransitCookie(key);
+        return storage.products;
+    },
+
+    /**
+     * Get storage items by ids.
+     *
+     * @param {String} key cookie key.
+     * @returns {Array<Object>} array of products objects.
+     */
+    getStorageItemsIds: function (key) {
+        var storage = CookieUtils.getTransitCookie(key),
+            products = storage.products,
+            productsArr = _.isNotEmpty(products) ? products : [];
+
+        return _.map(productsArr, function (item) { return item.article });
+    },
+
+    /**
+     * Get storage product count.
+     *
+     * @param {String} key storage key.
+     * @param {String} article product article.
+     * @returns {number} count of product.
+     */
+        getStorageItemCount: function (key, article) {
+        var item = this.getStorageItem(key, article);
+        return item ? item.count : 0;
+    },
+
+    /**
+     * Check need update products in storage.
+     *
+     * @param {String} key     storage key.
+     * @param {String} article product article.
+     * @param {Object} value   value.
+     * @returns {boolean} flag true or false.
+     */
+    needUpdateItemInStorage: function (key, article, value) {
+        var item = this.getStorageItem(key, article);
+        return item && item.count !== value;
+    },
+
+    /**
+     * Get storage item as string.
+     *
+     * @param {String} key     storage key.
+     * @param {String} article product article.
+     * @returns {String|undefined} storage item as string or if this doesn't exists, return undefined.
+     */
+    getStorageItemAsStr: function (key, article) {
+        var shopCart = CookieUtils.getTransitCookie(key);
+        return _.find(shopCart.products, function (product) {
+            return _.isNotUndefined(product) || _.isNotEmpty(product) ? article === product.article : false;
+        });
+    },
+
+    /**
+     * Update storage.
+     *
+     * @param {String} key     storage name.
+     * @param {String} article product article.
+     * @param {Number} count   product count.
+     * @param {Object} params  params.
+     */
+    updateStorage: function (key, article, count, params) {
+        var oldCount = StorageUtils.getStorageItemCount(CookieUtils.SHOP_LIST_COOKIE_NAME, article),
+            array = CookieUtils.getTransitCookie(key),
+            listItem = StorageUtils.getStorageItemAsStr(key, article),
+            $catalogProductList = $('[data-js-catalog-product-list]'),
+            promo = CommonGAUtils.isPromo($catalogProductList, /\bpredlozhenie-ogranicheno\b/);
+
+        if (_.isUndefined(listItem)) {
+            array.products.push({article: article, count: count});
+        } else {
+            var index = _.findIndex(array.products, function (obj) {
+                return article === obj.article;
+            });
+            array.products[index].count = count;
+        }
+
+        CookieUtils.setTransitCookie(key, array);
+        if (CookieUtils.SHOP_LIST_COOKIE_NAME === key) {
+            this.synchronizeShopList(!listItem);
+        }
+
+        // GTM
+        if (_.isUndefined(params) || params.noGTM) {
+            return;
+        }
+
+        var selector = params.selector,
+            $gtmRoot = _.isNotUndefined(selector) ? $(selector) : $('[data-ga-root][data-product-id=' + article + ']'),
+            place = _.isNotUndefined(params.place) ? params.place : $gtmRoot.data('place'),
+            quantity = NumberUtils.subtract(count, oldCount);
+
+        if (quantity > 0) {
+            globalConfig.aemServiceLayer.gtmEventPush('wishlist-add', {root: $gtmRoot, count: quantity, place: place, promo: promo});
+        } else if (quantity < 0) {
+            globalConfig.aemServiceLayer.gtmEventPush('wishlist-remove', {root: $gtmRoot, count: -quantity, place: place, promo: promo});
+        }
+    },
+
+    /**
+     * Remove products in storage by ids.
+     *
+     * @param {String} key cookie name.
+     * @param {Array<String>|String} ids ids of products.
+     */
+    removeByIds: function (key, ids) {
+        var productArray = CookieUtils.getTransitCookie(key),
+            removeIds;
+        if ($.isArray(ids)) {
+            removeIds = ids;
+        } else {
+            removeIds = ids.split(' ');
+        }
+        for (var j = 0; j < removeIds.length; j++) {
+            var item = this.getStorageItemAsStr(key, removeIds[j]);
+            if (item) {
+                productArray.products = _.filter(productArray.products, function(p) {
+                    return p.article !== item.article;
+                });
+            }
+        }
+        if (productArray.products.length !== 0) {
+            CookieUtils.setTransitCookie(key, productArray);
+        } else {
+            CookieUtils.removeAllTransitCookie(key);
+        }
+    },
+
+    /**
+     * Synchronize shopping list.
+     *
+     * @param {Boolean} withoutWaiting flag.
+     */
+    synchronizeShopList: function (withoutWaiting) {
+        if (withoutWaiting) {
+            CustomerSyncUtils().synchronizeShopListRun();
+        } else {
+            CustomerSyncUtils().debounceSynchronizeShopList();
+        }
+    }
+};
+
+var PriceUtils = {
+
+    getPriceData: function (price) {
+        if (price) {
+            var priceData = price.toString().split('.');
+            if (!priceData[1]) {
+                priceData[1] = '00';
+            }
+            if (priceData[1].length == 1) {
+                priceData[1] = priceData[1] + '0';
+            }
+            return priceData;
+        } else {
+            return ['0', '00'];
+        }
+    },
+
+    formatPrice : function(price) {
+        if (price === undefined) {
+            return '';
+        }
+        var parts = price.toString().split('.');
+        if (parts.length === 1) {
+            return price + ',00';
+        } else {
+            return (parts[1].length === 1 ? price + '0' : price).replace('.', ',');
+        }
+    },
+
+    getPriceStr: function (value) {
+        var priceArr = this.getPriceData(value),
+            priceFract = priceArr[1],
+            priceInt = NumberUtils.formatSum(priceArr[0]);
+
+        return priceInt + ',' + priceFract;
+    },
+
+    getWeightStr: function (value) {
+        var weightArr = this.getPriceData(value);
+        return NumberUtils.formatSum(weightArr[0]) + ',' + weightArr[1];
+    },
+
+    getProductPrice: function (product) {
+        var price;
+        var priceUnit;
+        var altPrice;
+        var altPriceUnit = "";
+
+        if (product.secondPriceOrCalculate) {
+            price = {left: product.formattedPriceInt, right: product.priceFractional};
+            priceUnit = product.priceUnit;
+            altPrice = {left: product.formattedSecondaryPriceInt, right: product.secondPriceFractional};
+            altPriceUnit = product.secondPriceUnit;
+        } else {
+            price = {left: product.formattedPriceInt, right: product.priceFractional};
+            priceUnit = product.priceUnit;
+        }
+
+        return {
+            price: price,
+            priceUnit: priceUnit,
+            altPrice: altPrice,
+            altPriceUnit: altPriceUnit
+        }
+    }
+
+};
+
+var CustomerSyncUtils = (function () {
+
+    return {
+        debounceSynchronizeShopList: $.debounce(1000, function () {
+            CustomerSyncUtils().synchronizeShopListRun();
+        }),
+
+        synchronizeShopListRun: function () {
+            if (!CookieUtils.isUserAuth()) {
+                return;
+            }
+            $.ajax({
+                type: 'POST',
+                url: $('.shop-list-synchronization').data("action"),
+                data: CookieUtils.getAsArray(CookieUtils.SHOP_LIST_COOKIE_NAME)
+            });
+        }
+    }
+});
+
+var ProductUtils = {
+
+    getProductWord: function (quantity, descr) {
+      return  I18nUtils.getNumEnding(quantity, [
+            I18nUtils.get('in ' + descr + ' {0} products ((1))', quantity),
+            I18nUtils.get('in ' + descr + ' {0} products ((2))', quantity),
+            I18nUtils.get('in ' + descr + ' {0} products ((5))', quantity)]);
+    },
+
+    getMainPhoto: function (product) {
+        if (_.isUndefined(product)) {
+            return globalConfig.defaultPhoto;
+        }
+        if (checkObject(product.mainPhoto)) {
+            return product.mainPhoto;
+        } else if (checkObject(product.firstPhoto)) {
+            return product.firstPhoto;
+        } else {
+            return globalConfig.defaultPhoto;
+        }
+    },
+
+    plus: function (accumulator, value) {
+        if (_.isUndefined(accumulator) || _.isUndefined(value)) {
+            return 0;
+        }
+        var a = parseFloat(accumulator),
+            b = parseFloat(value);
+
+        var res = parseFloat((a + b).toFixed(2));
+        if (res % 1 == 0) {
+            res = parseInt(res, 10);
+        }
+
+        return res;
+    },
+
+    multiple: function (value, multiplier, precision) {
+        if (_.isUndefined(value) || _.isUndefined(multiplier)) {
+            return 0;
+        }
+
+        var val =
+                !_.isNumber(value)
+                    ? value.replaceAll(',', '.')
+                    : value,
+            mult =
+                !_.isNumber(multiplier)
+                    ? multiplier = multiplier.replaceAll(',', '.')
+                    : multiplier,
+            res =
+                parseFloat((parseFloat(val) * parseFloat(mult))
+                    .toFixed(_.isNotUndefined(precision) ? precision : 2));
+
+        return res % 1 === 0
+            ? parseInt(res, 10)
+            : res;
+    },
+
+    /**
+     * Validate product quantity.
+     *
+     * @param {Number} quantity product quantity
+     * @return {Number}
+     */
+    validateQuantity: function (quantity) {
+        if (quantity > 999) {
+            quantity = 999;
+        }
+        return quantity;
+    },
+
+    /**
+     * Get product new quantity (event add product to basket|shopList).
+     *
+     * @param {Object} params
+     * @param {string} params.productId
+     * @param {string} params.modelType
+     * @param {*} params.value increment value
+     *
+     * @return {Number} new product quantity
+     */
+    getProductNewQuantity: function (params) {
+        var productId = params.productId,
+            product = {},
+            modelType = params.modelType,
+            incrementValue = params.value,
+            articleField = '',
+            quantityField = '',
+            cookie = {},
+            productQuantity = 0,
+            newQuantity = 0;
+
+        if (_.isNotUndefined(incrementValue) && _.isString(incrementValue)) {
+            incrementValue = incrementValue.replace(',', '.');
+        }
+
+        incrementValue = Number(incrementValue);
+        incrementValue = _.isNaN(incrementValue) ? 1 : incrementValue;
+
+        if (modelType === 'basket') {
+            cookie = CookieUtils.getTransitCookie('cartInfo');
+            articleField = 'code';
+            quantityField = 'quantity';
+        } else {
+            cookie = CookieUtils.getTransitCookie('shoppingList');
+            articleField = 'article';
+            quantityField = 'count';
+        }
+
+        product = _.find(cookie.products, function (item) {
+            return item[articleField] === productId;
+        });
+
+        productQuantity = checkObject(product) ? product[quantityField] : 0;
+
+        newQuantity = ProductUtils.plus(productQuantity, incrementValue);
+
+        return this.validateQuantity(newQuantity);
+    },
+
+    getPriceMarkup: function (productPrice, currencyCode) {
+        var priceData = PriceUtils.getPriceData(productPrice),
+            html;
+        html = '<span class="price-int">' + NumberUtils.formatSum(priceData[0]) + '</span>';
+        html += '<span class="price-separator">,</span>';
+        html += '<span class="price-fractional">' + priceData[1].substring(0,2) + '</span>';
+        if (currencyCode) {
+            html += '<span class="price-currency"> ' + I18nUtils.get(currencyCode) + '</span>';
+        } else {
+            html += '<span class="price-currency currency">' + I18nUtils.get('currency') + '</span>';
+        }
+
+        return html;
+    },
+
+    calcProductPrice: function (product, count) {
+        if (product.priceInt && count) {
+            var productPrice = parseFloat(product.priceInt + '.' + product.priceFractional),
+                value = productPrice * count;
+            return parseFloat(value.toFixed(2));
+        }
+        return null;
+    },
+
+    getQuantityPos: function (quantity) {
+        if (0 === quantity) {
+            return I18nUtils.get('quantity.zero');
+        }
+        return  I18nUtils.getNumEnding(quantity, [
+            I18nUtils.get('quantity ((1))', quantity),
+            I18nUtils.get('quantity ((2))', quantity),
+            I18nUtils.get('quantity ((5))', quantity)]);
+    },
+
+    calcAllProductPrice: function (selector, cookieName) {
+        var products = $(selector).data('products'),
+            result = 0;
+        if (!products) {
+            return result;
+        }
+        for (var j = 0; j < products.length; j++) {
+            var product = products[j],
+                count = this.getProductCount(product.article, cookieName);
+
+            if (product && product.priceInt && count) {
+                result = parseFloat((result + this.calcProductPrice(product, count)).toFixed(2));
+            }
+        }
+        return result;
+    },
+
+    getProductCount: function (productId, cookieName) {
+        var product = StorageUtils.getStorageItem(cookieName, productId);
+        return product ? product.count : 0;
+    },
+
+    getProductsCount: function (popupSelector, cookieName) {
+        var count = 0,
+            products = $(popupSelector).data('products');
+        if (!products) {
+            return count;
+        }
+        for (var j = 0; j < products.length; j++) {
+            var obj = StorageUtils.getStorageItem(cookieName, products[j].article);
+            if (obj) {
+                count += obj.count;
+            }
+        }
+        return count;
+    },
+
+    getBasketPopupProperties: function (params) {
+        var popUpSettings = _.extend({}, mainConfigPopUp);
+        popUpSettings.src = params.ajaxHref;
+        popUpSettings.type = 'ajax';
+
+        popUpSettings.image = {
+           preload : 'auto'
+        };
+
+        popUpSettings.ajax = {
+             settings: {
+                 animationEffect : true,
+                 data: {
+                     type: 'GET',
+                     cache: false,
+                     productId: params.productId,
+                     storeCode: params.storeCode
+                 }
+             }
+        };
+
+        return popUpSettings;
+    },
+
+    setCountryCharacteristic: function() {
+        var map = $('.product-detailed-page, .product-quick-view').data('source-countries-map');
+        if (_.isUndefined(map)) {
+            $('.source-country-line').addClass('hidden');
+            return;
+        }
+        var defaultStoreId = globalConfig.defaultStoreId,
+            defaultStoreCountry, country = '';
+
+        if (_.isNotUndefined(defaultStoreId)) {
+            defaultStoreCountry = map[defaultStoreId];
+        }
+
+        if (_.isNotUndefined(defaultStoreCountry)) {
+            country = defaultStoreCountry;
+        } else {
+            country = map['global'];
+        }
+
+        if (_.isNotUndefined(country)) {
+            $('.characteristics-property').find('.source-country-replace').html(country);
+        } else {
+            $('.source-country-line').addClass('hidden');
+        }
+    },
+
+    cutUnavailableDisplayedName: function () {
+        $('.unavailable-products-wrapper .card-item-unavailable .card-item-name').each(function () {
+            var $this = $(this),
+                name = $this.text(),
+                cutName = $.trim(name),
+                heightEl = parseInt($this.css('height'), 10);
+            if (heightEl > 40) {
+                $this.text(cutName.slice(0, 25) + '...');
+            }
+        });
+    }
+};
+
+var LocalStorageUtils = {
+
+    CHECKOUT_SESSION_CART: 'checkoutSessionCart',
+
+    BASKET_PRODUCTS_GTM: 'basketProductsGTM',
+
+    getAnswer: function () {
+        return localStorage.getItem('answerJson');
+    },
+
+    getErrorCode: function () {
+        return localStorage.getItem('errorCode');
+    },
+
+    checkLocalStorageAvalible: function () {
+        return (typeof localStorage !== 'undefined');
+    },
+
+    setJSONParam: function (paramName, param) {
+        if (this.checkLocalStorageAvalible()) {
+            localStorage.setItem(paramName, JSON.stringify(param));
+        } else {
+            $.cookie.json = true;
+            $.cookie(paramName, param, {
+                expires: 3654,
+                path: CookieUtils.STANDARD_PATH,
+                domain: CookieUtils.getDomain()
+            });
+            $.cookie.json = false;
+        }
+    },
+
+    getJSONParam: function (paramName) {
+        if (this.checkLocalStorageAvalible()) {
+            return localStorage.getItem(paramName);
+        } else {
+            return $.cookie(paramName);
+        }
+    },
+    
+    getJSON: function (paramName) {
+        var JsonString = this.getJSONParam(paramName);
+        return (JsonString)? JSON.parse(JsonString) : null;
+    },
+    
+    removeStoredItem: function (paramName) {
+        if (this.checkLocalStorageAvalible()) {
+            return localStorage.removeItem(paramName);
+        } else {
+            return $.removeCookie(paramName);
+        }
+    },
+
+    getBasketProducts: function () {
+        var result = [],
+            obj = this.getJSON(this.BASKET_PRODUCTS_GTM);
+        if (obj && obj.ecommerce && obj.ecommerce.checkout
+            && obj.ecommerce.checkout.products) {
+            result = obj.ecommerce.checkout.products;
+        }
+        return result;
+    },
+
+    updateCheckoutSessionCart: function (products) {
+        this.setJSONParam(this.CHECKOUT_SESSION_CART, products);
+    },
+
+    getCheckoutSessionCart: function () {
+        return this.getJSON(this.CHECKOUT_SESSION_CART);
+    }
+};
+
+var BasketUtils = (function () {
+    return {
+        /**
+         * Move products to shop list.
+         *
+         * @param {Object} params
+         * @param {Array.<Object>} params.opusProducts
+         * @param {Array.<String>} params.movedProductIds
+         * @param {boolean} params.updateUI
+         */
+        moveProductsToShopList: function (params) {
+            var opusProducts = params.opusProducts,
+                movedProductIds = params.movedProductIds,
+                updateUI = params.updateUI,
+                basketCookie = CookieUtils.getBasketCookie();
+
+            if (_.isEmpty(opusProducts)) {
+                return;
+            }
+            _.each(opusProducts, function (product) {
+                if (movedProductIds.includes(product.article)) {
+                    var id = product.article,
+                        quantity = product.quantity ? parseFloat(product.quantity) : 1,
+                        storageItem = StorageUtils.getStorageItem(CookieUtils.SHOP_LIST_COOKIE_NAME, id),
+                        cartProduct = _.find(basketCookie.products, function (item) {
+                            return item.code === id;
+                        });
+
+                    if (_.isNotUndefined(cartProduct)) {
+                        quantity = cartProduct.quantity;
+                    }
+
+                    if (checkObject(storageItem)) {
+                        quantity = parseFloat(storageItem.count) + quantity;
+                    }
+
+                    quantity = ProductUtils.validateQuantity(quantity);
+
+                    StorageUtils.updateStorage(CookieUtils.SHOP_LIST_COOKIE_NAME, id, quantity, {noGTM: true});
+                    ShopListStorageUtils.addProduct(product);
+                }
+            });
+
+            ShopListUtils.synchronizeShopList(true);
+            if (updateUI) {
+                $('.shop-list-wrapper .shop-list-content .shopping-list').trigger('*:reloadContent');
+            }
+        },
+
+        updateCartInfo: function (productId, quantity) {
+            if (!this.needUpdateCartInfo(productId, quantity)) {
+                return;
+            }
+            var productQuantity = parseFloat(quantity),
+                cartInfo = CookieUtils.getBasketCookie();
+
+            if (_.isUndefined(cartInfo)) {
+                cartInfo = {products: [{code: productId, quantity: productQuantity}]};
+            } else {
+                var product = _.find(cartInfo.products, function (item) {
+                    return item.code === productId;
+                });
+                if (product) {
+                    product.quantity = productQuantity;
+                } else {
+                    cartInfo.products.push({code: productId, quantity: productQuantity});
+                }
+            }
+            this.saveCartInfoChanges(cartInfo);
+        },
+
+        getBasketProductsId: function () {
+            var cartInfo = CookieUtils.getBasketCookie();
+
+            return _.isUndefined(cartInfo) || cartInfo.products.length === 0
+                ? []
+                : _.map(cartInfo.products, function (product) {
+                    return product.code;
+                });
+        },
+
+        getBasketProductsCount: function () {
+            var cartInfo = CookieUtils.getBasketCookie(),
+                count = 0;
+            if (checkObject(cartInfo) && _.isNotUndefined(cartInfo.products)) {
+                count = cartInfo.products.reduce(function (product) {
+                    return ProductUtils.plus(count, product.quantity);
+                });
+            }
+            return count;
+        },
+
+        showBasketProductsCount: function () {
+            var basketProductsCount = this.getBasketProductsCount(),
+                $cardQuickQt = $('.icon-basket .card-quick-qt');
+            if (basketProductsCount !== 0) {
+                if (!bootstrapGridCheck.isXs()) {
+                    $cardQuickQt.html(basketProductsCount);
+                } else {
+                    $cardQuickQt.html('');
+                }
+                $cardQuickQt.addClass('active');
+            } else {
+                $cardQuickQt.removeClass('active');
+            }
+        },
+
+        saveCartInfoChanges: function (cartInfo) {
+            if (cartInfo && cartInfo.products && !cartInfo.products.length) {
+                CookieUtils.removeTransactionId();
+            }
+            CookieUtils.setBasketCookie(cartInfo);
+
+            document.dispatchEvent(new CustomEvent('basket:update'));
+            $.event.trigger({
+                type: "basket:basket-changed",
+                newCartInfo: CookieUtils.getBasketCookie('id')
+            });
+        },
+
+        removeCartItem: function (productId) {
+            var cartInfo = CookieUtils.getBasketCookie();
+            if (_.isUndefined(cartInfo)) {
+                return;
+            }
+            cartInfo.products = _.filter(cartInfo.products, function (item) {
+                return item.code !== productId;
+            });
+            this.saveCartInfoChanges(cartInfo);
+            $('.basket-page .basket-item.item-code-' + productId).remove();
+        },
+
+        needUpdateCartInfo: function (productId, quantity) {
+            var cartInfo = CookieUtils.getBasketCookie();
+            if (_.isUndefined(cartInfo)) {
+                return true;
+            }
+            var product = _.find(cartInfo.products, function (item) {
+                return item.code === productId;
+            });
+            if (checkObject(product)) {
+                if (parseFloat(product.quantity) !== parseFloat(quantity)) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+            return false;
+        },
+
+        isFloat: function isFloat(n) {
+            return Number(n) === n && n % 1 !== 0;
+        },
+
+        createMeasuresSettings: function createMeasuresSettings($el) {
+            return {
+                delta: Number($el.attr('data-unit-step')),
+                initValue: this.isFloat(Number($el.attr('data-unit-step'))) ? 1.0 : 1,
+                maxValue: Number($el.attr('data-unit-max')),
+                minValue: Number($el.attr('data-unit-min'))
+            }
+        },
+
+        removeFromShopList: function (productId) {
+            StorageUtils.removeByIds(CookieUtils.SHOP_LIST_COOKIE_NAME, productId);
+            $('.shop-list-wrapper .shop-list-content .shopping-list').trigger('*:reloadContent');
+        },
+
+        getProductData: function (productId) {
+            if (_.isUndefined(productId)) {
+                return {};
+            }
+            var cartInfo = CookieUtils.getBasketCookie(),
+                products = _.isNotUndefined(cartInfo.products) ? cartInfo.products : [],
+                product = _.find(products, function (cartInfoProduct) {
+                    return cartInfoProduct.code === productId;
+                });
+            return _.isNotUndefined(product) ? {
+                quantity: product.quantity,
+                stock: product.stock
+            } : {};
+        },
+
+        getSelectedDelivery: function () {
+            var self = this,
+                checkoutResponse = BasketPage.getStartCheckoutResponse(),
+                currentDeliveryMode = BasketPage.getCurrentDeliveryMode(),
+                result;
+
+            if (!checkObjectKey(checkoutResponse, 'deliveries')) {
+                return undefined;
+            }
+
+            var opusProducts = BasketProducts.getOpusProducts();
+
+            result = _.find(checkoutResponse.deliveries, function (delivery) {
+                return currentDeliveryMode === delivery.deliveryMode;
+            });
+
+            if (_.isNotUndefined(result)) {
+                $.extend(result, self.syncUnavailableProductsWithOpusData(result, opusProducts));
+            }
+
+            return result;
+        },
+
+        getCheckoutTotalInfo: function () {
+            var checkoutResponse = BasketPage.getStartCheckoutResponse(),
+                result = {
+                    availableCount: 0, unavailableCount: 0, amountProducts: 0,
+                    amountDelivery: 0,
+                    totalWeight: 0, totalAmount: 0
+                };
+
+            if (_.isUndefined(checkoutResponse)) {
+                return result;
+            }
+
+            var selectedDelivery = this.getSelectedDelivery();
+
+            if (_.isUndefined(selectedDelivery)) {
+                return result;
+            }
+
+            var
+                totalAmount,
+                totalWeight,
+                availables,
+                unavailableType1,
+                unavailableType2,
+                values = selectedDelivery;
+            availables = values.availableProducts;
+            unavailableType1 = values.unavailableType1;
+            unavailableType2 = values.unavailableType2;
+            totalAmount = values.totalAmount;
+            totalWeight = values.totalWeight;
+
+            result.availableCount = availables.length;
+            result.unavailableCount = _.isUndefined(selectedDelivery) ? unavailableType1.length + unavailableType2.length
+                : values.unavailableProducts.length;
+            result.amountProducts = totalAmount.amountProducts;
+            result.amountDelivery = totalAmount.amountDelivery;
+            result.totalAmount = totalAmount.totalAmount;
+            result.totalWeight = totalWeight;
+
+            return result;
+        },
+
+        getUnavailableProducts: function () {
+            var selectedDelivery = this.getSelectedDelivery();
+            if (!selectedDelivery) {
+                return [];
+            }
+            return selectedDelivery.unavailableProducts;
+        },
+
+        getPvzMaxWeight: function () {
+            return _.isNotUndefined(globalConfig.pvzMaxWeight) ? globalConfig.pvzMaxWeight : '';
+        },
+
+        checkWeightExceeded: function () {
+            var selectedDelivery = this.getSelectedDelivery(),
+                checkoutResponse = BasketPage.getStartCheckoutResponse();
+            if (_.isNotUndefined(selectedDelivery) && selectedDelivery.deliveryMode === 'PICKUP_POINT'
+                && _.isNotUndefined(checkoutResponse) && _.isNotUndefined(checkoutResponse.warnings)) {
+                return _.some(checkoutResponse.warnings, function (w) {
+                    return w.code === '307';
+                });
+            }
+            return false;
+        },
+
+        getNextStep: function () {
+            var checkoutResponse = BasketPage.getStartCheckoutResponse();
+            if (_.isUndefined(checkoutResponse) || _.isUndefined(checkoutResponse.steps)) {
+                return undefined;
+            }
+            return _.find(checkoutResponse.steps, function (step) {
+                return 'NEXT' === step.type && step.title;
+            });
+        },
+
+        getAmountDelivery: function () {
+            var total = this.getCheckoutTotalInfo(),
+                amountDelivery = total.amountDelivery;
+
+            if (_.isUndefined(amountDelivery) || _.isEmpty(amountDelivery)) {
+                return undefined;
+            }
+
+            var value = parseFloat(amountDelivery);
+
+            if (value === 0) {
+                var selectedDelivery = this.getSelectedDelivery();
+                if (_.isNotUndefined(selectedDelivery)) {
+                    switch (selectedDelivery.deliveryMode) {
+                        case 'HOME_DELIVERY':
+                            return I18nUtils.get('basket.not-calculated');
+                        case 'PICKUP_POINT':
+                            return I18nUtils.get('basket.not-calculated');
+                        case 'PICKUP':
+                            return I18nUtils.get('basket.total-free');
+                        default:
+                            return value;
+                    }
+                }
+            }
+            return parseFloat(value.toFixed(2));
+        },
+
+        getCartProduct: function (productId) {
+            var cartInfo = CookieUtils.getBasketCookie();
+            if (checkObject(cartInfo) && _.isNotUndefined(cartInfo.products)) {
+                return _.find(cartInfo.products, function (item) {
+                    return item.code === productId;
+                });
+            }
+        },
+
+        checkOrderButtonActive: function () {
+            var selectedDelivery = this.getSelectedDelivery();
+            return _.isNotUndefined(selectedDelivery) && _.isNotEmpty(selectedDelivery.availableProducts)
+                && selectedDelivery.available && !this.checkWeightExceeded();
+        },
+
+        sortProducts: function (products, cartInfoOrder) {
+            if (_.isUndefined(products) || _.isEmpty(cartInfoOrder)) {
+                return products;
+            }
+
+            return products.sort(function (a, b) {
+                var indA = cartInfoOrder[a.productId],
+                    indB = cartInfoOrder[b.productId];
+
+                if (indA < indB) {
+                    return -1;
+                }
+                if (indA > indB) {
+                    return 1;
+                }
+                return 0;
+            });
+        },
+
+        getCartInfoOrder: function () {
+            var cartInfo = CookieUtils.getBasketCookie(),
+                products = _.isNotUndefined(cartInfo) && !_.isEmpty(cartInfo.products) ? cartInfo.products : [],
+                result = {};
+            var j = 0;
+            _.each(products, function (item) {
+                result[item.code] = j;
+                j++;
+            });
+            return result;
+        },
+
+        getBasketTotalPrice: function () {
+            return $('[data-js-basket-sum]').attr('data-unparsed-sum');
+        },
+
+        checkAvailabilityInAnyDelivery: function (params) {
+            var productId = params.productId,
+                currentDeliveryMode = params.currentDeliveryMode,
+                deliveries = params.deliveries;
+
+            var availables = [], unavailables = [];
+
+            for (var deliveryCode in deliveries) {
+                if (!deliveries.hasOwnProperty(deliveryCode) || deliveryCode === currentDeliveryMode) {
+                    continue;
+                }
+                var delivery = deliveries[deliveryCode];
+                availables = availables.concat(Object.keys(delivery.availables));
+                unavailables = unavailables.concat(delivery.unavailables);
+            }
+
+            var found = _.contains(availables, productId);
+
+            if (found) {
+                return true;
+            }
+
+            found = _.some(unavailables, function (item) {
+                return item.productId === productId && (item.reason === 'STOCK' && parseFloat(item.stock) > 0
+                    || item.reason === 'WEIGHT_EXCEEDED');
+            });
+
+            return found;
+        },
+
+        findProductInDelivery: function (params) {
+            var productId = params.productId,
+                deliveriesMap = params.deliveriesMap,
+                findInAvailables = params.findInAvailables,
+                predicate = params.predicate;
+
+            for (var deliveryCode in deliveriesMap) {
+                if (deliveriesMap.hasOwnProperty(deliveryCode)) {
+                    var delivery = deliveriesMap[deliveryCode],
+                        obj = _.property(productId)(findInAvailables ? delivery.availables : delivery.unavailables);
+
+                    if (_.isNotUndefined(obj) && _.isNotUndefined(predicate)) {
+                        var res = predicate.apply(null, [obj]);
+                        if (res) {
+                            return obj;
+                        }
+                    }
+                }
+            }
+            return undefined;
+        },
+
+        transformCheckoutResponse: function () {
+            var checkoutResponse = BasketPage.getStartCheckoutResponse();
+            if (_.isUndefined(checkoutResponse) && _.isUndefined(checkoutResponse.deliveries)) {
+                return;
+            }
+            var result = {deliveries: {}},
+                deliveries = checkoutResponse.deliveries;
+
+            _.each(deliveries, function (delivery) {
+                var obj = {code: delivery.deliveryMode, availables: {}, unavailables: {}};
+                result.deliveries[delivery.deliveryMode] = obj;
+                _.each(delivery.availableProducts, function (product) {
+                    obj.availables[product.productId] = product;
+                });
+                _.each(delivery.unavailableProducts, function (product) {
+                    obj.unavailables[product.productId] = product;
+                });
+            });
+
+            return result;
+        },
+
+        /**
+         * Check basket or shopList popup disable feature.
+         *
+         * @param code 'basket' or 'shop-list'
+         * @returns {boolean}
+         */
+        isDisablePopup: function (code) {
+            var prop = code === 'basket' ? globalConfig.disableBasketPopup : globalConfig.disableShopListPopup;
+            return 'true' === prop;
+        },
+
+        /**
+         * Find preferable delivery mode.
+         *
+         * @param {Array.<object>} deliveries
+         * @returns {string}
+         */
+        findPreferableDeliveryMode: function (deliveries) {
+            var result,
+                filteredDeliveries = _.chain(deliveries)
+                .filter(function (delivery) {
+                    return delivery.available;
+                })
+                .map(function (delivery) {
+                    return {
+                        deliveryMode: delivery.deliveryMode,
+                        availableCount: checkObjectKey(delivery, 'availableProducts')
+                            ? delivery.availableProducts.length
+                            : 0
+                    };
+                })
+                .value();
+
+            if (_.isNotEmpty(filteredDeliveries)) {
+                result = _.max(filteredDeliveries, function (item) {
+                    return item.availableCount;
+                });
+            } else {
+                result = _.first(deliveries);
+            }
+            return _.isNotUndefined(result) ? result.deliveryMode : '';
+        },
+
+        /**
+         * Find preferable delivery mode in target ids.
+         *
+         * @param {Array.<object>} deliveries
+         * @param {Array.<string>} targetIds
+         * @returns {string}
+         */
+        findPreferableDeliveryModeByIds: function (deliveries, targetIds) {
+            var self = this,
+                targetDeliveries;
+
+            targetDeliveries = _.filter(deliveries, function (item) {
+                return targetIds.includes(item.deliveryMode);
+            });
+
+            return self.findPreferableDeliveryMode(targetDeliveries);
+        },
+
+        /**
+         * Sync unavailable products with opus data.
+         * Leave unavailable products which exist in opus.
+         *
+         * @param {object} currentDelivery current delivery
+         * @param {Array.<Object>} opusProducts opus products
+         * @returns {Object}
+         */
+        syncUnavailableProductsWithOpusData: function(currentDelivery, opusProducts) {
+            var result = {unavailableProducts: []},
+                ids = _.map(opusProducts, function (item) {
+                    return item.article;
+                });
+                result.unavailableProducts = _.filter(currentDelivery.unavailableProducts, function (item) {
+                    return ids.includes(item.productId);
+                });
+            return result;
+        },
+
+        /**
+         * Is readonly.
+         *
+         * @param {boolean} unavailable  unavailable
+         * @param {string} reason       reason
+         * @param {Number} stock        stock
+         * @return {*|boolean}
+         */
+        isReadonly: function (unavailable, reason, stock) {
+            return unavailable && (reason === 'STOCK' && stock <= 0
+                || !_.contains(['WEIGHT_EXCEEDED', 'STOCK'], reason));
+        },
+
+        isBasketSyncEnabled: function () {
+            return globalConfig.bwsEnabled === 'true';
+        },
+
+        getDelta: function (mainList, list) {
+            return _.difference(mainList, list);
+        },
+
+        checkShowAuthPopup: function () {
+            if (CookieUtils.isShowAuthPopup()) {
+                var $basketPage = $('[data-js-basket-page]'),
+                    logoutUrl = $basketPage.attr('data-logout-url'),
+                    userAuth = CookieUtils.isUserAuth();
+
+                $('[data-mobile-not-auth]').toggleClass('hidden', userAuth);
+                $('[data-mobile-auth]').toggleClass('hidden', !userAuth);
+
+                $.ajax({
+                    url: logoutUrl,
+                    type: 'POST'
+                }).always(function () {
+                    var iframe = document.createElement('iframe');
+                    iframe.setAttribute('src', logoutUrl);
+                    $('[data-js-header-hidden]').append(iframe);
+
+                    Header.authModal();
+                    CookieUtils.remove(CookieUtils.SHOW_AUTH_POPUP);
+                });               
+
+                return true;
+            }
+            return false;
+        },
+
+        /**
+         * Check if products lists equal (ignoring products order)
+         *
+         * @param {Array.<Object>} listA
+         * @param {Array.<Object>} listB
+         * @returns {boolean}
+         */
+        areProductsListsEqual: function (listA, listB) {
+            function compare(product1, product2) {
+                var product1Id = product1.code;
+                var product2Id = product2.code;
+
+                return product2Id - product1Id;
+            }
+
+            return listA.length !== listB.length ?
+                false : _.isEqual(listA.slice().sort(compare), listB.slice().sort(compare));
+        }
+
+    };
+})();
+
+var AjaxUtils = {
+    parseResponse: function (response) {
+        try {
+           return $.parseJSON(response);
+        } catch (err) { }
+    }
+};
+
+var ProductPictureUtils = {
+
+    PATH_TO_REPLACE: "image/upload/",
+    DEFAULT_PARAMS: ",c_pad,b_white",
+    DEFAULT_PHOTO: ",d_photoiscoming.png/",
+
+    getUrl: function(product, width, height) {
+        var mainPhoto = ProductUtils.getMainPhoto(product);
+        if (_.isUndefined(mainPhoto) || _.isNull(mainPhoto)) {
+            mainPhoto = globalConfig.defaultPhoto;
+        }
+        return mainPhoto.replace(this.PATH_TO_REPLACE,
+            'image/upload/f_auto,q_auto,w_' + width + ',h_' + height + this.DEFAULT_PARAMS + this.DEFAULT_PHOTO);
+    }
+};
+
+var ShopListStorageUtils = (function () {
+    'use strict';
+
+    var syncInProcess = false;
+
+    return {
+        save: function (params) {
+            var products = params.products ? params.products : [],
+                groups = params.groups ? params.groups : [],
+                priceTypeModel = params.priceTypeModel,
+                amountPerDay = params.amountPerDay,
+                links = params.links,
+                productsBrands = params.productsBrands ? params.productsBrands : '';
+            localStorage.setItem('shopList', JSON.stringify({products: products}));
+            localStorage.setItem('shopListGroups', JSON.stringify(groups));
+            localStorage.setItem('priceTypeModel', JSON.stringify(priceTypeModel));
+            localStorage.setItem('amountPerDay', JSON.stringify(amountPerDay));
+            localStorage.setItem('links', JSON.stringify(links));
+            localStorage.setItem('shoppingListProductsBrands', JSON.stringify(productsBrands));
+        },
+
+        clearAll: function () {
+            this.setItem('shopList', {products: []});
+            this.setItem('priceTypeModel', {});
+        },
+
+        getItem: function (code) {
+            var item = undefined;
+            try {
+                item = JSON.parse(localStorage.getItem(code));
+            } catch (e) {
+            }
+            return item ? item : {};
+        },
+
+        setItem: function (code, obj) {
+            localStorage.setItem(code, JSON.stringify(obj));
+        },
+
+        addProduct: function (product) {
+            if (_.isNotUndefined(product)) {
+                var products = this.getProducts();
+                var found = _.find(products, function (item) {
+                    return item.article === product.article;
+                });
+                if (_.isUndefined(found)) {
+                    products.push(product);
+                    this.setItem('shopList', {products: products});
+                }
+            }
+        },
+
+        updateProductFamily: function (productId, familyIds, familyNames) {
+            var products = ShopListStorageUtils.getProducts();
+
+            var found = _.find(products, function (item) {
+                return item.article === productId;
+            });
+            if (_.isNotUndefined(found)) {
+                found.familyIds = familyIds;
+                found.familyNames = familyNames;
+                this.setItem('shopList', {products: products});
+            }
+        },
+
+        updatePriceTypeModel: function (productId, priceType) {
+            var item = this.getItem('priceTypeModel');
+            if (item && !item[productId]) {
+                item[productId] = priceType;
+            }
+        },
+
+        getProduct: function (productId) {
+            var shopList = this.getShopList();
+            var products = shopList.products;
+            return products ? _.find(products, function (item) {
+                return productId === item.article;
+            }) : undefined;
+        },
+
+        getProducts: function () {
+            var shopList = this.getShopList();
+            if (_.isNotUndefined(shopList)) {
+                var ids = StorageUtils.getStorageItemsIds(CookieUtils.SHOP_LIST_COOKIE_NAME),
+                    products = shopList.products;
+                return _.filter(products, function (item) {
+                    return ids.includes(item.article);
+                });
+            }
+        },
+
+        getShopList: function () {
+            return this.getItem('shopList');
+        },
+
+        getAmountsPerDay: function () {
+            return this.getItem('amountPerDay');
+        },
+
+        loadShopList: function (callback) {
+            if (syncInProcess) {
+                var waitSync = setInterval(_.bind(function () {
+                    if (syncInProcess) {
+                        return;
+                    }
+                    clearInterval(waitSync);
+                    this.loadShopList(callback);
+                }, this), 300);
+                return;
+            }
+
+            this.loadData(callback);
+        },
+
+        /**
+         * Get shopping list groups.
+         *
+         * @param {Array} productList array of products.
+         * @returns {Array} product groups.
+         */
+        getGroups: function (productList) {
+            var shopListItem;
+
+            if (_.isUndefined(productList) || _.isUndefined(productList.products)) {
+                shopListItem = this.getShopList();
+            }
+            if (_.isEmpty(shopListItem) || _.isEmpty(shopListItem.products)) {
+                return [];
+            }
+
+            var result = _
+                .chain(shopListItem.products)
+                .filter(function (product) {
+                    return _.isNotUndefined(product.departmentId);
+                })
+                .groupBy('departmentId')
+                .map(function (value, key) {
+                    return {
+                        uid: key,
+                        name: value[0].department
+                    };
+                })
+                .value();
+            return _.isUndefined(result) ? [] : result;
+        },
+
+        loadData: function (callback) {
+            syncInProcess = true;
+            var self = this;
+            $.ajax({
+                url: globalConfig.shopListStorageSyncAjaxHref,
+                cache: false
+            }).success(function (response) {
+                var $response = $(response),
+                    products = $response.data('products');
+                CookieUtils.setStorageForShopListActual();
+                self.save({
+                    products: products,
+                    groups: self.getGroups(products),
+                    priceTypeModel: $response.data('price-type-model'),
+                    amountPerDay: $response.data('amount-per-day'),
+                    productsBrands: self.mapProductsBrands($response)
+                });
+                callback.apply(null);
+            }).always(function () {
+                syncInProcess = false;
+            });
+        },
+
+        mapProductsBrands: function ($selector) {
+            var brands = {};
+            $selector.find('[data-js-shopping-list-product-brand]')
+                .each(function (index, brand) {
+                    var $brand = $(brand);
+                    brands[$brand.attr('data-brand-name')] = {
+                        pageUrl: $brand.attr('data-page-url'),
+                        image: $brand.attr('data-image')
+                    };
+                });
+            return brands;
+        },
+
+        getProductsByGroup: function (groupId, groups) {
+            var shopList = this.getShopList(),
+                allProducts = shopList.products;
+
+            if (_.isNotUndefined(groups)) {
+                var group = _.find(groups, function (item) {
+                    return item.uid === groupId;
+                });
+
+                var ids = StorageUtils.getStorageItemsIds(CookieUtils.SHOP_LIST_COOKIE_NAME);
+                return _.filter(allProducts, function (product) {
+                    return product.departmentId === group.uid && ids.includes(product.article);
+                });
+            }
+            return [];
+        }
+    };
+})();
+
+var TemplateUtils = (function () {
+    return {
+        compileUnderscore: function (templateStr, data) {
+            if (_.isUndefined(data) || _.isUndefined(templateStr)) {
+                return '';
+            }
+            try {
+                var templateFunc = _.template(templateStr, {variable: 'data'});
+                return templateFunc(data);
+            } catch (e) {
+                console.warn('Wrong data parsing for template=' + templateStr);
+                console.warn('Error info: ' + e.toString());
+                return '';
+            }
+        }
+    };
+})();
+
+var PageLoadingUtils = (function () {
+    function controller() {
+
+    }
+
+    controller.prototype.sendRequest = function (params) {
+        var delay1 = _.isNotUndefined(params.delay1) ? params.delay1 : 5000,
+            container = params.container;
+        $(container).data('wait', true);
+        setTimeout(function() {
+            if ($(container).data('wait')) {
+                $(container).attr('mask-view-status', 'showed');
+            }
+        }, delay1);
+    };
+
+    controller.prototype.finishRequest = function (container) {
+        $(container).data('wait', false);
+        $(container).attr('mask-view-status', 'hidden');
+    };
+
+    return controller;
+})();
+
+var pageLoadingUtils;
+
+$(document).ready(function () {
+    pageLoadingUtils = new PageLoadingUtils();
+});
+
+var CheckoutEventTypes = {
+    CHECKOUT_HOME_DELIVERY_LOAD: 'CHECKOUT_HOME_DELIVERY_LOAD',
+    CHECKOUT_HOME_DELIVERY_CONTINUE: 'CHECKOUT_HOME_DELIVERY_CONTINUE',
+    CHECKOUT_PICKUP_LOAD: 'CHECKOUT_PICKUP_LOAD',
+    CHECKOUT_PICKUP_CONTINUE: 'CHECKOUT_PICKUP_CONTINUE',
+    CHECKOUT_PICKUP_POINT_LOAD: 'CHECKOUT_PICKUP_POINT_LOAD',
+    CHECKOUT_PICKUP_POINT_CONTINUE: 'CHECKOUT_PICKUP_POINT_CONTINUE'
+};
+
+var TunnelErrorProcessor = (function () {
+    'use strict';
+
+    // 101 - invalid transactionId
+    // 120 - transactionId can not be empty
+    // 202 - delivery HOME_DELIVERY can not be selected
+    // 203 - delivery PICKUP can not be selected
+    // 204 - selected service levels has changed
+    // 208 - service levels did not calculate
+    // 209 - array of available products has changed
+    // 221 - selected date can not be selected
+    // 223 - pickup point are not available in current region
+    // 227 - step pickup error
+    // 230 - selected date for pickup can not be selected
+    // 235 - selected pickup point changed the status of unavailable
+
+    var invalidateTransactionCases = [
+            '400:120',
+            '404:101'
+        ],
+        redirectCases = [
+            '404:223',
+            '409:202',
+            '409:203',
+            '409:209',
+            '409:227'
+        ],
+        reloadCases = [
+            '409:203',
+            '409:204',
+            '409:205',
+            '409:208',
+            '409:221',
+            '409:230',
+            '409:235',
+            '400:504'
+        ];
+
+    /**
+     * Handle errors.
+     *
+     * @param {Object} jqXHR jQuery XMLHttpRequest (jqXHR)
+     */
+    function apply(jqXHR) {
+        var response = getCheckoutResponse(jqXHR);
+
+        if (CookieUtils.isShowAuthPopup()) {
+            redirectToBasket();
+            return;
+        }
+
+        if (!checkObject(response)) {
+            DeliveryUtils.showErrorPopup();
+            return;
+        }
+
+        if (response.needBasketRedirect) {
+            redirectToBasket();
+            return;
+        }
+
+        var statusCode = response.statusCode,
+            errorCode = response.errorCode;
+
+        if (test(statusCode, errorCode, invalidateTransactionCases)) {
+            invalidateTransaction();
+        } else if (test(statusCode, errorCode, redirectCases)) {
+            redirectToBasket();
+        } else if (test(statusCode, errorCode, reloadCases)) {
+            window.location.reload();
+        } else {
+            DeliveryUtils.showErrorPopup();
+        }
+    }
+
+    /**
+     * Find statusCode and errorCode in errorCodes list ['statusCode:errorCode'].
+     *
+     * @param {number} statusCode
+     * @param {string} errorCode
+     * @param {Array.<string>} errorCodes
+     */
+    function test(statusCode, errorCode, errorCodes) {
+        return _.some(errorCodes, function (str) {
+            return str === statusCode + ':' + errorCode;
+        })
+    }
+
+    /**
+     * Get checkout response.
+     *
+     * @param {Object} jqXHR jQuery XMLHttpRequest (jqXHR)
+     * @return {Object}
+     */
+    function getCheckoutResponse(jqXHR) {
+        var response = jqXHR.responseJSON;
+
+        if (!checkObject(response)) {
+            return {};
+        }
+
+        var error = _.first(response.errors);
+
+        return $.extend(response, {errorCode:  checkObject(error) ? error.code : ''});
+    }
+
+    function redirectToBasket() {
+        window.location.href = globalConfig.basketPageUrl;
+    }
+
+    function invalidateTransaction() {
+        CookieUtils.remove(CookieUtils.TRANSACTION_ID_COOKIE_NAME);
+        redirectToBasket();
+    }
+
+    return {
+        apply: apply
+    }
+
+})();
+
+var CheckoutUtils = {
+
+    /**
+     * Generate ajax settings for checkout servlet ajax request.
+     *
+     * @param {string} eventType - event type
+     * @param {object} body - body
+     * @returns {object} ajax settings
+     */
+    ajaxSettings: function (eventType, body) {
+        // eventType goes to querystring due to dashboard logging
+        var settings = {
+            url: checkoutConfig.checkoutServletAjaxHref + (_.isNotEmpty(eventType) ? '?eventType=' + eventType : ''),
+            type: 'POST',
+        };
+
+        if (_.isNotUndefined(body)) {
+            settings.data = {
+                body: JSON.stringify(body)
+            };
+        }
+
+        return settings;
+    },
+
+    isCheckoutPage: function () {
+        var pageType = globalConfig.pageType;
+        return 'Checkout' === pageType || 'basket' === pageType;
+    },
+
+    /**
+     * Check availability checkout for current region.
+     *
+     * @param {Object} checkoutResponse checkout response
+     * @return {boolean}
+     */
+    isAllDeliveriesNotAvailable: function (checkoutResponse) {
+        if (!checkObject(checkoutResponse)) {
+            return false;
+        }
+        var warn = _.first(checkoutResponse.warnings);
+        return checkObject(warn) && (warn.code === '310' || warn.code === '311')
+            || _.isEmpty(checkoutResponse.deliveries);
+    },
+
+    /**
+     * Check transactionId errors in response.
+     *
+     * @param {Object} checkoutResponse checkout response
+     */
+    isInvalidTransactionId: function (checkoutResponse) {
+        if (!checkObject(checkoutResponse)) {
+            return false;
+        }
+        var error = _.first(checkoutResponse.errors),
+            statusCode = checkoutResponse.statusCode;
+        return (checkObject(error) && (statusCode === 400 && error.code === '120' || statusCode === 404 && error.code === '101'));
+    },
+
+    checkoutBack: function () {
+        document.location.href = CookieUtils.isUserAuth()
+            ? $('#checkout-path-preparation').data('value')
+            : $('#checkout-path-authorization').data('value');
+    },
+
+    getStoreDaysCount: function (storeId) {
+        var settings = globalConfig.storageDaysCount;
+        if (_.isUndefined(settings)) {
+            return 1;
+        }
+        settings = JSON.parse(settings.replaceAll('&#34;', '"'));
+        var settingsItem = _.find(settings, function (item) {
+            return item.storeId === storeId;
+        });
+        return _.isUndefined(settingsItem) ? 1 : settingsItem.daysCount;
+    },
+
+    getStoreDaysCountWord: function (quantity) {
+        return I18nUtils.getNumEnding(quantity, [
+            I18nUtils.get('checkout.pickup-store-days-count ((1))', quantity),
+            I18nUtils.get('checkout.pickup-store-days-count ((2))', quantity),
+            I18nUtils.get('checkout.pickup-store-days-count ((5))', quantity)]);
+    },
+
+    putAuth: function () {
+        $.ajax(CheckoutUtils.ajaxSettings('CHECKOUT_AUTH_CONTINUE'))
+            .success(function (data) {
+                if (_.isNotEmpty(data.steps)) {
+                    var nextStep = _.find(data.steps, function (step) {
+                        return 'NEXT' === step.type;
+                    });
+                    if (_.isNotUndefined(nextStep)) {
+                        window.location.href = CheckoutUtils.getNextStepUrl(nextStep);
+                    }
+                } else {
+                    window.location.href = DeliveryUtils.getBasketRedirectHref();
+                }
+            })
+            .error(function () {
+                $.fancybox.open({
+                    src: '#errorBasketPopup',
+                    'overflow-x': 'hidden',
+                    afterShow: function () {
+                        $('[data-js-error-popup-close]').on('click', function () {
+                            $.fancybox.close();
+                        });
+                    }
+                });
+            });
+    },
+
+    goToNextStep: function () {
+        var nextStep = BasketUtils.getNextStep();
+        if (nextStep && nextStep.title) {
+            var mode = $('.delivery-item.selected').attr('data-code');
+            CookieUtils.setSelectedDeliveryMode(mode);
+            if (checkoutConfig.disableCheckoutAuthorizationPage) {
+                CheckoutUtils.putAuth();
+            } else {
+                var url = CheckoutUtils.getNextStepUrl(nextStep);
+                if (_.isNotUndefined(url)) {
+                    window.location.href = url;
+                }
+            }
+        }
+    },
+
+    getNextStepUrl: function (nextStep) {
+       var $el = $('#checkout-path-' + nextStep.title.toLowerCase());
+       return $el.data('value');
+    },
+
+    /**
+     * Get products array for PutStartCheckout request.
+     *
+     * @param {boolean} all all products
+     * @return {Array.<Object>}
+     */
+    getProductsForPutStart: function (all) {
+        var cartInfo = CookieUtils.getBasketCookie(),
+            unavailableProducts = BasketUtils.getSelectedDelivery().unavailableProducts;
+
+        return this.mapProductsForPutStart(all
+            ? cartInfo.products
+            : this.filterProductList(cartInfo.products, unavailableProducts));
+    },
+
+    /**
+     * Filter product list.
+     *
+     * @param allProducts
+     * @param excludedProducts
+     * @param idProp
+     */
+    filterProductList: function(allProducts, excludedProducts, idProp) {
+        var excludedIds = _.pluck(excludedProducts, idProp || 'productId');
+        return _.filter(allProducts, function (product) {
+            return !_.contains(excludedIds, product.productId || product.code);
+        });
+    },
+
+    /**
+     * Map products to new array for PutStartCheckout request.
+     *
+     * @param {Array.<Object>} products basket products
+     * @return {Array.<Object>}
+     */
+    mapProductsForPutStart: function (products) {
+        return _.map(products, function (item) {
+            return {productId: item.code, quantity: item.quantity};
+        });
+    },
+
+    /**
+    * Redirect for checkout: from old to new pages, depending on newCheckout pageProperty and checkout version cookie.
+    * 1. newCheckout pageProperty is used to set checkout version in region: if true - then new checkout, otherwise -
+    * old checkout.
+    * 2. Checkout version cookie is used to control checkout version via Google Optimize for checkout version A/B-test
+    * purposes.
+    */
+    redirectToBasketNew: function() {
+        var queryParameter = window.location.search;
+        window.location.href = globalConfig.basketPageUrl + queryParameter;
+        return;
+    },
+
+    /**
+     * Invalidate checkout session.
+     */
+    invalidateCheckoutSession: function () {
+        LocalStorageUtils.removeStoredItem(LocalStorageUtils.CHECKOUT_SESSION_CART);
+        LocalStorageUtils.removeStoredItem(LocalStorageUtils.BASKET_PRODUCTS_GTM);
+
+        CookieUtils.remove(CookieUtils.TRANSACTION_ID_COOKIE_NAME);
+        CookieUtils.remove(CookieUtils.SELECTED_DELIVERY_MODE);
+        CookieUtils.remove(CookieUtils.SELECTED_PAYMENT_TYPE);
+    }
+};
+
+var bootstrapGridCheck  = (function () {
+    var screenlg = 1200,
+        screenMd = 992,
+        screenSm = 768,
+        screenXs = 480,
+        screenlgMin = screenlg,
+        screenMdMax = screenlg - 1,
+        screenSmMax = screenMd - 1,
+        screenXsMax = screenSm - 1;
+
+    function matchMediaQuery(query) {
+        var mql = window.matchMedia(query);
+        return mql.matches;
+    }
+
+    function isLg() {
+        var query = '(min-width: ' + screenlgMin + 'px)';
+        return matchMediaQuery(query);
+    }
+
+    function isMd() {
+        var query = '(max-width: ' + screenMdMax + 'px) and (min-width: ' + screenMd + 'px)';
+        return matchMediaQuery(query);
+    }
+
+    function isSm() {
+        var query = '(max-width: ' + screenSmMax + 'px) and (min-width: ' + screenSm + 'px)';
+        return matchMediaQuery(query);
+    }
+
+    function isXs() {
+        var query = '(max-width: ' + screenXsMax + 'px)';
+        return matchMediaQuery(query);
+    }
+
+    function isMobile() {
+        return isSm() || isXs();
+    }
+
+    return {
+        isLg: isLg,
+        isMd: isMd,
+        isSm: isSm,
+        isXs: isXs,
+        isMobile: isMobile
+    }
+})();
+
+var SlideMenuUtils = {
+    calculatePosAfterSticks: function($topStickingEl, $header) {
+        var pos = 0;
+        if ($topStickingEl.length > 0) { pos += $topStickingEl.offset().top + $topStickingEl.height(); }
+        if ($header.length        > 0) { pos -= $header.height(); }
+        return pos;
+    },
+    calculatePosBeforeUnsticks: function($allContent, $footer, $comparePanel, $header, $stickyFilters, $headerPanel) {
+        var pos = -30;
+        if ($allContent.length    > 0) { pos += $allContent.height();    }
+        if ($footer.length        > 0) { pos -= $footer.height();        }
+        if ($comparePanel.length  > 0) { pos -= $comparePanel.height();  }
+        if ($header.length        > 0) { pos -= $header.height();        }
+        if ($stickyFilters.length > 0) { pos -= $stickyFilters.height(); }
+        if ($headerPanel.length   > 0) { pos -= $headerPanel.height();   }
+        return pos;
+    },
+    calculateHeightFilter: function($header, $comparePanel, $footer) {
+        var height = document.documentElement.clientHeight;
+        if ($footer.length > 0 && height > $footer.offset().top) {
+            height = $footer.offset().top;
+        } else {
+            if ($comparePanel.length > 0) {
+                height -= $comparePanel.height();
+            }
+        }
+        if ($header.length > 0) {
+            height -= $header.height();
+        }
+        return height - 30;
+    },
+    bottomSticky: function($mainBlock, posBeforeSticks, $scrollableBlock) {
+        $scrollableBlock.toggleClass('is-sticky__bottom', $mainBlock.scrollTop() >= posBeforeSticks);
+    },
+    topSticky: function($mainBlock, posAfterSticks, $scrollableBlock, heightScrollableBlock) {
+        if ($mainBlock.scrollTop() >= posAfterSticks) {
+            $scrollableBlock.addClass('is-sticky');
+            $scrollableBlock.find('.mCSB_scrollTools').height(heightScrollableBlock);
+            $scrollableBlock.height(heightScrollableBlock);
+        } else {
+            $scrollableBlock.removeClass('is-sticky');
+        }
+    },
+    createScrollBar: function($stickyObj, heightStickyEl) {
+        $stickyObj.mCustomScrollbar({
+            axis:"y",
+            autoHideScrollbar: true
+        });
+
+        $stickyObj.find('.mCSB_scrollTools').height(heightStickyEl);
+        $stickyObj.height(heightStickyEl);
+    },
+    stickyWhileScrolling: function() {
+        var self = this;
+        var $afterFilterSticks = $('[data-after-filter-sticks]');
+        var $stickyFilters = $('[data-sticky-filters]');
+
+        if ($stickyFilters.length > 0 && $afterFilterSticks.length > 0) {
+            var $window = $(window);
+            var $footer = $('.footer');
+            var $header = $('[data-js-header]');
+            var $headerPanel = $('.header-panel');
+            var $comparePanel = $('[data-js-compare-panel]');
+            var $rightColumn = $('.products-right-column');
+            var posAfterSticks = self.calculatePosAfterSticks($afterFilterSticks, $header);
+            var posBeforeSticks = self.calculatePosBeforeUnsticks($('body'), $footer, $comparePanel, $header, $stickyFilters, $headerPanel);
+            var heightFilter = self.calculateHeightFilter($header, $comparePanel, $footer);
+
+            if ($rightColumn.length === 0 || ($rightColumn.length > 0 && $rightColumn.height() >= heightFilter)) {
+                self.createScrollBar($stickyFilters, heightFilter);
+                $window.scroll(function() {
+                        self.topSticky($window, posAfterSticks, $stickyFilters, heightFilter);
+                        self.bottomSticky($window, posBeforeSticks, $stickyFilters);
+                })
+            }
+        }
+    },
+    initSlideMenu: function() {
+        var $slideMenu = $('.slide-menu');
+
+        if (!$slideMenu.length) {
+            return;
+        }
+
+        var $body = $('body');
+        $slideMenu.off('click').on('click', '.slide-menu__hamburger, .slide-menu__close', onClick);
+
+        function onClick(e) {
+            var $target = $(e.currentTarget),
+                $menu = $target.closest('.slide-menu');
+            $menu.toggleClass('is_active');
+            $body.toggleClass('is_blocked', $menu.hasClass('is_active'));
+        }
+
+        if (CookieUtils.get('srpFamilies') === 'freezing' && !bootstrapGridCheck.isXs() && !bootstrapGridCheck.isSm()) {
+            this.stickyWhileScrolling();
+        }
+    }
+};
+$(document).ready(function () {
+    SlideMenuUtils.initSlideMenu();
+});
+
+var DeliveryUtils = {
+    DELIVERY_ADDRESS_WARNING_MOBILE: I18nUtils.get('checkout.delivery-address-warning-mobile'),
+    DELIVERY_ADDRESS_WARNING_DESKTOP: I18nUtils.get('checkout.delivery-address-warning'),
+    DELIVERY_ADDRESS_NOT_BELONG_ANY_ZONES: I18nUtils.get('checkout.delivery-address-not-belong-any-zones'),
+    DELIVERY_APPOINTMENTS_WARNING: I18nUtils.get('checkout.delivery-appointments-warning'),
+
+    getBasketRedirectHref: function () {
+        return globalConfig.basketPageUrl;
+    },
+
+    initTabs: function () {
+        var callback = function () {
+            var $this = $(this),
+                available = $this.data('available'),
+                active = $this.hasClass('active');
+            if (!available || active) {
+                return;
+            }
+            DeliveryUtils.changeDelivery($this);
+        };
+        $('[data-js-delivery-navigation-tab]').off('click', callback).on('click', callback);
+    },
+
+    bindChangeRegionClick: function () {
+        $('[data-js-change-region-link]').off('click').on('click', function () {
+            var $transactionalChangeRegion = $('[data-js-transactional-change-region]');
+            $transactionalChangeRegion.removeClass('hidden');
+            var changeRegionSelector = '#changeRegion';
+            $(changeRegionSelector).find('[data-js-select-region]').addClass('hidden');
+            var popUpSettings = _.extend(mainConfigPopUp, {
+                src: changeRegionSelector,
+                afterClose: function () {
+                    $transactionalChangeRegion.addClass('hidden');
+                }
+            });
+            $.fancybox.open(popUpSettings);
+        });
+    },
+
+    changeDelivery: function ($tab) {
+        var nextDeliveryMode = $tab.attr('data-type');
+        $('[data-js-delivery-navigation-tab]').removeClass('active');
+        $tab.addClass('active');
+
+        if (nextDeliveryMode === 'PICKUP' || nextDeliveryMode === 'PICKUP_POINT') {
+            PickupTabController.init(nextDeliveryMode, pickupSettings);
+            PickupTabController.loadContent({tabUpdate: true});
+        } else if (nextDeliveryMode === 'HOME_DELIVERY') {
+            DeliveryTab.loadContent({tabUpdate: true});
+        }
+        TransactionalGAUtils.changeDeliveryGAEventPush('delivery-option', nextDeliveryMode);
+    },
+
+    checkSendPostCalculate: function () {
+        var latitude = $('[data-js-saved-latitude]').val(),
+            longitude = $('[data-js-saved-longitude]').val(),
+            deliveryTo = $('[data-js-delivery-mode-radio]:checked').attr('data-type'),
+            floor = $('[data-js-delivery-floor-counter]').find('[data-js-floor-counter-input]').val(),
+            checkFloor = deliveryTo !== 'TO_DOOR' || floor,
+            belongToZone = DeliveryMap.isPointBelongToZones([parseFloat(latitude), parseFloat(longitude)]);
+
+        return _.isNotEmpty(latitude)
+            && _.isNotEmpty(longitude)
+            && checkFloor
+            && belongToZone;
+    },
+
+    getDeliveryResponse: function (html) {
+        if (html) {
+            return $(html).find('[data-js-delivery-option-main-content-block]').data('delivery-json');
+        }
+        return $('[data-js-delivery-option-main-content-block]').data('delivery-json');
+    },
+
+    getSelectedDeliveryResponse: function () {
+        return $('[data-js-delivery-option-main-content-block]').data('selected-delivery-json');
+    },
+
+    updateDeliverySubmitBtn: function () {
+        var latitude = $('[data-js-saved-latitude]').val(),
+            longitude = $('[data-js-saved-longitude]').val(),
+            deliveryMode = $('[data-js-delivery-mode-radio]:checked').attr('data-type'),
+            positionIsNotEmpty = _.isNotEmpty(latitude) && _.isNotEmpty(longitude),
+            deliveryIsNotEmpty = _.isNotEmpty(deliveryMode),
+            status = positionIsNotEmpty && deliveryIsNotEmpty && DeliveryCalendar.isSelectedDateTime();
+
+        $('[data-js-delivery-option-next-button]').toggleClass('disabled', !status);
+    },
+
+    hasAllowedWarningCode: function (response) {
+        return function (statusCode, warningCode) {
+            return response.statusCode === statusCode && _.some(response.warnings, function (warning) {
+                    return warningCode === warning.code;
+                });
+        };
+    },
+
+    showErrorPopup: function () {
+        var popUpSettings = {};
+
+        popUpSettings.src = '#errorBasketPopup';
+
+        popUpSettings.afterShow = function () {
+            $('[data-js-error-popup-close]').off('click').on('click', function () {
+                $.fancybox.close();
+            });
+        };
+
+        $.fancybox.open(popUpSettings);
+    },
+
+    showDeliveryWarning: function (message) {
+        DeliveryUtils.hideWarnings();
+        $('[data-js-delivery-warning-part]').html(message);
+        $('[data-js-delivery-warning]').removeClass('hidden');
+    },
+
+    hideWarnings: function () {
+        $('[data-js-delivery-warning-part]').html('');
+        $('[data-js-delivery-warning]').addClass('hidden');
+    },
+
+    toggleProcessMask: function (maskContainer, action) {
+        $(maskContainer).attr('mask-view-status', action);
+    },
+
+    getSavedAddress: function (response) {
+        var result = {list: [], notAvailable: false};
+
+        if (checkObject(response) && checkObject(response.addresses)) {
+            var addressArr = response.addresses,
+                addressLength = addressArr.length;
+            for (var j = 0; j < addressLength; j++) {
+                var address = addressArr[j],
+                    checkCord = checkObject(address.latitude) && checkObject(address.longitude),
+                    checkAddress = checkObject(address.city) && checkObject(address.house);
+
+                if (checkCord || checkAddress) {
+                    result.list.push(address);
+                }
+            }
+            if (addressLength > 0 && _.isEmpty(result.list)) {
+                result.notAvailable = true;
+            }
+        }
+        return result;
+    },
+
+    processPostCalculateResponse: function (response) {
+        if (_.isUndefined(response)) {
+            return;
+        }
+
+        var responseHasAllowedWarning = DeliveryUtils.hasAllowedWarningCode(response);
+
+        if (responseHasAllowedWarning(200, '305')) {
+            DeliveryUtils.showDeliveryWarning(DeliveryUtils.DELIVERY_APPOINTMENTS_WARNING);
+        }
+    },
+
+    processPutDeliveryForDeliveryResponse: function (response) {
+        if (_.isUndefined(response)) {
+            return;
+        }
+
+        if (DeliveryUtils.checkUnavailableProductsInPutResponse(response)) {
+            window.location.href = DeliveryUtils.getBasketRedirectHref();
+            return;
+        }
+
+        DeliveryUtils.redirectToNextStep(response);
+    },
+
+    redirectToNextStep: function (response) {
+        if (_.isUndefined(response) || _.isUndefined(response.steps)) {
+            return;
+        }
+        var nextStep = _.find(response.steps, function (step) {
+            return 'NEXT' === step.type;
+        });
+        if (_.isNotUndefined(nextStep) && _.isNotUndefined(nextStep.title)) {
+            var $el = $('[data-key="checkout-path-{0}"]'.format(nextStep.title.toLowerCase()));
+            window.location.href = $el.data('value');
+        }
+    },
+
+    checkUnavailableProductsInPutResponse: function (response) {
+        return _.isNotUndefined(response)
+            && _.isNotUndefined(response.unavailableProducts)
+            && _.isNotEmpty(response.unavailableProducts);
+    }
+};
+
+var blockedWindow  = (function () {
+  var blockerClass = 'blocker',
+      spinnerClass = 'blocker__spinner',
+      isActive = false;
+
+  function createBlocker() {
+    var blocker = document.createElement('div'),
+        spinner = document.createElement('div');
+    blocker.classList.add(blockerClass);
+    spinner.classList.add(spinnerClass);
+    blocker.appendChild(spinner);
+    return blocker;
+  }
+  
+  function init() {
+    if(!isActive) {
+      var blocker = createBlocker();
+      document.body.appendChild(blocker);
+      isActive = true;
+    }
+  }
+
+  function remove() {
+    if(!isActive) {
+      var blocker = document.querySelector('.'+ blocker);
+      document.body.removeChild(blocker);
+      isActive = false;
+    }
+  }
+
+  return {
+    init: init,
+    remove: remove
+  }
+})();
+
+; (function($, window){
+  'use strict';
+
+  /**
+   * Generate the cache key under which to store the local data - either the cache key supplied,
+   * or one generated from the url, the type and, if present, the data.
+   */
+  var genCacheKey = function(options) {
+      var url;
+
+      // If cacheKey is specified, and a function, return the result of calling that function
+      // as the cacheKey. Otherwise, just return the specified cacheKey as-is.
+      if (options.cacheKey){
+          return (typeof options.cacheKey === 'function') ?
+              options.cacheKey(options) : options.cacheKey;
+      }
+
+      url = options.url.replace(/jQuery.*/, '');
+
+      // Strip _={timestamp}, if cache is set to false
+      if (options.cache === false) {
+          url = url.replace(/([?&])_=[^&]*/, '');
+      }
+
+      return url + options.type + (options.data || '');
+  };
+
+  /**
+   * Determine whether we're using localStorage or, if the user has specified something other than a boolean
+   * value for options.localCache, whether the value appears to satisfy the plugin's requirements.
+   * Otherwise, throw a new TypeError indicating what type of value we expect.
+   * @param {boolean|object} storage
+   * @returns {boolean|object}
+   */
+  var getStorage = function(storage){
+      if (!storage) return false;
+      if (storage === true) return window.localStorage;
+      if (typeof storage === "object" && 'getItem' in storage &&
+          'removeItem' in storage && 'setItem' in storage)
+      {
+          return storage;
+      }
+      throw new TypeError("localCache must either be a boolean value, " +
+          "or an object which implements the Storage interface.");
+  };
+
+  /**
+   * Remove the item specified by cacheKey and its attendant meta items from storage.
+   * @param {Storage|object} storage
+   * @param {string} cacheKey
+   */
+  var removeFromStorage = function(storage, cacheKey){
+      storage.removeItem(cacheKey);
+      storage.removeItem(cacheKey + 'cachettl');
+      storage.removeItem(cacheKey + 'dataType');
+      storage.removeItem(cacheKey + 'region');
+  };
+
+  /**
+   * Prefilter for caching ajax calls.
+   * See also $.ajaxTransport for the elements that make this compatible with jQuery Deferred.
+   * New parameters available on the ajax call:
+   * localCache   : true // required - either a boolean (in which case localStorage is used), or an object
+   * implementing the Storage interface, in which case that object is used instead.
+   * cacheTTL     : 5,           // optional - cache time in hours, default is 5.
+   * cacheKey     : 'post',      // optional - key under which cached string will be stored.
+   * region       : 34        // optional - 
+   * isCacheValid : function  // optional - return true for valid, false for invalid.
+   * isResponseValid: function // optional - return true to cache response, false to skip caching response.
+   * thenResponse: function // optional - chains on request to potentially alter the response data that
+   * gets stored - must return whatever you want stored.
+   * @method $.ajaxPrefilter
+   * @param options {Object} Options for the ajax call, modified with ajax standard settings.
+   * @param orginalOptions {object} Options for ajax as specified in the original call.
+   * @param jqXHR {jQuery.xhr} jQuery ajax object.
+   */
+  $.ajaxPrefilter(function(options, originalOptions, jqXHR){
+      var storage = getStorage(options.localCache),
+          hourstl = options.cacheTTL || 5,
+          cacheKey = options.cacheKey = genCacheKey(options),
+          cacheValid = options.isCacheValid,
+          responseValid = options.isResponseValid,
+          thenResponse = options.thenResponse || null,
+          currentRegion = options.region || null,
+          ttl,
+          value,
+          region;
+
+      if (!storage) return;
+      ttl = storage.getItem(cacheKey + 'cachettl');
+      region = storage.getItem(cacheKey + 'region');
+
+      if (cacheValid && typeof cacheValid === 'function' && !cacheValid()){
+          removeFromStorage(storage, cacheKey);
+          ttl = 0;
+      }
+
+      if (ttl && ttl < +new Date()){
+          removeFromStorage(storage, cacheKey);
+          ttl = 0;
+      }
+
+      if (currentRegion && region !== currentRegion){
+        removeFromStorage(storage, cacheKey);
+      }
+
+      value = storage.getItem(cacheKey);
+      if (!value){
+          // If value not in the cache, add a then block to request to store the results on success.
+          jqXHR.then(thenResponse).then(function(data, status, jqXHR){
+              var strdata = data,
+                  dataType = options.dataType || jqXHR.getResponseHeader('Content-Type') || 'text/plain';
+
+              if (!(responseValid && typeof responseValid === 'function' && !responseValid(data, status, jqXHR))) {
+
+                  if (dataType.toLowerCase().indexOf('json') !== -1) strdata = JSON.stringify(data);
+
+                  // Save the data to storage catching exceptions (possibly QUOTA_EXCEEDED_ERR)
+                  try {
+                      storage.setItem(cacheKey, strdata);
+                      // Store timestamp and dataType
+                      storage.setItem(cacheKey + 'cachettl', +new Date() + 1000 * 60 * 60 * hourstl);
+                      storage.setItem(cacheKey + 'dataType', dataType);
+                      storage.setItem(cacheKey + 'region', currentRegion);
+                  } catch (e) {
+                      // Remove any incomplete data that may have been saved before the exception was caught
+                      removeFromStorage(storage, cacheKey);
+                      console.log('Cache Error:'+e, cacheKey, strdata);
+                  }
+              }
+          });
+      }
+  });
+
+  /**
+   * This function performs the fetch from cache portion of the functionality needed to cache ajax
+   * calls and still fulfill the jqXHR Deferred Promise interface.
+   * See also $.ajaxPrefilter
+   * @method $.ajaxTransport
+   * @params options {Object} Options for the ajax call, modified with ajax standard settings and our
+   * cacheKey for this call as determined in prefilter.
+   */
+  $.ajaxTransport("+*", function(options){
+      if (options.localCache)
+      {
+          var cacheKey = options.cacheKey,
+              storage = getStorage(options.localCache),
+              dataType = options.dataType || storage.getItem(cacheKey + 'dataType') || 'text',
+              value = (storage) ? storage.getItem(cacheKey) : false;
+
+          if (value){
+              // In the cache? Get it, parse it to json if the dataType is JSON,
+              // and call the completeCallback with the fetched value.
+              if (dataType.toLowerCase().indexOf('json') !== -1) value = JSON.parse(value);
+              return {
+                  send: function(headers, completeCallback) {
+                      var response = {};
+                      response[dataType] = value;
+                      completeCallback(200, 'success', response, '');
+                  },
+                  abort: function() {
+                      console.log("Aborted ajax transport for json cache.");
+                  }
+              };
+          }
+      }
+  });
+})(jQuery, window);
+var TransactionalGAUtils = {
+    changePaymentTypeGAEventPush: function (paymentType) {
+        var step = '4',
+            params = {
+            event: 'LeroyMerlin',
+            eventAction: 'switch',
+            eventCategory: 'Interactions',
+            eventContent: paymentType,
+            eventLabel: 'shippingMethod',
+            checkoutStepName: 'Payment',
+            checkoutStepNumber: step,
+            ecommerce: {
+                checkout_option: {
+                    actionField: {
+                        action: 'checkout_option',
+                        option: paymentType,
+                        step: step
+                    }
+                }
+            }
+        };
+
+        globalConfig.aemServiceLayer.gtmEventPush('payment-type-change', {root: params});
+    },
+
+    changeDeliveryGAEventPush: function (step, selectedDelivery) {
+        var stepName;
+        var stepNumber;
+        switch (step) {
+            case 'basket':
+                stepName = 'Cart';
+                stepNumber = '1';
+                break;
+            case 'delivery-option':
+                stepName = 'Delivery Method';
+                stepNumber = '3';
+                break;
+            default:
+                break;
+        }
+        var deliveryName;
+        if (selectedDelivery === 'HOME_DELIVERY') {
+            deliveryName = I18nUtils.get('checkout.ga-home-delivery');
+        } else if (selectedDelivery === 'PICKUP') {
+            deliveryName = I18nUtils.get('basket.pickup-from-store');
+        } else if (selectedDelivery === 'PICKUP_POINT') {
+            deliveryName = I18nUtils.get('checkout.ga-pickup-point');
+        }
+
+        var params = {
+            event: 'LeroyMerlin',
+            eventCategory: 'Interactions',
+            eventAction: 'switch',
+            eventLabel: 'shippingMethod',
+            eventLocation: 'Checkout',
+            eventContent: deliveryName,
+            checkoutStepName: stepName,
+            checkoutStepNumber: stepNumber,
+            ecommerce: {
+                checkout_option: {
+                    actionField: {
+                        step: parseInt(stepNumber, 10)
+                    }
+                }
+            }
+        };
+        if (_.isNotEmpty(deliveryName)) {
+            params.ecommerce.checkout_option.actionField.option = deliveryName;
+        }
+        globalConfig.aemServiceLayer.gtmEventPush('shipping-method', {root: params});
+    },
+
+    continueCustomerInfoGAEventPush: function (authStatus) {
+        var option = authStatus === 'notAuth' ? '0' : '1',
+            params = {
+                eventContent: authStatus,
+                checkoutStepNumber: '2',
+                checkoutStepName: 'Authorization',
+                eventLocation: 'Checkout',
+                ecommerce: {
+                    checkout_option: {
+                        actionField: {
+                            step: 2
+                        }
+                    }
+                }
+            };
+        if (_.isNotEmpty(option)) {
+            params.ecommerce.checkout_option.actionField.option = option;
+        }
+        globalConfig.aemServiceLayer.gtmEventPush('customer-info-continue', {root: params});
+    },
+
+    continueDeliveryOptionGAEventPush: function (selectedDeliveryMode) {
+        if (!selectedDeliveryMode) {
+            return;
+        }
+        var deliveryName,
+            products = TransactionalGAUtils.getFilteredProducts();
+        if (selectedDeliveryMode === 'PICKUP') {
+            deliveryName = I18nUtils.get('basket.pickup-from-store');
+        } else if (selectedDeliveryMode === 'HOME_DELIVERY') {
+            deliveryName = I18nUtils.get('checkout.ga-home-delivery');
+        } else if (selectedDeliveryMode === 'PICKUP_POINT') {
+            deliveryName = I18nUtils.get('checkout.ga-pickup-point');
+        }
+
+        var params = {
+            checkoutStepNumber: '3',
+            checkoutStepName: 'Delivery Method',
+            ecommerce: {
+                checkout: {
+                    actionField: {
+                        step: 3
+                    },
+                    products: products
+                }
+            }
+        };
+        if (_.isNotEmpty(deliveryName)) {
+            params.ecommerce.checkout.actionField.option = deliveryName;
+        }
+
+        globalConfig.aemServiceLayer.gtmEventPush('delivery-option-continue', {root: params});
+    },
+
+    paymentClickGAEventPush: function () {
+        var authStatus = CookieUtils.isUserAuth() ? 'auth' : 'notAuth',
+            eventContent = authStatus,
+            userData = CookieUtils.getUserData(),
+            userDataObj = _.isEmpty(userData) ? undefined : JSON.parse(userData),
+
+            params = {
+                'eventContent': eventContent,
+                'userPhoneHash': _.isEmpty(userDataObj) ? 'not set' : userDataObj.userPhoneHash,
+                'userEmailHash': _.isEmpty(userDataObj) ? 'not set' : userDataObj.userEmailHash
+            };
+        globalConfig.aemServiceLayer.gtmEventPush('payment-continue', {root: params});
+    },
+
+    /**
+     * Get filtered products from local storage.
+     *
+     * @param [filter] array of ids. if undefined cartInfo will be used instead.
+     */
+    getFilteredProducts: function (filter) {
+        var localStorageProducts = LocalStorageUtils.getBasketProducts(),
+            productsIds;
+        if (_.isUndefined(localStorageProducts)) {
+            return [];
+        }
+
+        if (_.isUndefined(filter)) {
+            var cartInfo = CookieUtils.getBasketCookie();
+            if (_.isUndefined(cartInfo) || _.isUndefined(cartInfo.products)) {
+                return [];
+            }
+            productsIds = _.map(cartInfo.products, function (product) {
+                return product.code;
+            });
+        } else {
+            productsIds = filter;
+        }
+
+        return _.filter(localStorageProducts, function (product) {
+            return _.contains(productsIds, product.id);
+        });
+    },
+
+    /**
+     * Get total weight of products in array.
+     *
+     * @param {Array} products array of products from local storage
+     * @return {number} total weight of products
+     */
+    getOrderWeight: function (products) {
+        return _.reduce(products, function (acc, product) {
+            return acc + parseFloat(!_.isEmpty(product.variant) ? product.variant : '0') * product.quantity;
+        }, 0);
+    },
+
+    getAdditionalData: function (data) {
+        var self = this,
+            selectors = globalConfig.aemServiceLayer.settings,
+            place = _.find([data.place, data.root.attr('data-place'), data.root.attr('data-product-location')], function (item) {
+                return _.isNotUndefined(item);
+            }),
+            resultList = data.list || globalConfig.pageType,
+            result = {
+                position: 1,
+                list: resultList,
+                eventContent: null,
+                eventContext: null,
+                parent: {
+                    root: data.root,
+                    list: globalConfig.pageType === 'Profile' ? 'Profile' : resultList,
+                    position: undefined
+                }
+            };
+
+        if (data.event === 'wishlist' && data.place === 'basket-header') {
+            place = 'shopping-list-header';
+        } else if (data.root.closest('[data-js-e-kitchen]').length > 0) {
+            place = 'project-products-list';
+        } else if (globalConfig.pageType === 'Advice') {
+            place = 'advice';
+        }
+
+        var extendResult = _.extend(result, self.findDataPlace(place, data, selectors));
+
+        if (_.isUndefined(extendResult.parent.position)) {
+            extendResult.parent.position = extendResult.position;
+        }
+
+        if (_.contains(['complements', 'similarProducts', 'alternativeProducts'], extendResult.list)) {
+            extendResult = _.extend(extendResult, self.findPageType(selectors, data));
+        }
+
+        return extendResult;
+    },
+
+    findDataPlace: function (place, data, selectors) {
+        var result = {
+            parent: {}
+        };
+        switch (place) {
+            case 'plp':
+                result.position = $(selectors.catProductItemSelector).index(data.root) + 1;
+                if (globalConfig.pageType === 'Profile') {
+                    result.list = 'previouslyViewed';
+                } else if(data.promo) {
+                    result.list = 'Promo';
+                } else {
+                    result.list = data.root.closest(selectors.searchResultsPage).length > 0
+                        ? 'SearchResults'   // SRP
+                        : 'Catalog';        // PLP
+                }
+                break;
+
+            case 'shopping-list-page':
+                result.position = $(selectors.catProductItemSelector).index(data.root) + 1;
+                result.list = 'ShoppingList';
+                if (data.action === 'product-page-open') {
+                    if (data.root.closest('.owl-carousel').length > 0) {
+                        // complement
+                        result.position = data.root.closest('.owl-stage')
+                            .find('.owl-item:not(.cloned) .card-inner').index(data.root) + 1;
+                    } else {
+                        // parent
+                        result.position = $(selectors.catProductItemSelector).filter(function (index, item) {
+                            return $(item).closest('.owl-carousel').length === 0;
+                        }).index(data.root) + 1;
+                    }
+                }
+                break;
+
+            case 'shopping-list-header':
+                result.position = $(selectors.shoplistMinimizedProductItem).index(data.root) + 1;
+                result.list = 'ShoppingListPreview';
+                if (data.action !== 'remove') {
+                    result.eventContent = 'counter';
+                }
+                break;
+
+            case 'basket-header':
+                result.position = $(selectors.basketMinimizedProductItem).index(data.root) + 1;
+                if (data.action === 'remove-from-cart'
+                    || data.action === 'add-to-cart') {
+                    result.list = 'cartPreview';
+                } else {
+                    result.list = globalConfig.pageType;
+                }
+                result.eventContext = 'cartPreview';
+                result.parent = {
+                    position: result.position
+                };
+                if ($(data.root.context).is('.item-counter-button, .item-counter-input')) {
+                    result.eventContent = 'counter';
+                }
+                break;
+
+            case 'basket-popup':
+                result.position = $(selectors.productItemSelector).index(data.root) + 1;
+                result.parent = {};
+                if (_.contains(['product-page-open', 'remove-from-cart', 'add-to-cart'], data.action)) {
+                    result.list = 'cartPopup';
+                    result.parent.position = 1;
+                } else {
+                    result.list = globalConfig.pageType;
+                    result.parent.position = null;
+                }
+                result.eventContent = 'counter';
+                result.eventContext = 'cartPopup';
+                break;
+
+            case 'basket-page':
+                if (data.action === 'add-to-cart' && data.root.find('.buy-stock-btn').length > 0) {
+                    result.count = data.count;
+                }
+                result.position = $(selectors.productItemSelector).index(data.root) + 1;
+                result.list = 'Checkout';
+                break;
+
+            case 'previouslyViewed':
+                result.position = $(selectors.catProductItemSelectorViewed).index(data.root) + 1;
+                result.list = 'previouslyViewed';
+                result.eventContext = null;
+                break;
+
+            case 'ComparisonList':
+                result.position = $(selectors.catProductItemSelector).index(data.root) + 1;
+                result.list = 'ComparisonList';
+                break;
+
+            case 'alternativeProducts':
+                result.position = $(selectors.basketProductItemSubstitutes).index(data.root) + 1;
+                result.list = 'alternativeProducts';
+                result.eventContext = 'alternativeProductsPopup';
+                break;
+
+            case 'basket':
+                result.position = $(selectors.productItemSelector).index(data.root) + 1;
+                if ($(data.root.context).is('.item-counter-button')) {
+                    result.eventContent = 'counter';
+                }
+                result.list = 'Checkout';
+                break;
+
+            case 'calc':
+                result.list = data.event === 'wishlist'
+                    ? 'ProductPage'
+                    : 'Calc pop-up';
+                result.eventContext = null;
+                result.parent = {
+                    position: 1,
+                    list: 'ProductPage',
+                    root: data.root
+                };
+                result.totalRevenue = (result.parent.root.data('product-price') * data.count).toFixed(2);
+                break;
+
+            case 'shopping-list-popup':
+                if (data.action === 'product-page-open' || data.event === 'wishlist') {
+                    result.position = 1;
+                    result.list = globalConfig.pageType;
+                } else {
+                    result.position = null;
+                    result.list = 'ShoppingListPopup';
+                }
+                result.eventContent = 'counter';
+
+                break;
+
+            case 'project-products-list':
+                result.list = 'E-Kitchen';
+                result.position = $('[data-rel="js-cat-product-item"]').index(data.root) + 1;
+                result.parent = {
+                    list: result.list,
+                    position: result.position
+                };
+
+                break;
+
+            case 'advice':
+                result.position = data.root.closest('[data-js-product-carousel]')
+                    .find('[data-rel=js-cat-product-item]').index(data.root) + 1;
+
+                break;
+
+            case 'complements':
+            case 'popup-complements':
+            default:
+                // complements:
+                // - basket page
+                // - basket popup
+                // - shopping list page
+                // - shopping list popup
+                // - PDP
+                // PDP similar products
+                var $cards = data.root.parents('.owl-stage').find('.owl-item:not(.cloned) .card-inner');
+                result.position = $cards.index(data.root) + 1;
+                if (result.position !== 0) {
+                    if (data.root.parents(selectors.similarProductsSelector).length > 0) {
+                        // PDP similar products
+                        result.list = 'similarProducts';
+                        result.eventLocation = 'similarProducts';
+                    } else {
+                        result.list = 'complements';
+                        result.eventLocation = 'complements';
+                    }
+                } else {
+                    result.position = 1;
+                }
+                break;
+
+            case 'search-popup':
+                result.position = $(selectors.catProductItemSelector).index(data.root) + 1;
+                result.list = 'Search_suggest';
+
+                break;
+        }
+        return result;
+    },
+
+    findPageType: function (selectors, data) {
+        var result = {
+            parent: {}
+        };
+        switch (globalConfig.pageType) {
+            case 'ProductPage':
+                result.parent = {
+                    root: data.root.parents(selectors.detailProductPage + ', ' + selectors.productItemSelector),
+                    list: globalConfig.pageType,
+                    position: 1
+                };
+
+                if (result.parent.root.is('.basket-popup')) {
+                    result.eventContext = 'cartPopup';
+                } else if (result.parent.root.is('.shop-list-popup')) {
+                    result.eventContext = 'ShoppingListPopup';
+                }
+
+                break;
+
+            case 'WishList':
+            case 'Profile':
+                var parentRoot = data.root.parents(selectors.catProductItemSelector);
+                result.parent = {
+                    root: parentRoot,
+                    list: globalConfig.pageType === 'WishList' ? 'ShoppingList' : globalConfig.pageType,
+                    position: TransactionalGAUtils.getAdditionalData({root: parentRoot}).position
+                };
+
+                break;
+
+            case 'Checkout':
+                parentRoot = result.eventContext === 'alternativeProductsPopup'
+                    ? $('.basket-item.item-code-' + data.root.attr('data-parent-product-id'))
+                    : data.root.parents(selectors.productItemSelector);
+
+                result.parent = {
+                    root: parentRoot,
+                    list: globalConfig.pageType,
+                    position: TransactionalGAUtils.getAdditionalData({root: parentRoot, place: 'basket'}).position
+                };
+
+                break;
+
+            default:
+                break;
+        }
+        return result;
+    }
+};
+
+var TextFitUtil = (function($) {
+
+    function fit() {
+        var $elements = $('[data-js-resize]');
+        if ($elements.length > 0) {
+            $elements.each(function () {
+                bestfit($(this));
+            });
+        }
+
+    }
+
+    function bestfit($e) {
+        var fs = parseInt($e.css("font-size"), 10),
+            $i = innerWrap($e);
+        while ($i.height() > $e.height()) {
+            $e.css("font-size", --fs + "px");
+        }
+        removeWrap($i);
+        return $e;
+    }
+
+    function innerWrap($el) {
+        $el.wrapInner($("<div id='textfit-inner'></div>")
+            .css("width", $el.css("width")));
+        return $("#textfit-inner");
+    }
+
+    function removeWrap($el) {
+        $el.replaceWith($el.contents());
+    }
+
+    return {
+        fit: fit
+    };
+})(jQuery);
+
+var ImageResizeUtil = (function($) {
+
+    function resizeImage() {
+        var imgs = $('.resize-image');
+        $.each(imgs, function( index, img ) {
+            var imgPath,
+                $img = $(img),
+                desktopRef = $img.data("desktopref"),
+                tabletRef = $img.data("tabletref"),
+                mobileRef = $img.data("mobileref");
+
+            imgPath = desktopRef;
+            if(bootstrapGridCheck.isXs() && _.isNotUndefined(mobileRef)) {
+                imgPath = mobileRef;
+            } else if(bootstrapGridCheck.isSm() && _.isNotUndefined(tabletRef)) {
+                imgPath = tabletRef;
+            }
+
+
+            $img.attr("src", imgPath);
+        })
+    }
+
+    return {
+        resizeImage: resizeImage
+    };
+})(jQuery);
+
+(function() {
+
+    /**
+        Scroll to element referenced by anchor link adding extra offset of header height.
+    */
+    var adjustAnchor = function () {
+        /**
+         * Currently nothing do
+         */
+    };
+
+    if (!bootstrapGridCheck.isXs()) {
+        $(window).on('hashchange', function () {
+            adjustAnchor();
+        });
+    }
+
+})();
+
+/**
+ * Util script for working with ymaps.
+ */
+var YmapsUtils = (function () {
+    /**
+     * Execute given callback when ymaps will be ready (<code>ymaps.ready</code>).
+     *
+     * @param {function} callback callback to execute
+     */
+    function execute(callback) {
+        if (_.isUndefined(window.ymaps)) {
+            $(document).on('ymaps.loaded', function () {
+                ymaps.ready(callback);
+            });
+            return;
+        }
+
+        ymaps.ready(callback);
+    }
+
+    /**
+     * Function for ymaps script 'onload' event.
+     */
+    function onload() {
+        $.event.trigger('ymaps.loaded');
+    }
+
+    /**
+     * Load enterprise version of ymaps asynchronously.
+     */
+    function load() {
+        $.ajax({
+            url: globalConfig.enterpriseYmapsLink + globalConfig.ymapsApiKey,
+            dataType: 'script'
+        }).success(onload).fail(loadFreeVersion);
+    }
+
+    /**
+     * Load free version of ymaps asynchronously.
+     */
+    function loadFreeVersion() {
+        $.ajax({
+            url: globalConfig.ymapsLink,
+            dataType: 'script'
+        }).success(onload);
+    }
+
+    /**
+     * Find address by position and then execute given callback.
+     *
+     * @param {number[]} position array of latitude and longitude
+     * @param {function} callback callback to be executed after retrieving address
+     */
+    function findAddressByPosition(position, callback) {
+        if (_.isUndefined(window.ymaps)) {
+            return;
+        }
+
+        ymaps.geocode(position, {
+            json: true,
+            results: 1
+        }).then(function (value) {
+            var featureMembers = checkObjectKey(value, 'GeoObjectCollection.featureMember');
+            if (_.isEmpty(featureMembers)) {
+                return;
+            }
+
+            var compose = _.compose(callback, mapToAddress, checkObjectKey);
+            compose(featureMembers[0], 'GeoObject.metaDataProperty.GeocoderMetaData.Address.Components');
+        });
+    }
+
+    /**
+     * @param {object} ymapsComponents ymaps address components
+     * @return {object} mapped address
+     */
+    function mapToAddress(ymapsComponents) {
+        if (_.isEmpty(ymapsComponents)) {
+            return {};
+        }
+
+        // some of yandex components have another names for their fields
+        // and we want to change it for better usability
+        var keysMap = {
+                locality: 'city',
+                province: 'area'
+            },
+            keyMapper = function (key) {
+                return keysMap[key] || key;
+            };
+
+        return _.chain(ymapsComponents)
+            .map(function (component) {
+                return [keyMapper(component.kind), component.name];
+            })
+            .object()
+            .value();
+    }
+
+    return {
+        execute: execute,
+        onload: onload,
+        load: load,
+        loadFreeVersion: loadFreeVersion,
+        findAddressByPosition: findAddressByPosition
+    };
+})();
+
+var CaptchaUtils = {
+    processToken: function (fn, captchaSiteKey) {
+             grecaptcha.ready(function () {
+                grecaptcha.execute(captchaSiteKey).then(function (token) {
+                    fn(token);
+                });
+            });
+    },
+    scriptTagCallback: function (name) {
+        $.event.trigger('captcha-' + name + '.load');
+    },
+    reset: function (cb, captchaSiteKey) {
+        grecaptcha.ready(function () {
+            grecaptcha.reset(captchaSiteKey);
+            cb();
+        });
+    }
+};
+
+var MarketUtils = {
+    createMarketAdvicePopupEvent: function () {
+    if (!localStorage.getItem('marketAdviceShowed')) {
+        document.addEventListener('market-advice-showed', function () {
+            localStorage.setItem('marketAdviceShowed','true');
+        });
+        document.dispatchEvent(new CustomEvent('show-market-advice'));
+    }
+}
+};
+

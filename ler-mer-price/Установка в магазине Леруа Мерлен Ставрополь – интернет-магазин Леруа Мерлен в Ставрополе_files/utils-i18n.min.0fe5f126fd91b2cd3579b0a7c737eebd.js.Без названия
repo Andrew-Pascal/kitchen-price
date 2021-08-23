@@ -1,0 +1,71 @@
+var I18nUtils = {
+    setLocale: function (value) {
+        Granite.I18n.setLocale(value);
+    },
+
+    getLocale: function () {
+        return Granite.I18n.getLocale();
+    },
+
+    /**
+     * Translates the specified text into the current language.
+     *
+     * @param {String} text The text to translate
+     * @param {String[]} [snippets] The snippets replacing <code>{n}</code> (optional)
+     * @param {String} [note] A hint for translators (optional)
+     * @returns {String} The translated text
+     */
+    get: function (text, snippets, note) {
+        return Granite.I18n.get(text, snippets, note);
+    },
+
+    /**
+     * Translates the specified text into the current language. Use this method to translate String variables, e.g.
+     * data from the server.
+     * (Shorten link for `get(text, null, note)`).
+     *
+     * @static
+     * @param {String} text The text to translate
+     * @param {String} note A hint for translators (optional)
+     * @return {String} The translated text
+     */
+    getVar: function (text, note) {
+        return Granite.I18n.getVar(text, note);
+    },
+
+    getNumEnding: function (iNumber, aEndings) {
+        var sEnding, i;
+        iNumber = iNumber % 100;
+        if (iNumber >= 11 && iNumber <= 19) {
+            sEnding = aEndings[2];
+        } else {
+            i = iNumber % 10;
+            switch (i) {
+                case (1):
+                    sEnding = aEndings[0];
+                    break;
+                case (2):
+                case (3):
+                case (4):
+                    sEnding = aEndings[1];
+                    break;
+                default:
+                    sEnding = aEndings[2];
+            }
+        }
+        return sEnding;
+    },
+
+    /**
+     * Returns 1, 2 or 5, according to end digit of passed parameter.
+     * @param {number} count count to check
+     * @param {string} [hintPrefix] additional not necessary prefix, to
+     */
+    getNumEndingHint: function (count, hintPrefix) {
+        return (hintPrefix || '') + this.getNumEnding(count, ['1', '2', '5']);
+    }
+};
+
+$(document).ready(function () {
+    I18nUtils.setLocale('ru');
+});
