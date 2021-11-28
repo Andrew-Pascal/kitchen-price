@@ -81,7 +81,7 @@ table {
 td {
   border: 2px solid rgb(0, 0, 0);
   /* Рамка вокруг таблицы */
-  font-size: 12px;
+  font-size: 8px;
 }
 
 th {
