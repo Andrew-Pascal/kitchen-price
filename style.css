@@ -7,7 +7,7 @@ body {
 .fontstyle-1 {
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 20px;
-  color: rgb(58, 35, 187);
+  color: blue;
   text-shadow: 0px 2px 3px rgb(145, 145, 145);
   background-color: #64ff97;
   border: 3px solid hsl(119, 63%, 84%);
@@ -32,9 +32,9 @@ body {
 .fontstyle-2 {
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 16px;
-  color: rgb(58, 35, 187);
+  color: blue;
   text-shadow: 0px 2px 3px rgb(145, 145, 145);
-  background-color: #64ff97;
+  background-color: #14cc52;
   border: 2px solid hsl(119, 63%, 84%);
   border-radius: 10px;
   text-decoration: none;
@@ -61,7 +61,7 @@ body {
 .text-h2 {
   font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
   font-size: 12px;
-  color: rgb(231, 14, 14);
+  color: blue;
   text-shadow: 0px 2px 20px rgb(88, 88, 88);
 }
 
