@@ -35,14 +35,13 @@ body {
   color: blue;
   text-shadow: 0px 2px 3px rgb(145, 145, 145);
   background-color: #5bf17c;
-  border: 1px solid hsl(236, 85%, 61%);
-  border-radius: 3px;
+  border: 2px solid hsl(175, 52%, 47%);
+  border-radius: 4px;
   text-decoration: none;
   font-weight: bold;
-  padding: 1px 20px;
+  padding: 1px 10px;
   text-align: center;
   display: inline-table;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.19);
 }
 
 .fontstyle-2 {
@@ -82,22 +81,23 @@ body {
 
 
 .table-headers {
-  font-family:cursive;     
+  font-family:Arial, Helvetica, sans-serif;     
   font-size: 14px;
   color: hsl(240, 100%, 50%);
 }
 
 .group-in-table {
-  font-family:cursive;  
+  font-family:Arial, Helvetica, sans-serif;
   color: hsl(240, 100%, 50%); 
   font-size: 22px; 
   text-align: center;
+  border-collapse: collapse;
 }
 
 table {
   font-weight: 600;
-  text-shadow: 0px 2px 5px rgb(182, 182, 182);
-  background: rgb(162, 206, 204);
+  text-shadow: 0px 0px 0px rgb(102, 102, 102);
+  background: rgb(184, 194, 216);
   border-collapse: collapse;
   /*убираем пустые промежутки между ячейками*/
   text-align: initial;
@@ -109,14 +109,14 @@ table {
 
 td {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  border: 1.5px solid rgb(0, 0, 0);
+  border: 2px solid rgb(0, 0, 0);
   /* Рамка вокруг таблицы */
-  font-size: 10px;
+  font-size: 12px;
 }
 
 th {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  border: 1.5px solid rgb(0, 0, 0);
+  border: 2px solid rgb(0, 0, 0);
   /* Рамка вокруг таблицы */
-  font-size: 11px;
+  font-size: 14px;
 }
