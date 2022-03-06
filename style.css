@@ -42,7 +42,7 @@ body {
   padding: 1px 6px;
   text-align: center;
   display: inline-block;
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .fontstyle-2:hover {
@@ -55,19 +55,28 @@ body {
     "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
   font-size: 13px;
   color: rgb(0, 0, 0);
-  text-shadow: 0px 2px 20px rgb(75, 75, 75);
+  text-shadow: 0px 2px 3px rgb(75, 75, 75);
 }
+
+.time {
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  font-size: 15px;
+  color: rgb(110, 103, 103);
+  text-shadow: 0px 1px 1px rgb(75, 75, 75);
+}
+
 
 .text-h2 {
   font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
   font-size: 12px;
-  color: blue;
-  text-shadow: 0px 2px 20px rgb(88, 88, 88);
+  color: rgb(9, 33, 78);
+  text-shadow: 0px 1px 3px rgb(88, 88, 88);
 }
 
 table {
   font-weight: 600;
-  text-shadow: 0px 2px 8px rgb(182, 182, 182);
+  text-shadow: 0px 2px 5px rgb(182, 182, 182);
   background: rgb(162, 206, 204);
   border-collapse: collapse;
   /*убираем пустые промежутки между ячейками*/
