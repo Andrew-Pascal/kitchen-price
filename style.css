@@ -82,13 +82,13 @@ body {
 
 
 .table-headers {
-  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;     
+  font-family:cursive;     
   font-size: 14px;
   color: hsl(240, 100%, 50%);
 }
 
 .group-in-table {
-  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;  
+  font-family:cursive;  
   color: hsl(240, 100%, 50%); 
   font-size: 22px; 
   text-align: center;
