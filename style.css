@@ -111,12 +111,12 @@ td {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   border: 1.5px solid rgb(0, 0, 0);
   /* Рамка вокруг таблицы */
-  font-size: 12px;
+  font-size: 10px;
 }
 
 th {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   border: 1.5px solid rgb(0, 0, 0);
   /* Рамка вокруг таблицы */
-  font-size: 13px;
+  font-size: 11px;
 }
