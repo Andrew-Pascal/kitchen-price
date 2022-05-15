@@ -14,7 +14,7 @@
     <table>
 
         <thead>
-            <tr><th>Наименование услуги</th><th>Кол</th><th>Цена</th><th>Сумма</th></tr>
+            <tr><th>Наименование услуги.</th><th>Кол.</th><th>Цена, Сумма.</th></tr>
         </thead>
         
         <tbody>
@@ -24,18 +24,13 @@
                 </td>
               
                 <td>
-                    <input type="button" name="one-" value="<" OnClick="one.value--">
-                    <input type="button" name="one" value="1" OnClick="">
-                    <input type="button" name="one+" value=">" OnClick="one.value++">
+                    <input type="button" name="onem" value="<" OnClick="calc.input.value = (calc.one / --one.value)">
+                    <input type="button" name="one" value="1" OnClick="one.value = '1', input.value = 200">
+                    <input type="button" name="onep" value=">" OnClick="calc.input.value = (++one.value * 200)">
                 </td>
 
                 <td>
-                    200
-                </td>
-
-                <td>
-                    <input type="button" name="doit" value="=" OnClick="calc.display.value = eval(calc.one.value *= 200)">
-                    <input type="text" name="display">
+                    <input type="text" name="input" value="200" size="16">
                 </td>
             </tr>
         </tbody>
