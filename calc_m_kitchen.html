@@ -54,7 +54,7 @@
                         <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_1.value = ''">
                         <input type="button" name="up" value="▷" OnClick="calc_1.input_1.value = (++amount.value * 200)">
                     </td>
-                    <td><input type="text" name="input_1" value="" size="6"></td>
+                    <td><input type="text" name="input_1" value="" size="5"></td>
                 </tr>
 
                 </form>
@@ -68,7 +68,7 @@
                         <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_2.value = ''">
                         <input type="button" name="up" value="▷" OnClick="calc_2.input_2.value = (++amount.value * 200)">
                     </td>
-                    <td><input type="text" name="input_2" value="" size="6"></td>
+                    <td><input type="text" name="input_2" value="" size="5"></td>
                 </tr>
             
                 </form>
@@ -82,7 +82,7 @@
                         <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_3.value = ''">
                         <input type="button" name="up" value="▷" OnClick="calc_3.input_3.value = (++amount.value * 200)">
                     </td>
-                    <td><input type="text" name="input_3" value="" size="6"></td>
+                    <td><input type="text" name="input_3" value="" size="5"></td>
                 </tr>
 
                 </form>
@@ -96,7 +96,7 @@
                         <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_4.value = ''">
                         <input type="button" name="up" value="▷" OnClick="calc_4.input_4.value = (++amount.value * 500)">
                     </td>
-                    <td><input type="text" name="input_4" value="" size="6"></td>
+                    <td><input type="text" name="input_4" value="" size="5"></td>
                 </tr>
 
                 </form>
@@ -110,11 +110,41 @@
                         <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_5.value = ''">
                         <input type="button" name="up" value="▷" OnClick="calc_5.input_5.value = (++amount.value * 500)">
                     </td>
-                    <td><input type="text" name="input_5" value="" size="6"></td>
+                    <td><input type="text" name="input_5" value="" size="5"></td>
                 </tr>
 
                 </form>
-            
+                
+                <form name="calc_6">
+
+                <tr>
+                    <td>Установка мойки</td>
+                    <td class="nowrap">
+                        <input type="button" name="down" value="◁" OnClick="calc_6.input_6.value = (--amount.value, calc_6.input_6.value  - 300)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_6.value = ''">
+                        <input type="button" name="up" value="▷" OnClick="calc_6.input_6.value = (++amount.value * 300)">
+                    </td>
+                    <td><input type="text" name="input_6" value="" size="5"></td>
+                </tr>
+
+                </form>
+
+                <form name="calc_7">
+
+                <tr>
+                    <td>Установка сифона на мойку</td>
+                    <td class="nowrap">
+                        <input type="button" name="down" value="◁" OnClick="calc_7.input_7.value = (--amount.value, calc_7.input_7.value  - 200)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_7.value = ''">
+                        <input type="button" name="up" value="▷" OnClick="calc_7.input_7.value = (++amount.value * 200)">
+                    </td>
+                    <td><input type="text" name="input_7" value="" size="5"></td>
+                </tr>
+
+                </form>
+
+
+
             </tbody>
         </table>
     </main>
