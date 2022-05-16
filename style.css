@@ -49,23 +49,17 @@ input[type=button] {
 
 input[name=up] {
   color: red;
-  font-size: 14px;
-  white-space: nowrap; 
-  text-align: center;
+  font-size: 10px;
 }
 
 input[name=down] {
   color: red;
-  font-size: 14px;
-  white-space: nowrap; 
-  text-align: center;
+  font-size: 10px;
 }
 
 input[name=amount] {
   color: rgb(0, 0, 0);
   font-size: 16px;
-  white-space: nowrap; 
-  text-align: center;
 }
 
 .nowrap {
