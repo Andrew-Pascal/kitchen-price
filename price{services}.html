@@ -36,7 +36,7 @@
 
         <div class="table-headers"><h2>ДОПОЛНИТЕЛЬНЫЕ РАБОТЫ</h2></div>
 
-        <form name="calc_1">
+        
         
         <table>
             <thead>
@@ -47,7 +47,9 @@
                     <th>Сумма</th>
                 </tr>
             </thead>
-            
+
+            <form name="calc_1">
+
             <tbody>
                 <tr>
                     <td>
@@ -55,9 +57,9 @@
                     </td>
               
                     <td>
-                        <input type="button" name="one_1_1" value="<" OnClick="calc_1.input_1.value = (--one_1.value, calc_1.input_1.value  - 200)">
-                        <input type="button" name="one_1" value="0" OnClick="one_1.value = '0', input_1.value = ''">
-                        <input type="button" name="one_1_2" value=">" OnClick="calc_1.input_1.value = (++one_1.value * 200)">
+                        <input type="button" name="down" value="<" OnClick="calc_1.input_1.value = (--amount.value, calc_1.input_1.value  - 200)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_1.value = ''">
+                        <input type="button" name="up" value=">" OnClick="calc_1.input_1.value = (++amount.value * 200)">
                     </td>
 
                     <td>
@@ -75,13 +77,14 @@
 
                 <tr>
                     <td>
-                        Распил полки для шкафа / выпил под коммуникации
+                        Распил / выпил под коммуникации
+                        <br>полки шкафа
                     </td>
               
                     <td>
-                        <input type="button" name="one_2_1" value="<" OnClick="calc_2.input_2.value = (--one_2.value, calc_2.input_2.value  - 200)">
-                        <input type="button" name="one_2" value="0" OnClick="one_2.value = '0', input_2.value = ''">
-                        <input type="button" name="one_2_2" value=">" OnClick="calc_2.input_2.value = (++one_2.value * 200)">
+                        <input type="button" name="down" value="<" OnClick="calc_2.input_2.value = (--amount.value, calc_2.input_2.value  - 200)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_2.value = ''">
+                        <input type="button" name="up" value=">" OnClick="calc_2.input_2.value = (++amount.value * 200)">
                     </td>
 
                     <td>
@@ -92,15 +95,34 @@
                         <input type="text" name="input_2" value="" size="6">
                     </td>
                 </tr>
-
             </form>
-            </tbody>
-        </table>
-        
-    </form>
 
-    </main>
+            <form name="calc_3">
 
+                <tr>
+                    <td>
+                        Вырез в столешнице под коммуникации
+                    </td>
+              
+                    <td>
+                        <input type="button" name="down" value="<" OnClick="calc_3.input_3.value = (--amount.value, calc_3.input_3.value  - 200)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_3.value = ''">
+                        <input type="button" name="up" value=">" OnClick="calc_3.input_3.value = (++amount.value * 200)">
+                    </td>
+
+                    <td>
+                        200
+                    </td>
+
+                    <td>
+                        <input type="text" name="input_3" value="" size="6">
+                    </td>
+                </tr>
+            </form>
+            
+        </tbody>
+    </table>
+</main>
 </body>
 
 
