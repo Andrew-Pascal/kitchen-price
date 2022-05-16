@@ -1,11 +1,53 @@
-input[type=text] {font-family:'Times New Roman', Times, serif; text-align: center; font-weight: bolder; font-size: 12px; background-color: rgb(184, 194, 216); border: 0px;}
-input[type=button] {font-family:'Times New Roman', Times, serif; font-weight: bolder; font-size: 12px; background-color: rgb(184, 194, 216); border: 0px; }
+body {
+  background-color: #79db76; text-align: center;
+}
 
-.nowrap {white-space: nowrap; text-align: center;}
+table {
+  background: rgb(184, 194, 216);
+  border-collapse: collapse;
+  /*убираем пустые промежутки между ячейками*/
+  width: fit-content;
+  /*Ширина таблицы*/
+  margin: auto;
+  /*Выравниваем таблицу по центру окна*/
+}
 
-body {font-family: Arial, Helvetica, sans-serif; background-color: #79db76; text-align: center;}
+th {
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2px solid rgb(0, 0, 0);
+  /* Рамка вокруг таблицы */
+  font-size: 14px;
+  font-weight: bolder;
+}
 
-.fontstyle-1 {
+td {
+  text-align: justify;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2px solid rgb(0, 0, 0);
+  /* Рамка вокруг таблицы */
+  font-size: 12px;
+  font-weight: bolder;
+}
+
+input[type=text] {
+  font-family:'Times New Roman', Times, serif; 
+  text-align: center; 
+  font-weight: bolder; 
+  font-size: 12px; 
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
+}
+
+input[type=button] {
+  font-family:'Times New Roman', Times, serif; 
+  font-weight: bolder; 
+  font-size: 12px; 
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
+}
+
+.main-menu {
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 20px;
   color: blue;
@@ -23,11 +65,16 @@ body {font-family: Arial, Helvetica, sans-serif; background-color: #79db76; text
   /*-webkit-transition-duration: 0.2s;*/
 }
 
-.fontstyle-1:hover {
+.main-menu-1:hover {
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.24),
     0 17px 50px 0 rgba(0, 0, 0, 0.19);
   /* background-color: #1900ff;
     color: rgb(0, 247, 255);*/
+}
+
+.nowrap {
+  white-space: nowrap; 
+  text-align: center;
 }
 
 .page-titles {
@@ -79,7 +126,6 @@ body {font-family: Arial, Helvetica, sans-serif; background-color: #79db76; text
   color: rgb(110, 103, 103);
 }
 
-
 .table-headers {
   font-family:Arial, Helvetica, sans-serif;     
   font-size: 14px;
@@ -92,48 +138,4 @@ body {font-family: Arial, Helvetica, sans-serif; background-color: #79db76; text
   font-size: 22px; 
   text-align: center;
   border-collapse: collapse;
-}
-
-table {
-  font-weight: 600;
-  text-shadow: 0px 0px 0px rgb(102, 102, 102);
-  background: rgb(184, 194, 216);
-  border-collapse: collapse;
-  /*убираем пустые промежутки между ячейками*/
-  text-align: initial;
-  width: auto;
-  /*Ширина таблицы*/
-  margin: auto;
-  /*Выравниваем таблицу по центру окна*/
-}
-
-td {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  border: 2px solid rgb(0, 0, 0);
-  /* Рамка вокруг таблицы */
-  font-size: 12px;
-}
-
-th {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  border: 2px solid rgb(0, 0, 0);
-  /* Рамка вокруг таблицы */
-  font-size: 14px;
-}
-
-
-
-
-.box {
-  width: 600px;
-  height: 300px;
-  border: 1px solid black;
-  padding: 2px 4px;
-  overflow-y: scroll;
-  overflow-x: auto;
-}
-
-.log {
-  margin-top: 8px;
-  font-family: monospace;
 }
