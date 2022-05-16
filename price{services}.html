@@ -67,7 +67,7 @@
                     </td>
 
                     <td>
-                        <input type="text" name="input_1" value="" size="6">
+                        <input type="text" name="input_1" value="" size="">
                     </td>
                 </tr>
 
@@ -77,8 +77,7 @@
 
                 <tr>
                     <td>
-                        Распил / выпил под коммуникации
-                        <br>полки шкафа
+                        Распил полки для шкафа / выпил под коммуникации
                     </td>
               
                     <td>
@@ -92,7 +91,7 @@
                     </td>
 
                     <td>
-                        <input type="text" name="input_2" value="" size="6">
+                        <input type="text" name="input_2" value="" size="">
                     </td>
                 </tr>
             </form>
@@ -115,7 +114,53 @@
                     </td>
 
                     <td>
-                        <input type="text" name="input_3" value="" size="6">
+                        <input type="text" name="input_3" value="" size="">
+                    </td>
+                </tr>
+            </form>
+
+            <form name="calc_4">
+
+                <tr>
+                    <td>
+                        Вырез под варочную панель
+                    </td>
+              
+                    <td>
+                        <input type="button" name="down" value="<" OnClick="calc_4.input_4.value = (--amount.value, calc_4.input_4.value  - 500)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_4.value = ''">
+                        <input type="button" name="up" value=">" OnClick="calc_4.input_4.value = (++amount.value * 500)">
+                    </td>
+
+                    <td>
+                        500
+                    </td>
+
+                    <td>
+                        <input type="text" name="input_4" value="" size="">
+                    </td>
+                </tr>
+            </form>
+
+            <form name="calc_5">
+
+                <tr>
+                    <td>
+                        Вырез под мойку
+                    </td>
+              
+                    <td>
+                        <input type="button" name="down" value="<" OnClick="calc_5.input_5.value = (--amount.value, calc_5.input_5.value  - 500)">
+                        <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_5.value = ''">
+                        <input type="button" name="up" value=">" OnClick="calc_5.input_5.value = (++amount.value * 500)">
+                    </td>
+
+                    <td>
+                        500
+                    </td>
+
+                    <td>
+                        <input type="text" name="input_5" value="" size="">
                     </td>
                 </tr>
             </form>
