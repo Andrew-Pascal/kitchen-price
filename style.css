@@ -42,7 +42,7 @@ input[type=text] {
 input[type=button] {
   font-family:'Times New Roman', Times, serif; 
   font-weight: bolder; 
-  font-size: 12px; 
+  font-size: 16px; 
   background-color: rgb(184, 194, 216); 
   border: 0px;
 }
