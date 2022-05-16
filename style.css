@@ -1,5 +1,5 @@
-input[type=text] {font-family:'Times New Roman', Times, serif; text-align: center; font-weight: bolder; font-size: 15px; background-color: rgb(184, 194, 216); border: 0px;}
-input[type=button] {font-family:'Times New Roman', Times, serif; font-weight: bolder; font-size: 15px; background-color: rgb(184, 194, 216); border: 0px; }
+input[type=text] {font-family:'Times New Roman', Times, serif; text-align: center; font-weight: bolder; font-size: 12px; background-color: rgb(184, 194, 216); border: 0px;}
+input[type=button] {font-family:'Times New Roman', Times, serif; font-weight: bolder; font-size: 12px; background-color: rgb(184, 194, 216); border: 0px; }
 
 .nowrap {white-space: nowrap; text-align: center;}
 
