@@ -1,10 +1,11 @@
 <form name="calc_13">
+
     <tr>
-        <td>Установка соединительных и торцевых планок</td>
+        <td>Монтаж плинтуса для столешницы</td>
         <td class="nowrap">
-            <input type="button" name="down" value="◁" OnClick="calc_13.input_13.value = (--amount.value, calc_13.input_13.value  - 70)">
-            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_13.value = ''">
-            <input type="button" name="up" value="▷" OnClick="calc_13.input_13.value = (++amount.value * 70)">
+            <input type="button" name="down" value="◁" OnClick="calc_13.input_13.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
+            <input type="button" name="amount" value="0" OnClick="amount.value ='0', input_13.value = ''">
+            <input type="button" name="up" value="▷" OnClick="calc_13.input_13.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
         </td>
         <td><input type="text" name="input_13" value="" size="5"></td>
     </tr>
