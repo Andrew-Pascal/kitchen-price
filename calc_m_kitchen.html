@@ -203,115 +203,88 @@
                     <tr>
                         <td>Монтаж плинтуса для столешницы</td>
                         <td class="nowrap">
-                            <input type="button" name="down" value="◁" OnClick="calc_14.input_14.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
+                            <input type="button" name="down" value="◁" OnClick="calc_14.input_14.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 80">
                             <input type="button" name="amount" value="0" OnClick="amount.value ='0', input_14.value = ''">
-                            <input type="button" name="up" value="▷" OnClick="calc_14.input_14.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
+                            <input type="button" name="up" value="▷" OnClick="calc_14.input_14.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 80">
                         </td>
                         <td><input type="text" name="input_14" value="" size="5"></td>
                     </tr>
                 </form>
-            
-            
 
+                <form name="calc_15">
+                    <tr>
+                        <td>Установка стеновой панели</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◁" OnClick="calc_15.input_15.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
+                            <input type="button" name="amount" value="0" OnClick="amount.value ='0', input_15.value = ''">
+                            <input type="button" name="up" value="▷" OnClick="calc_15.input_15.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
+                        </td>
+                        <td><input type="text" name="input_15" value="" size="5"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_16">
+                    <tr>
+                        <td>Распил стеновой панели</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◁" OnClick="calc_16.input_16.value = (--amount.value, calc_16.input_16.value - 200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_16.value = ''">
+                            <input type="button" name="up" value="▷" OnClick="calc_16.input_16.value = (++amount.value * 200)">
+                        </td>
+                        <td><input type="text" name="input_16" value="" size="5"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_17">
+                    <tr>
+                        <td>Распил в длинну<br>(продольный пил) более 1.2м</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◁" OnClick="calc_17.input_17.value = (--amount.value, calc_17.input_17.value - 350)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_17.value = ''">
+                            <input type="button" name="up" value="▷" OnClick="calc_17.input_17.value = (++amount.value * 350)">
+                        </td>
+                        <td><input type="text" name="input_17" value="" size="5"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_18">
+                    <tr>
+                        <td>Вырез под розетки / выключатели<br>в стеновой панели</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◁" OnClick="calc_18.input_18.value = (--amount.value, calc_18.input_18.value - 200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_18.value = ''">
+                            <input type="button" name="up" value="▷" OnClick="calc_18.input_18.value = (++amount.value * 200)">
+                        </td>
+                        <td><input type="text" name="input_18" value="" size="5"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_19">
+                    <tr>
+                        <td>Вырез под коммуникации в стеновой панели</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◁" OnClick="calc_19.input_19.value = (--amount.value, calc_19.input_19.value - 200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_19.value = ''">
+                            <input type="button" name="up" value="▷" OnClick="calc_19.input_19.value = (++amount.value * 200)">
+                        </td>
+                        <td><input type="text" name="input_19" value="" size="5"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_20">
+                    <tr>
+                        <td>Перенос точки питания</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◁" OnClick="calc_20.input_20.value = (--amount.value, calc_20.input_20.value - 250)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_20.value = ''">
+                            <input type="button" name="up" value="▷" OnClick="calc_20.input_20.value = (++amount.value * 250)">
+                        </td>
+                        <td><input type="text" name="input_20" value="" size="5"></td>
+                    </tr>
+                </form>
 
 
             </tbody>
         </table>
     </main>
 </body>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-
-<head> 
-    <meta charset="utf-8" />
-    <title>Калькулятор</title>
-    <style type="text/css">
-        #calculator * {font-size: 16px;}
-        #calculator table {border: solid 3px silver; border-spacing: 3px; background-color: #EEE; }
-        #calculator table td {border-spacing: 3px;}
-        input.display {width: 166px; text-align: right;}
-        td.buttons {border-top: solid 1px silver;}  
-        input[type= button] {width: 40px; height: 30px;}
-    </style>
-    </head>
-
-    <body>
-    <form name="calc" id="calculator">
-        <table>
-        <tr>
-        <td>
-            <input type="text" name="input" size="16" class="display">
-        </td>
-        </tr>
-        
-        <tr>
-        <td class="buttons">
-            <input type="button" name="one" value="1" OnClick="calc.input.value += '1'">
-            <input type="button" name="two" value="2" OnClick="calc.input.value += '2'">
-            <input type="button" name="three" value="3" OnClick="calc.input.value += '3'">
-            <input type="button" name="add" value="+" OnClick="calc.input.value += '+'">
-            <br>
-            <input type="button" name="four" value="4" OnClick="calc.input.value += '4'">
-            <input type="button" name="five" value="5" OnClick="calc.input.value += '5'">
-            <input type="button" name="six" value="6" OnClick="calc.input.value += '6'">
-            <input type="button" name="sub" value="-" OnClick="calc.input.value += '-'">
-            <br>
-            <input type="button" name="seven" value="7" OnClick="calc.input.value += '7'">
-            <input type="button" name="eight" value="8" OnClick="calc.input.value += '8'">
-            <input type="button" name="nine" value="9" OnClick="calc.input.value += '9'">
-            <input type="button" name="mul" value="x" OnClick="calc.input.value += '*'">
-            <br>
-            <input type="button" name="clear" value="c" OnClick="calc.input.value = ''">
-            <input type="button" name="zero" value="0" OnClick="calc.input.value += '0'">
-            <input type="button" name="doit" value="=" OnClick="calc.input.value = eval(calc.input.value)">
-            <input type="button" name="div"  value="/" OnClick="calc.input.value += '/'">
-        </td>
-        </tr>
-        </table>
-    </form>
-    </body>
-
-      
-      
-      
-      
-      
-      
-      <form action="index.html">
-      <input type="hidden" name="searchid" value="Выезд и замер">
-      <input type="search" name="Выезд и замер">
-      <input type="submit" value="Найти">
-    </form>
-    
-    <fieldset>
-    <legend>Наименование услуги</legend>
-    
-    <select onchange="window.location.href=this.options[this.selectedIndex].value">
-    
-    <option VALUE="#">Выберете услугу</option>
-    <option VALUE="file:///C:/Users/User/Desktop/price/1.html">Выезд и замер</option>
-    <option VALUE="file:///C:/Users/User/Desktop/price/2.html">Дополнительные работы</option>
-    <option VALUE="file:///C:/Users/User/Desktop/price/3.html">Проба</option>
-            
-        
-    </select>
-    </fieldset>
-    </form>
-  
-  
-  
-  -->
