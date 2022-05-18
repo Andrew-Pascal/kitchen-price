@@ -59,7 +59,7 @@ input[name=down] {
 
 input[name=amount] {
   color: rgb(0, 0, 0);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .nowrap {
@@ -154,4 +154,41 @@ input[name=amount] {
   text-align: center;
   border-collapse: collapse;
   /*убираем пустые промежутки между ячейками*/
+}
+
+
+
+
+input[value="СБРОС"] {
+  border: none;
+  background-color: inherit;
+  padding: 15px 40px;
+  font-size: 30px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+
+input[value="СБРОС"]:hover {background: rgba(0, 89, 255, 0.623); border-radius: 50px;}
+
+
+input[value="ИТОГ"] {
+  border: none;
+  background-color: inherit;
+  padding: 15px 40px;
+  font-size: 30px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+
+input[value="ИТОГ"]:hover {background: rgba(0, 89, 255, 0.623); border-radius: 50px;}
+
+
+input[name="input"] {
+all: none;
+width: 150px;
+height: 50px;
+font-size: 50px;
+background-color: #79db76;
 }
