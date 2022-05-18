@@ -282,9 +282,53 @@
                         <td><input type="text" name="input_20" value="" size="5"></td>
                     </tr>
                 </form>
+            </tbody>
+        </table>
 
+        <div class="table-headers"><h2>ОБЩАЯЯ СУММА<br>ДОПОЛНИТЕЛЬНЫХ РАБОТ</h2></div>
+        
+        <table>
+
+            <tbody>
+                
+
+
+                <form name="calc">
+                    <tr>
+                        <td>ОБЩАЯ СУММА</td>
+                        <td class="nowrap"><input type="button" name="amount" value="СБРОС" OnClick="amount.value = 'СБРОС', input.value = ''"></td>
+                        <td class="nowrap">
+                            <input type="button" name="up" value="ОБЩАЯ СУММА" OnClick="calc.input.value = 
+                            (
+                                Number(calc_1.input_1.value) +
+                                Number(calc_2.input_2.value) +
+                                Number(calc_3.input_3.value) +
+                                Number(calc_4.input_4.value) +
+                                Number(calc_5.input_5.value) +
+                                Number(calc_6.input_6.value) +
+                                Number(calc_7.input_7.value) +
+                                Number(calc_8.input_8.value) +
+                                Number(calc_9.input_9.value) +
+                                Number(calc_10.input_10.value) +
+                                Number(calc_11.input_11.value) +
+                                Number(calc_12.input_12.value) +
+                                Number(calc_13.input_13.value) +
+                                Number(calc_14.input_14.value) +
+                                Number(calc_15.input_15.value) +
+                                Number(calc_16.input_16.value) +
+                                Number(calc_17.input_17.value) +
+                                Number(calc_18.input_18.value) +
+                                Number(calc_19.input_19.value) +
+                                Number(calc_20.input_20.value)
+                            )">
+                        </td>
+                        <td><input type="text" name="input" value=" " size="5"></td>
+                    </tr>
+                </form>
 
             </tbody>
         </table>
     </main>
 </body>
+
+
