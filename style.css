@@ -3,6 +3,7 @@ body {
 }
 
 table {
+  display: inline-block;
   background: rgb(184, 194, 216);
   border-collapse: collapse;
   /*убираем пустые промежутки между ячейками*/
