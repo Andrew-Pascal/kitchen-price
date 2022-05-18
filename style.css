@@ -7,8 +7,8 @@ table {
   background: rgb(184, 194, 216);
   border-collapse: collapse;
   /*убираем пустые промежутки между ячейками*/
-  width: fit-content;
-  height: fit-content;
+  width: auto;
+  height: auto;
   margin: auto;
   /*Выравниваем таблицу по центру окна*/
 }
@@ -176,7 +176,7 @@ input[value="СБРОС"]:hover {background: rgba(0, 89, 255, 0.623); border-rad
 input[value="ИТОГ"] {
   border: none;
   background-color: inherit;
-  padding: 15px 40px;
+  padding: 1px 4px;
   font-size: 30px;
   cursor: pointer;
   display: inline-block;
@@ -186,10 +186,11 @@ input[value="ИТОГ"] {
 input[value="ИТОГ"]:hover {background: rgba(0, 89, 255, 0.623); border-radius: 50px;}
 
 
-input[name="input"] {
+input[name="input"] { /** итоговая сумма**/
 all: none;
 width: 150px;
 height: 50px;
 font-size: 50px;
 background-color: #79db76;
+padding: 15px 40px;
 }
