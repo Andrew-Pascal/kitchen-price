@@ -161,24 +161,18 @@ input[name=amount] {
 
 
 input[value="СБРОС"] {
-  text-align: center;
-  background: rgb(66, 197, 40);
-  padding: 20px 4px;
-  border: none;
   font-size: 20px;
+  text-align: center;
 }
 
 input[value="ИТОГ"] {
-  text-align: center;
-  background: rgb(66, 197, 40);
-  padding: 20px 4px;
-  border: none;
   font-size: 20px;
+  text-align: center;
+
 }
 
 input[name="input"] { /** итоговая сумма**/
-all: none;
-font-size: 25px;
-background-color: #79db76;
-padding: 20px 4px;
+  all: none;
+  font-size: 25px;
+  text-align: center;
 }
