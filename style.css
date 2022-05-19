@@ -1,5 +1,5 @@
 body {
-  background-color: #79db76; text-align: center;
+  display: inline; background-color: #79db76; text-align: center;
 }
 
 table {
@@ -161,36 +161,29 @@ input[name=amount] {
 
 
 input[value="СБРОС"] {
+  text-align: center;
+  background: rgb(66, 197, 40);
+  padding: 20px 4px;
   border: none;
-  background-color: inherit;
-  padding: 15px 40px;
-  font-size: 30px;
+  font-size: 20px;
   cursor: pointer;
   display: inline-block;
 }
-
-
-input[value="СБРОС"]:hover {background: rgba(0, 89, 255, 0.623); border-radius: 50px;}
-
 
 input[value="ИТОГ"] {
+  text-align: center;
+  background: rgb(66, 197, 40);
+  padding: 20px 4px;
   border: none;
-  background-color: inherit;
-  padding: 1px 4px;
-  font-size: 30px;
+  font-size: 20px;
   cursor: pointer;
   display: inline-block;
 }
-
-
-input[value="ИТОГ"]:hover {background: rgba(0, 89, 255, 0.623); border-radius: 50px;}
-
 
 input[name="input"] { /** итоговая сумма**/
 all: none;
-width: 150px;
-height: 50px;
-font-size: 50px;
+font-size: 30px;
 background-color: #79db76;
 padding: 15px 40px;
+display: inline-block;
 }
