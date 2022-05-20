@@ -173,6 +173,6 @@ input[value="ИТОГ"] {
 
 input[name="input"] { /** итоговая сумма**/
   all: none;
-  font-size: 25px;
+  font-size: 22px;
   text-align: center;
 }
