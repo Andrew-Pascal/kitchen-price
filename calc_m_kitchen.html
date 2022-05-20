@@ -30,7 +30,7 @@
                     <tr>
                         <td>Сборка каркасов кухни, навеска и стяжка верхних и нижних корпусов, установка столешници ДСП (из комплекта),
                             <br>навеска и регулеровка фасвдов, монтаж ручек и ножек (из комплекта)</td>
-                        <td>
+                        <td class="nowrap">
                             <input type="button" name="down" value="◄" OnClick="calc_50.input_50.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 1150">
                             <input type="button" name="amount" value="0" OnClick="amount.value ='0', input_50.value = ''">
                             <input type="button" name="up" value="►" OnClick="calc_50.input_50.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 1150">
@@ -691,7 +691,7 @@
                             Number(calc_50.input_50.value) )">
                         </td>
                         <td><input type="text" name="input" value=" " size="7"></td></td>
-                        <td><input type="button" name="clear" value="C" OnClick="amount.value = 'C', input.value = ''"></td>
+                        <td><input type="button" name="amount" value="C" OnClick="amount.value = 'C', input.value = ''"></td>
                         <td><input type="button" name="allclear" value="AC" OnClick="calc.input.value = (
                             (calc_1.input_1.value) ='',
                             (calc_2.input_2.value) ='',
