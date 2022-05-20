@@ -138,7 +138,7 @@ input[name=amount] {
 .time {
   font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
     "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   color: rgb(110, 103, 103);
 }
 
