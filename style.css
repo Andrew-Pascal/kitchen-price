@@ -31,39 +31,45 @@ td {
   font-weight: bolder;
 }
 
-input[type=text] {
-  font-family:'Times New Roman', Times, serif; 
-  text-align: center; 
-  font-weight: bolder; 
-  font-size: 11px; 
-  white-space: nowrap;
-  background-color: rgb(184, 194, 216); 
-  border: 0px;
-}
-
-input[name=up] {
-  color: red;
-  font-size: 8px;
-  font-family:'Times New Roman', Times, serif; 
-  font-weight: bolder; 
-  background-color: rgb(184, 194, 216); 
-  border: 0px;
-}
-
-input[name=down] {
-  font-family:'Times New Roman', Times, serif; 
-  font-weight: bolder; 
-  background-color: rgb(184, 194, 216); 
-  border: 0px;
-  color: red;
-  font-size: 8px;
-}
-
-input[name=amount] {
-  color: rgb(0, 0, 0);
+input[name=up] { /* стрелка повышения */
+  font-family:'Times New Roman', Times, serif;
   font-size: 10px;
-  font-family:'Times New Roman', Times, serif; 
+  text-align: center;
+  color: red;
+  white-space: nowrap;
   font-weight: bolder; 
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
+}
+
+input[name=down] { /* стрелка понижение */
+  font-family:'Times New Roman', Times, serif; 
+  font-size: 10px;
+  text-align: center;
+  color: red;
+  white-space: nowrap;
+  font-weight: bolder; 
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
+}
+
+input[name=amount] { /*  количество */
+  font-family:'Times New Roman', Times, serif;
+  font-size: 10px;
+  text-align: center;
+  color: rgb(0, 0, 0);
+  white-space: nowrap;
+  font-weight: bolder; 
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
+}
+
+input[type=text] { /* результат */
+  font-family:'Times New Roman', Times, serif; 
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
 }
@@ -164,33 +170,38 @@ input[name=amount] {
 
 
 
-input[value="С"] {
+input[name="clear"] { /* С */
+  font-family:'Times New Roman', Times, serif;
   font-size: 16px;
   text-align: center;
+  color: rgb(0, 0, 0);
+  font-weight: bolder; 
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
 }
 
-input[value="ИТОГ"] {
+input[name="result"] { /* кнопка ИТОГ */
+  font-family:'Times New Roman', Times, serif;
   font-size: 16px;
   text-align: center;
   color: red;
-  font-family:'Times New Roman', Times, serif; 
   font-weight: bolder; 
   background-color: rgb(184, 194, 216); 
   border: 0px;
 }
 
-input[value="AC"] { 
+input[name="allclear"] { /* AC */
+  font-family:'Times New Roman', Times, serif;
   font-size: 16px;
   text-align: center;
   color: rgb(14, 0, 174);
-  font-family:'Times New Roman', Times, serif; 
-  font-weight: bolder; 
+  font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
 
 }
 
-input[name="input"] { /** итоговая сумма**/
+input[name="input"] { /* итоговая сумма */
   all: none;
   font-size: 16px;
   text-align: center;
