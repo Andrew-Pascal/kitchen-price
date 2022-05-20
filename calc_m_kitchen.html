@@ -635,66 +635,172 @@
         
         <table>
             <tbody>
-        <form name="calc">
-            <tr>    
-                <td><input type="button" name="total" value="ИТОГ" OnClick="calc.input.value = 
-                    (
-                        Number(calc_1.input_1.value) +
-                        Number(calc_2.input_2.value) +
-                        Number(calc_3.input_3.value) +
-                        Number(calc_4.input_4.value) +
-                        Number(calc_5.input_5.value) +
-                        Number(calc_6.input_6.value) +
-                        Number(calc_7.input_7.value) +
-                        Number(calc_8.input_8.value) +
-                        Number(calc_9.input_9.value) +
-                        Number(calc_10.input_10.value) +
-                        Number(calc_11.input_11.value) +
-                        Number(calc_12.input_12.value) +
-                        Number(calc_13.input_13.value) +
-                        Number(calc_14.input_14.value) +
-                        Number(calc_15.input_15.value) +
-                        Number(calc_16.input_16.value) +
-                        Number(calc_17.input_17.value) +
-                        Number(calc_18.input_18.value) +
-                        Number(calc_19.input_19.value) +
-                        Number(calc_20.input_20.value) +
-                        Number(calc_21.input_21.value) +
-                        Number(calc_22.input_22.value) +
-                        Number(calc_23.input_23.value) +
-                        Number(calc_24.input_24.value) +
-                        Number(calc_25.input_25.value) +
-                        Number(calc_26.input_26.value) +
-                        Number(calc_27.input_27.value) +
-                        Number(calc_28.input_28.value) +
-                        Number(calc_29.input_29.value) +
-                        Number(calc_30.input_30.value) +
-                        Number(calc_31.input_31.value) +
-                        Number(calc_32.input_32.value) +
-                        Number(calc_33.input_33.value) +
-                        Number(calc_34.input_34.value) +
-                        Number(calc_35.input_35.value) +
-                        Number(calc_36.input_36.value) +
-                        Number(calc_37.input_37.value) +
-                        Number(calc_38.input_38.value) +
-                        Number(calc_39.input_39.value) +
-                        Number(calc_40.input_40.value) +
-                        Number(calc_41.input_41.value) +
-                        Number(calc_42.input_42.value) +
-                        Number(calc_43.input_43.value) +
-                        Number(calc_44.input_44.value) +
-                        Number(calc_45.input_45.value) +
-                        Number(calc_46.input_46.value) +
-                        Number(calc_47.input_47.value) +
-                        Number(calc_48.input_48.value) +
-                        Number(calc_49.input_49.value) +
-                        Number(calc_50.input_50.value) 
-                    )"></td>
-                    <td><input type="text" name="input" value=" " size="7"></td></td>
-                    <td><input type="button" name="amount" value="С" OnClick="amount.value = 'С', input.value = ''"></td>
-                </tr>
-            
-            </form>
+                
+                <form name="calc">
+                    <tr>
+                        <td><input type="button" name="total" value="ИТОГ" OnClick="calc.input.value = (
+                            Number(calc_1.input_1.value) +
+                            Number(calc_2.input_2.value) +
+                            Number(calc_3.input_3.value) +
+                            Number(calc_4.input_4.value) +
+                            Number(calc_5.input_5.value) +
+                            Number(calc_6.input_6.value) +
+                            Number(calc_7.input_7.value) +
+                            Number(calc_8.input_8.value) +
+                            Number(calc_9.input_9.value) +
+                            Number(calc_10.input_10.value) +
+                            Number(calc_11.input_11.value) +
+                            Number(calc_12.input_12.value) +
+                            Number(calc_13.input_13.value) +
+                            Number(calc_14.input_14.value) +
+                            Number(calc_15.input_15.value) +
+                            Number(calc_16.input_16.value) +
+                            Number(calc_17.input_17.value) +
+                            Number(calc_18.input_18.value) +
+                            Number(calc_19.input_19.value) +
+                            Number(calc_20.input_20.value) +
+                            Number(calc_21.input_21.value) +
+                            Number(calc_22.input_22.value) +
+                            Number(calc_23.input_23.value) +
+                            Number(calc_24.input_24.value) +
+                            Number(calc_25.input_25.value) +
+                            Number(calc_26.input_26.value) +
+                            Number(calc_27.input_27.value) +
+                            Number(calc_28.input_28.value) +
+                            Number(calc_29.input_29.value) +
+                            Number(calc_30.input_30.value) +
+                            Number(calc_31.input_31.value) +
+                            Number(calc_32.input_32.value) +
+                            Number(calc_33.input_33.value) +
+                            Number(calc_34.input_34.value) +
+                            Number(calc_35.input_35.value) +
+                            Number(calc_36.input_36.value) +
+                            Number(calc_37.input_37.value) +
+                            Number(calc_38.input_38.value) +
+                            Number(calc_39.input_39.value) +
+                            Number(calc_40.input_40.value) +
+                            Number(calc_41.input_41.value) +
+                            Number(calc_42.input_42.value) +
+                            Number(calc_43.input_43.value) +
+                            Number(calc_44.input_44.value) +
+                            Number(calc_45.input_45.value) +
+                            Number(calc_46.input_46.value) +
+                            Number(calc_47.input_47.value) +
+                            Number(calc_48.input_48.value) +
+                            Number(calc_49.input_49.value) +
+                            Number(calc_50.input_50.value) )">
+                        </td>
+                        <td><input type="text" name="input" value=" " size="7"></td></td>
+                        <td><input type="button" name="amount" value="С" OnClick="amount.value = 'С', input.value = ''"></td>
+                        <td><input type="button" name="all_c" value="AC" OnClick="calc.input.value = (
+                            (calc_1.input_1.value) ='',
+                            (calc_2.input_2.value) ='',
+                            (calc_3.input_3.value) ='',
+                            (calc_4.input_4.value) ='',
+                            (calc_5.input_5.value) ='',
+                            (calc_6.input_6.value) ='',
+                            (calc_7.input_7.value) ='',
+                            (calc_8.input_8.value) ='',
+                            (calc_9.input_9.value) ='',
+                            (calc_10.input_10.value) ='',
+                            (calc_11.input_11.value) ='',
+                            (calc_12.input_12.value) ='',
+                            (calc_13.input_13.value) ='',
+                            (calc_14.input_14.value) ='',
+                            (calc_15.input_15.value) ='',
+                            (calc_16.input_16.value) ='',
+                            (calc_17.input_17.value) ='',
+                            (calc_18.input_18.value) ='',
+                            (calc_19.input_19.value) ='',
+                            (calc_20.input_20.value) ='',
+                            (calc_21.input_21.value) ='',
+                            (calc_22.input_22.value) ='',
+                            (calc_23.input_23.value) ='',
+                            (calc_24.input_24.value) ='',
+                            (calc_25.input_25.value) ='',
+                            (calc_26.input_26.value) ='',
+                            (calc_27.input_27.value) ='',
+                            (calc_28.input_28.value) ='',
+                            (calc_29.input_29.value) ='',
+                            (calc_30.input_30.value) ='',
+                            (calc_31.input_31.value) ='',
+                            (calc_32.input_32.value) ='',
+                            (calc_33.input_33.value) ='',
+                            (calc_34.input_34.value) ='',
+                            (calc_35.input_35.value) ='',
+                            (calc_36.input_36.value) ='',
+                            (calc_37.input_37.value) ='',
+                            (calc_38.input_38.value) ='',
+                            (calc_39.input_39.value) ='',
+                            (calc_40.input_40.value) ='',
+                            (calc_41.input_41.value) ='',
+                            (calc_42.input_42.value) ='',
+                            (calc_43.input_43.value) ='',
+                            (calc_44.input_44.value) ='',
+                            (calc_45.input_45.value) ='',
+                            (calc_46.input_46.value) ='',
+                            (calc_47.input_47.value) ='',
+                            (calc_48.input_48.value) ='',
+                            (calc_49.input_49.value) ='',
+                            (calc_50.input_50.value)='',
+                            (calc_1.amount.value) = '0',
+                            (calc_2.amount.value) = '0',
+                            (calc_3.amount.value) = '0',
+                            (calc_4.amount.value) = '0',
+                            (calc_5.amount.value) = '0',
+                            (calc_6.amount.value) = '0',
+                            (calc_7.amount.value) = '0',
+                            (calc_8.amount.value) = '0',
+                            (calc_9.amount.value) = '0',
+                            (calc_10.amount.value) = '0',
+                            (calc_11.amount.value) = '0',
+                            (calc_12.amount.value) = '0',
+                            (calc_13.amount.value) = '0',
+                            (calc_14.amount.value) = '0',
+                            (calc_15.amount.value) = '0',
+                            (calc_16.amount.value) = '0',
+                            (calc_17.amount.value) = '0',
+                            (calc_18.amount.value) = '0',
+                            (calc_19.amount.value) = '0',
+                            (calc_20.amount.value) = '0',
+                            (calc_21.amount.value) = '0',
+                            (calc_22.amount.value) = '0',
+                            (calc_23.amount.value) = '0',
+                            (calc_24.amount.value) = '0',
+                            (calc_25.amount.value) = '0',
+                            (calc_26.amount.value) = '0',
+                            (calc_27.amount.value) = '0',
+                            (calc_28.amount.value) = '0',
+                            (calc_29.amount.value) = '0',
+                            (calc_30.amount.value) = '0',
+                            (calc_31.amount.value) = '0',
+                            (calc_32.amount.value) = '0',
+                            (calc_33.amount.value) = '0',
+                            (calc_34.amount.value) = '0',
+                            (calc_35.amount.value) = '0',
+                            (calc_36.amount.value) = '0',
+                            (calc_37.amount.value) = '0',
+                            (calc_38.amount.value) = '0',
+                            (calc_39.amount.value) = '0',
+                            (calc_40.amount.value) = '0',
+                            (calc_41.amount.value) = '0',
+                            (calc_42.amount.value) = '0',
+                            (calc_43.amount.value) = '0',
+                            (calc_44.amount.value) = '0',
+                            (calc_45.amount.value) = '0',
+                            (calc_46.amount.value) = '0',
+                            (calc_47.amount.value) = '0',
+                            (calc_48.amount.value) = '0',
+                            (calc_49.amount.value) = '0',
+                            (calc_50.amount.value) = '0',
+                            amount.value = 'С', input.value = '' )">
+                        </td>
+                    </tr>
+                </form>
+
+                
+
+
             </tbody>
         </table>
 

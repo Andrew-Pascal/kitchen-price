@@ -169,6 +169,12 @@ input[value="ИТОГ"] {
   font-size: 16px;
   text-align: center;
   color: red;
+}
+
+input[value="AC"] {
+  font-size: 16px;
+  text-align: center;
+  color: rgb(21, 0, 255);
 
 }
 
