@@ -1,50 +1,31 @@
-<form name="calc_15">
+
+<!--количество в штуках-->
+
+<form name="calc_48">
     <tr>
-        <td>Установка стеновой панели</td>
+        <td>Подключение ПММ (посудомоечная машина) на готовые коммуникации</td>
         <td class="nowrap">
-            <input type="button" name="down" value="◄" OnClick="calc_15.input_15.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
-            <input type="button" name="amount" value="0" OnClick="amount.value ='0', input_15.value = ''">
-            <input type="button" name="up" value="►" OnClick="calc_15.input_15.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
+            <input type="button" name="down" value="◄" OnClick="calc_48.input_48.value = (--amount.value, calc_48.input_48.value - 650)">
+            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_48.value = ''">
+            <input type="button" name="up" value="►" OnClick="calc_48.input_48.value = (++amount.value * 650)">
         </td>
-        <td><input type="text" name="input_15" value="" size="5"></td>
+        <td><input type="text" name="input_48" value="" size="7"></td>
     </tr>
 </form>
 
 
-<form name="calc_19">
+<!--количество в погонных метрах-->
+
+
+
+<form name="calc_49">
     <tr>
-        <td>Вырез под коммуникации в стеновой панели</td>
+        <td>Наращивание жесткого сливного шланга<br>более 1,2м при подключении ПММ (посудомоечная машина)</td>
         <td class="nowrap">
-            <input type="button" name="down" value="◄" OnClick="calc_19.input_19.value = (--amount.value, calc_19.input_19.value - 200)">
-            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_19.value = ''">
-            <input type="button" name="up" value="►" OnClick="calc_19.input_19.value = (++amount.value * 200)">
+            <input type="button" name="down" value="◄" OnClick="calc_49.input_49.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 200">
+            <input type="button" name="amount" value="0" OnClick="amount.value ='0', input_49.value = ''">
+            <input type="button" name="up" value="►" OnClick="calc_49.input_49.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 200">
         </td>
-        <td><input type="text" name="input_19" value="" size="5"></td>
-    </tr>
-</form>
-
-
-
-<form name="calc_20">
-    <tr>
-        <td>Перенос точки питания</td>
-        <td class="nowrap">
-            <input type="button" name="down" value="◄" OnClick="calc_20.input_20.value = (--amount.value, calc_20.input_20.value - 200)">
-            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_20.value = ''">
-            <input type="button" name="up" value="►" OnClick="calc_20.input_20.value = (++amount.value * 200)">
-        </td>
-        <td><input type="text" name="input_20" value="" size="5"></td>
-    </tr>
-</form>
-
-
-<form name="calc">
-    <tr>
-        <td></td>
-        <td class="nowrap">
-            <input type="button" name="amount" value="СБРОС" OnClick="amount.value = 'CБРОС', input.value = ''">
-            <input type="button" name="up" value="ОБЩАЯ СУММА" OnClick="calc.input.value = (Number(calc_20.input_20.value) + Number(calc_15.input_15.value) + Number(calc_19.input_19.value))">
-        </td>
-        <td><input type="text" name="input" value=" " size="5"></td>
+        <td><input type="text" name="input_49" value="" size="7"></td>
     </tr>
 </form>
