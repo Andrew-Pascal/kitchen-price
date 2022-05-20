@@ -50,17 +50,17 @@ input[type=button] {
 
 input[name=up] {
   color: red;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 input[name=down] {
   color: red;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 input[name=amount] {
   color: rgb(0, 0, 0);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .nowrap {
