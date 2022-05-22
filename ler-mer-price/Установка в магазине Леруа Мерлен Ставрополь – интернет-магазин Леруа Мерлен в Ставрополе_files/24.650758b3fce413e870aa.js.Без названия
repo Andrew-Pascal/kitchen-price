@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[24],{67:function(n,t,o){"use strict";o.d(t,"a",(function(){return u}));var s=o(19),w=o.n(s),c=o(25);function r(){const n=w()(['<svg viewBox="0 0 10 16" xmlns="https://www.w3.org/2000/svg"><path d="M0 8l8-8 1.5 1.5L3 8l6.5 6.5L8 16 0 8z"/></svg>']);return r=function(){return n},n}const u=Object(c.m)(r())}}]);

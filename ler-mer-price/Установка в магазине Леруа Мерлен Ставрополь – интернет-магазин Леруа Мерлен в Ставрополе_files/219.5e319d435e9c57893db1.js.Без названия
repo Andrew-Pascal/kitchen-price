@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[219],{325:function(n,o,i){"use strict";i.d(o,"a",(function(){return t}));const t=()=>{const n=navigator.userAgent||navigator.vendor||window.opera;return/android/i.test(n)?"android":/iPad|iPhone|iPod/.test(n)&&!window.MSStream?"ios":""}}}]);

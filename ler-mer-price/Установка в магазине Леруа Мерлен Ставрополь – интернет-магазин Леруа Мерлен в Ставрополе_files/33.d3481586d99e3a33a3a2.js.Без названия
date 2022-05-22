@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[33],{196:function(s,c,o){"use strict";o.d(c,"a",(function(){return a}));var t=o(5),r=o.n(t);class a{constructor(){r()(this,"_collectors",[]),this._collectors=[]}add(s){this._collectors.push(s)}addMany(s){s.forEach(s=>this.add(s))}release(){this._collectors.forEach(s=>s())}}}}]);

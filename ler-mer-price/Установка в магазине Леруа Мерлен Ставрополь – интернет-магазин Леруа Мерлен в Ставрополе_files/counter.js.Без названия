@@ -1,9 +1,0 @@
-(function () {
-    if(true){
-        var d_i = document.createElement("img");
-        d_i.style.cssText="width:1px !important; height:1px !important; display:none !important;";
-        d_i.setAttribute("alt","");
-        d_i.setAttribute("src","//counter.yadro.ru/id127/ddp-id.gif");
-        var s = document.body;
-        s.appendChild(d_i);}
-})();
