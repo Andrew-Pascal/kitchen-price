@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,  initial-scale=1">
+    <title>Kitchen Price</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <script src="script.js"></script>
+    
+    <main>
+        
+        <h2 class="page-titles">МОДУЛЬНАЯ КУХНЯ</h2>
+        
+        <p><button onclick="window.location.href='index.html'" class="fontstyle-2">главная</button></p>
+        
+        <h2 class="table-headers">ПРОЕКТНАЯ КУХНЯ</h2>
+
+        <table>
+            <thead>
+                <tr><th>Наименование услуги</th><th style="width: 55px;"><!--расширение таблицы-->Кол</th><th>Сумма</th></tr>
+            </thead>
+            
+            <tbody>
+
+                <form name="calc_1">
+                    <tr>
+                        <td>Сборка каркасов кухни, навеска и стяжка верхних и нижних корпусов, навеска и регулировка дверей.Установка столешницы ДСП, плинтуса, цоколя, фальшпанелей. 
+                            Распил столешницы и стеновой панели МДФ / ДСП (2 пила включены в стоимость). Вырез под трубы (2 выреза включены в стоимость). Вырез отверстия под ВАРОЧНУЮ ПАНЕЛЬ и МОЙКУ.
+                            Установка и подключение ЭЛЕКТОПЛИТЫ или ЭЛЕКТРИЧЕСКОЙ ВАПРОЧНОЙ ПАНЕЛИ или ДУХОВОГО ШКАФА (на готовые коммуникации). Установка и подключение МОЙКИ (без наращивания шлангов).
+                            Установка СМЕСИТЕЛЯ (без доработок). Установка ВЫТЯЖКИ без переделки каркаса. Подключение ВЫТЯЖКИ в режиме рециркуляции. Установка встроенной СВЧ (микроволновая печь) без подпила фасада
+                            Установка СУШКИ и ВЫДВИЖНЫХ КОРЗИН. Вырез отверстия под СМЕСИТЕЛЬ в мойки или столешнице МДФ / ДСП. Монтаж РУЧЕК и НОЖЕК. Установка РЕЙЛИНГА в стеновую панель МДФ / ДСП</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_1.input_calc_1.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 2000">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_calc_1.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_1.input_calc_1.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 2000">
+                        </td>
+                        <td><input type="text" name="input_calc_1" value=" " size="7"></td>
+                    </tr>
+                </form>
