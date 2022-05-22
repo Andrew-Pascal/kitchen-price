@@ -29,29 +29,30 @@ td {
   border: 1px solid rgb(0, 0, 0);
   /* Рамка вокруг таблицы */
   font-weight: bolder;
+  padding: 0px 0px 0px 0px;
 }
 
 input[name=up] { /* стрелка повышения */
   font-family:'Times New Roman', Times, serif;
-  font-size: 9px;
-  text-align: left;
+  font-size: 10px;
   color: red;
   font-weight: bolder; 
   background-color: rgb(184, 194, 216); 
   border: 0px;
+  padding: 0px 0px 0px 0px;
 }
 
-input[name=down] { /* стрелка понижение */
+input[name=down] { /* стрелка понижение  */
   font-family:'Times New Roman', Times, serif; 
-  font-size: 9px;
-  text-align: right;
+  font-size: 10px;
   color: red;
   font-weight: bolder; 
   background-color: rgb(184, 194, 216); 
   border: 0px;
+  padding: 0px 0px 0px 0px;
 }
 
-input[name=amount] { /*  количество */
+input[name=amount] { /*  количество в таблице */
   font-family:'Times New Roman', Times, serif;
   font-size: 10px;
   text-align: center;
@@ -61,13 +62,14 @@ input[name=amount] { /*  количество */
   border: 0px;
 }
 
-input[type=text] { /* результат */
+input[type=text] { /* результат в таблице */
   font-family:'Times New Roman', Times, serif; 
   font-size: 12px;
   text-align: center;
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 .nowrap {
