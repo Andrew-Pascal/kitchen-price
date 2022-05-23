@@ -1,3 +1,40 @@
 <!--количество в штуках-->
 
+<form name="calc_9">
+    <tr>
+        <td>Навеска дополнительного верхнего уровня шкафов КУХНЯ-ФУТЛЯР</td>
+        <td class="nowrap">
+            <input type="button" name="down" value="◄" OnClick="calc_9.input_9.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 400">
+            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_9.value = ' '">
+            <input type="button" name="up" value="►" OnClick="calc_9.input_9.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 400">
+        </td>
+        <td><input type="text" name="input_9" value=" " size="7"></td>
+    </tr>
+</form>
+
+<form name="calc_12">
+    <tr>
+        <td>Навеска дополнительного верхнего уровня шкафов КУХНЯ-ФУТЛЯР</td>
+        <td class="nowrap">
+            <input type="button" name="down" value="◄" OnClick="calc_12.input_12.value = ((amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 400).toFixed()">
+            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_12.value = ' '">
+            <input type="button" name="up" value="►" OnClick="calc_12.input_12.value = ((amount.value = (1 / 10 + +amount.value).toFixed(1)) * 400).toFixed()">
+        </td>
+        <td><input type="text" name="input_12" value=" " size="7"></td>
+    </tr>
+</form>
+
+<form name="calc_14">
+    <tr>
+        <td>Установка раздвижной системы ШКАФ-КУПЕ</td>
+        <td class="nowrap">
+            <input type="button" name="down" value="◄" OnClick="calc_14.input_14.value = (--amount.value, calc_14.input_14.value  - 1000)">
+            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_14.value = ' '">
+            <input type="button" name="up" value="►" OnClick="calc_14.input_14.value = (++amount.value * 1000)">
+        </td>
+        <td><input type="text" name="input_14" value=" " size="7"></td>
+    </tr>
+</form>
+
 <!--количество в погонных метрах-->
+

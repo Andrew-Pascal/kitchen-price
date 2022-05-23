@@ -152,6 +152,7 @@ input[name=amount] { /*  количество в таблице */
   font-weight: bolder; 
   background-color: rgb(184, 194, 216); 
   border: 0px;
+  padding: 0px 0px 0px 0px;
 }
 
 input[type=text] { /* результат в таблице */
