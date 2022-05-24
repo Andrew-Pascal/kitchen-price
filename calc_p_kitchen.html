@@ -226,7 +226,7 @@
                 
                 <form name="calc_16">
                     <tr>
-                        <td>Вырез отверстия под МОЙКУ</td>
+                        <td>Вырез под МОЙКУ</td>
                         <td class="nowrap">
                             <input type="button" name="down" value="◄" OnClick="calc_16.input_16.value = (--amount.value, calc_16.input_16.value  - 500)">
                             <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_16.value = ' '">
@@ -238,7 +238,7 @@
 
                 <form name="calc_17">
                     <tr>
-                        <td>Вырез отверстия под ВАРОЧНУЮ ПАНЕЛЬ</td>
+                        <td>Вырез под ВАРОЧНУЮ ПАНЕЛЬ</td>
                         <td class="nowrap">
                             <input type="button" name="down" value="◄" OnClick="calc_17.input_17.value = (--amount.value, calc_17.input_17.value  - 500)">
                             <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_17.value = ' '">
@@ -274,7 +274,7 @@
 
                 <form name="calc_20">
                     <tr>
-                        <td>Распил в длинну более 80см<br>(продольный пил)</td>
+                        <td>Распил в длинну более 0.8м (продольный пил)</td>
                         <td class="nowrap">
                             <input type="button" name="down" value="◄" OnClick="calc_20.input_20.value = (--amount.value, calc_20.input_20.value  - 400)">
                             <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_20.value = ' '">
@@ -331,8 +331,72 @@
                         <td><input type="text" name="input_24" value=" " size="7"></td>
                     </tr>
                 </form>
-
+                
                 <tr><td class="group-in-table" colspan="3">СТЕНОВАЯ ПАНЕЛЬ МДФ / ДСП</td></tr>
+
+                <form name="calc_25">
+                    <tr>
+                        <td>Установка (до уровня навесных шкафов)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_25.input_25calc_25.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_25calc_25.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_25.input_25calc_25.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
+                        </td>
+                        <td><input type="text" name="input_25calc_25" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_26">
+                    <tr>
+                        <td>Распил</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_26.input_26.value = (--amount.value, calc_26.input_26.value  - 150)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_26.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_26.input_26.value = (++amount.value * 150)">
+                        </td>
+                        <td><input type="text" name="input_26" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_27">
+                    <tr>
+                        <td>Распил в длинну более 0.6м (продольный пил)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_27.input_27.value = (--amount.value, calc_27.input_27.value  - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_27.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_27.input_27.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_27" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_28">
+                    <tr>
+                        <td>Вырез под розетки / выключатели</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_28.input_28.value = (--amount.value, calc_28.input_28.value  - 200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_28.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_28.input_28.value = (++amount.value * 200)">
+                        </td>
+                        <td><input type="text" name="input_28" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_29">
+                    <tr>
+                        <td>Установка торцевых / соединительных планок</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_29.input_29.value = (--amount.value, calc_29.input_29.value  - 70)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_29.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_29.input_29.value = (++amount.value * 70)">
+                        </td>
+                        <td><input type="text" name="input_29" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <tr><td class="group-in-table" colspan="3">ЭЛЕКТРИКА</td></tr>
+
+                
 
             </tbody>
         </table>
