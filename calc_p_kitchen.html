@@ -640,7 +640,7 @@
                     </tr>
                 </form>
 
-                <form name="calc_50">
+                <form name="calc_50"> <!--ОШИБКА-->
                     <tr>
                         <td>Установка рейлинга в плитку / керамогранит</td>
                         <td class="nowrap">
@@ -748,14 +748,521 @@
                     </tr>
                 </form>
 
-                <h2 class="table-headers">Установка и подключение товаров<br>НЕ ЛЕРУА МЕРЛЕН</h2>
+                <tr><td class="group-in-table" colspan="3">Установка и подключение товаров<br>НЕ ЛЕРУА МЕРЛЕН</td></tr>
+
+                <form name="calc_59">
+                    <tr>
+                        <td>ВАРОЧНАЯ ПОВЕРХНОСТЬ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_59.input_59.value = (--amount.value, calc_59.input_59.value - 1000)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_59.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_59.input_59.value = (++amount.value * 1000)">
+                        </td>
+                        <td><input type="text" name="input_59" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_60">
+                    <tr>
+                        <td>ДУХОВОЙ ШКАФ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_60.input_60.value = (--amount.value, calc_60.input_60.value - 1000)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_60.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_60.input_60.value = (++amount.value * 1000)">
+                        </td>
+                        <td><input type="text" name="input_60" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_61">
+                    <tr>
+                        <td>ПЛИТА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_61.input_61.value = (--amount.value, calc_61.input_61.value - 1000)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_61.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_61.input_61.value = (++amount.value * 1000)">
+                        </td>
+                        <td><input type="text" name="input_61" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_62">
+                    <tr>
+                        <td>СТИРАЛЬНАЯ МАШИНА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_62.input_62.value = (--amount.value, calc_62.input_62.value - 1100)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_62.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_62.input_62.value = (++amount.value * 1100)">
+                        </td>
+                        <td><input type="text" name="input_62" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_63">
+                    <tr>
+                        <td>ПОСУДОМОЕЧНАЯ МАШИНА (ПММ)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_63.input_63.value = (--amount.value, calc_63.input_63.value - 1250)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_63.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_63.input_63.value = (++amount.value * 1250)">
+                        </td>
+                        <td><input type="text" name="input_63" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_64">
+                    <tr>
+                        <td>ВСТРОЕННАЯ МИКРОВОЛНОВАЯ ПЕЧЬ (СВЧ)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_64.input_64.value = (--amount.value, calc_64.input_64.value - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_64.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_64.input_64.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_64" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_65">
+                    <tr>
+                        <td>ВЫТЯЖКА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_65.input_65.value = (--amount.value, calc_65.input_65.value - 1000)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_65.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_65.input_65.value = (++amount.value * 1000)">
+                        </td>
+                        <td><input type="text" name="input_65" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_70">
+                    <tr>
+                        <td>ВСТРАИВАЕМЫЙ ХОЛОДИЛЬНИК</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_70.input_70.value = (--amount.value, calc_70.input_70.value - 1200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_70.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_70.input_70.value = (++amount.value * 1200)">
+                        </td>
+                        <td><input type="text" name="input_70" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_71">
+                    <tr>
+                        <td>ИЗМЕЛЬЧИТЕЛЬ ПИЩЕВЫХ ОТХОДОВ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_71.input_71.value = (--amount.value, calc_71.input_71.value - 500)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_71.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_71.input_71.value = (++amount.value * 500)">
+                        </td>
+                        <td><input type="text" name="input_71" value=" " size="7"></td>
+                    </tr>
+                </form>
+                
+                <tr><td class="group-in-table" colspan="3">Установка и подключение товаров<br>НЕ ЛЕРУА МЕРЛЕН<br>РАЗДЕЛЬНО</td></tr>
+
+                <form name="calc_66">
+                    <tr>
+                        <td>Установка ВАРОЧНОЙ ПОВЕРХНОСТИ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_66.input_66.value = (--amount.value, calc_66.input_66.value - 400)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_66.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_66.input_66.value = (++amount.value * 400)">
+                        </td>
+                        <td><input type="text" name="input_66" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_67">
+                    <tr>
+                        <td>Подключение ВАРОЧНОЙ ПОВЕРХНОСТИ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_67.input_67.value = (--amount.value, calc_67.input_67.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_67.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_67.input_67.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_67" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_68">
+                    <tr>
+                        <td>Установка ДУХОВОГО ШКАФА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_68.input_68.value = (--amount.value, calc_68.input_68.value - 400)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_68.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_68.input_68.value = (++amount.value * 400)">
+                        </td>
+                        <td><input type="text" name="input_68" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_69">
+                    <tr>
+                        <td>Подключение ДУХОВОГО ШКАФА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_69.input_69.value = (--amount.value, calc_69.input_69.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_69.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_69.input_69.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_69" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_72">
+                    <tr>
+                        <td>Установка ПЛИТЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_72.input_72.value = (--amount.value, calc_72.input_72.value - 400)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_72.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_72.input_72.value = (++amount.value * 400)">
+                        </td>
+                        <td><input type="text" name="input_72" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_73">
+                    <tr>
+                        <td>Подключение ПЛИТЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_73.input_73.value = (--amount.value, calc_73.input_73.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_73.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_73.input_73.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_73" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_74">
+                    <tr>
+                        <td>Установка СТИРАЛЬНОЙ МАШИНЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_74.input_74.value = (--amount.value, calc_74.input_74.value - 500)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_74.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_74.input_74.value = (++amount.value * 500)">
+                        </td>
+                        <td><input type="text" name="input_74" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_75">
+                    <tr>
+                        <td>Подключение СТИРАЛЬНОЙ МАШИНЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_75.input_75.value = (--amount.value, calc_75.input_75.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_75.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_75.input_75.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_75" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_76">
+                    <tr>
+                        <td>Установка ПОСУДОМОЕЧНОЙ МАШИНЫ (ПММ)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_76.input_76.value = (--amount.value, calc_76.input_76.value - 650)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_76.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_76.input_76.value = (++amount.value * 650)">
+                        </td>
+                        <td><input type="text" name="input_76" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_77">
+                    <tr>
+                        <td>Подключение ПОСУДОМОЕЧНОЙ МАШИНЫ (ПММ)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_77.input_77.value = (--amount.value, calc_77.input_77.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_77.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_77.input_77.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_77" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_78">
+                    <tr>
+                        <td>Установка ВСТРАИВАЕМОЙ СВЧ (микроволновая печь)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_78.input_78.value = (--amount.value, calc_78.input_78.value - 200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_78.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_78.input_78.value = (++amount.value * 200)">
+                        </td>
+                        <td><input type="text" name="input_78" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_79">
+                    <tr>
+                        <td>Подключение ВСТРАИВАЕМОЙ СВЧ (микроволновая печь)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_79.input_79.value = (--amount.value, calc_79.input_79.value - 100)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_79.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_79.input_79.value = (++amount.value * 100)">
+                        </td>
+                        <td><input type="text" name="input_79" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_80">
+                    <tr>
+                        <td>Установка ВЫТЯЖКИ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_80.input_80.value = (--amount.value, calc_80.input_80.value - 500)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_80.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_80.input_80.value = (++amount.value * 500)">
+                        </td>
+                        <td><input type="text" name="input_80" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_81">
+                    <tr>
+                        <td>Подключение ВЫТЯЖКИ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_81.input_81.value = (--amount.value, calc_81.input_81.value - 500)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_81.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_81.input_81.value = (++amount.value * 500)">
+                        </td>
+                        <td><input type="text" name="input_81" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_82">
+                    <tr>
+                        <td>Установка ВСТРАИВАЕМОГО ХОЛОДИЛЬНИКА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_82.input_82.value = (--amount.value, calc_82.input_82.value - 750)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_82.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_82.input_82.value = (++amount.value * 750)">
+                        </td>
+                        <td><input type="text" name="input_82" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_83">
+                    <tr>
+                        <td>Подключение ВСТРАИВАЕМОГО ХОЛОДИЛЬНИКА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_83.input_83.value = (--amount.value, calc_83.input_83.value - 450)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_83.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_83.input_83.value = (++amount.value * 450)">
+                        </td>
+                        <td><input type="text" name="input_83" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <tr><td class="group-in-table" colspan="3">Установка и подключение товаров<br>ЛЕРУА МЕРЛЕН</td></tr>
+
+                <form name="calc_84">
+                    <tr>
+                        <td>Установка и подключение ВАРОЧНОЙ ПОВЕРХНОСТИ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_84.input_84.value = (--amount.value, calc_84.input_84.value - 400)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_84.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_84.input_84.value = (++amount.value * 400)">
+                        </td>
+                        <td><input type="text" name="input_84" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_85">
+                    <tr>
+                        <td>Установка и подключение ДУХОВОГО ШКАФА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_85.input_85.value = (--amount.value, calc_85.input_85.value - 400)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_85.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_85.input_85.value = (++amount.value * 400)">
+                        </td>
+                        <td><input type="text" name="input_85" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_86">
+                    <tr>
+                        <td>Установка и подключение ПЛИТЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_86.input_86.value = (--amount.value, calc_86.input_86.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_86.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_86.input_86.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_86" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_87">
+                    <tr>
+                        <td>Установка и подключение СТИРАЛЬНОЙ МАШИНЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_87.input_87.value = (--amount.value, calc_87.input_87.value - 500)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_87.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_87.input_87.value = (++amount.value * 500)">
+                        </td>
+                        <td><input type="text" name="input_87" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_88">
+                    <tr>
+                        <td>Установка и подключение ПОСУДОМОЕЧНОЙ МАШИНЫ (ПММ)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_88.input_88.value = (--amount.value, calc_88.input_88.value - 650)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_88.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_88.input_88.value = (++amount.value * 650)">
+                        </td>
+                        <td><input type="text" name="input_88" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_89">
+                    <tr>
+                        <td>Установка и подключение ВСТРАИВАЕМОГО ХОЛОДИЛЬНИКА</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_89.input_89.value = (--amount.value, calc_89.input_89.value - 750)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_89.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_89.input_89.value = (++amount.value * 750)">
+                        </td>
+                        <td><input type="text" name="input_89" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_90">
+                    <tr>
+                        <td>Установка и подключение ИЗМЕЛЬЧИТЕЛЯ ПИЩЕВЫХ ОТХОДОВ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_90.input_90.value = (--amount.value, calc_90.input_90.value - 400)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_90.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_90.input_90.value = (++amount.value * 400)">
+                        </td>
+                        <td><input type="text" name="input_90" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_91">
+                    <tr>
+                        <td>Установка и подключение ФИЛЬТРА ДЛЯ ВОДЫ</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_91.input_91.value = (--amount.value, calc_91.input_91.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_91.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_91.input_91.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_91" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_92">
+                    <tr>
+                        <td>Установка и подключение ВЫТЯЖКИ (к отдельной точке электроснабжения без доработки)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_92.input_92.value = (--amount.value, calc_92.input_92.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_92.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_92.input_92.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_92" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_93">
+                    <tr>
+                        <td>Подключение встроенной СВЧ (микроволновая печь)</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_93.input_93.value = (--amount.value, calc_93.input_93.value - 200)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_93.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_93.input_93.value = (++amount.value * 200)">
+                        </td>
+                        <td><input type="text" name="input_93" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <h2 class="table-headers">Демонтаж</h2>
+
+                <form name="calc_94">
+                    <tr>
+                        <td>Столешница ДСП</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_94.input_94.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_94.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_94.input_94.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
+                        </td>
+                        <td><input type="text" name="input_94" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_95">
+                    <tr>
+                        <td>Стеновая панель МДФ / ДСП</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_95.input_95.value = (amount.value = (-1 / 10 + +amount.value).toFixed(1)) * 250">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_95.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_95.input_95.value = (amount.value = (1 / 10 + +amount.value).toFixed(1)) * 250">
+                        </td>
+                        <td><input type="text" name="input_95" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_96">
+                    <tr>
+                        <td>Металлическая мойка</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_96.input_96.value = (--amount.value, calc_96.input_96.value - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_96.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_96.input_96.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_96" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_97">
+                    <tr>
+                        <td>Вклеенная мойка из фрагранита</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_97.input_97.value = (--amount.value, calc_97.input_97.value - 600)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_97.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_97.input_97.value = (++amount.value * 600)">
+                        </td>
+                        <td><input type="text" name="input_97" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_98">
+                    <tr>
+                        <td>Варочная электрическая / газовая поверхность</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_98.input_98.value = (--amount.value, calc_98.input_98.value - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_98.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_98.input_98.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_98" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_99">
+                    <tr>
+                        <td>Духовой электрический шкаф</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_99.input_99.value = (--amount.value, calc_99.input_99.value - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_99.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_99.input_99.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_99" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_100">
+                    <tr>
+                        <td>Вытяжка</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_100.input_100.value = (--amount.value, calc_100.input_100.value - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_100.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_100.input_100.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_100" value=" " size="7"></td>
+                    </tr>
+                </form>
 
             </tbody>
         </table>
-
-                
-                
-                
+        
                 <h2 class="table-headers">ИТОГОВАЯ СУММА</h2>
         
                 <table>
@@ -821,7 +1328,49 @@
                                     Number(calc_55.input_55.value) +
                                     Number(calc_56.input_56.value) +
                                     Number(calc_57.input_57.value) +
-                                    Number(calc_58.input_58.value) )">
+                                    Number(calc_58.input_58.value) +
+                                    Number(calc_59.input_59.value) +
+                                    Number(calc_60.input_60.value) +
+                                    Number(calc_61.input_61.value) +
+                                    Number(calc_62.input_62.value) +
+                                    Number(calc_63.input_63.value) +
+                                    Number(calc_64.input_64.value) +
+                                    Number(calc_65.input_65.value) +
+                                    Number(calc_66.input_66.value) +
+                                    Number(calc_67.input_67.value) +
+                                    Number(calc_68.input_68.value) +
+                                    Number(calc_69.input_69.value) +
+                                    Number(calc_70.input_70.value) +
+                                    Number(calc_71.input_71.value) +
+                                    Number(calc_72.input_72.value) +
+                                    Number(calc_73.input_73.value) +
+                                    Number(calc_74.input_74.value) +
+                                    Number(calc_75.input_75.value) +
+                                    Number(calc_76.input_76.value) +
+                                    Number(calc_77.input_77.value) +
+                                    Number(calc_78.input_78.value) +
+                                    Number(calc_79.input_79.value) +
+                                    Number(calc_80.input_80.value) +
+                                    Number(calc_81.input_81.value) +
+                                    Number(calc_82.input_82.value) +
+                                    Number(calc_83.input_83.value) +
+                                    Number(calc_84.input_84.value) +
+                                    Number(calc_85.input_85.value) +
+                                    Number(calc_86.input_86.value) +
+                                    Number(calc_87.input_87.value) +
+                                    Number(calc_88.input_88.value) +
+                                    Number(calc_89.input_89.value) +
+                                    Number(calc_90.input_90.value) +
+                                    Number(calc_91.input_91.value) +
+                                    Number(calc_92.input_92.value) +
+                                    Number(calc_93.input_93.value) +
+                                    Number(calc_94.input_94.value) +
+                                    Number(calc_95.input_95.value) +
+                                    Number(calc_96.input_96.value) +
+                                    Number(calc_97.input_97.value) +
+                                    Number(calc_98.input_98.value) +
+                                    Number(calc_99.input_99.value) +
+                                    Number(calc_100.input_100.value))">
                                 </td>
                                 <td><input type="text" name="input" value=" " size="7"></td></td>
                                 <td><input type="button" name="amount" value="C" OnClick="amount.value = 'C', input.value = ' '"></td>
@@ -875,6 +1424,7 @@
                                     (calc_47.input_47.value) ='',
                                     (calc_48.input_48.value) ='',
                                     (calc_49.input_49.value) ='',
+                                    (calc_50.input_50.value) ='',
                                     (calc_51.input_51.value) ='',
                                     (calc_52.input_52.value) ='',
                                     (calc_53.input_53.value) ='',
@@ -883,6 +1433,48 @@
                                     (calc_56.input_56.value) ='',
                                     (calc_57.input_57.value) ='',
                                     (calc_58.input_58.value) ='',
+                                    (calc_59.input_59.value) ='',
+                                    (calc_60.input_60.value) ='',
+                                    (calc_61.input_61.value) ='',
+                                    (calc_62.input_62.value) ='',
+                                    (calc_63.input_63.value) ='',
+                                    (calc_64.input_64.value) ='',
+                                    (calc_65.input_65.value) ='',
+                                    (calc_66.input_66.value) ='',
+                                    (calc_67.input_67.value) ='',
+                                    (calc_68.input_68.value) ='',
+                                    (calc_69.input_69.value) ='',
+                                    (calc_70.input_70.value) ='',
+                                    (calc_71.input_71.value) ='',
+                                    (calc_72.input_72.value) ='',
+                                    (calc_73.input_73.value) ='',
+                                    (calc_74.input_74.value) ='',
+                                    (calc_75.input_75.value) ='',
+                                    (calc_76.input_76.value) ='',
+                                    (calc_77.input_77.value) ='',
+                                    (calc_78.input_78.value) ='',
+                                    (calc_79.input_79.value) ='',
+                                    (calc_80.input_80.value) ='',
+                                    (calc_81.input_81.value) ='',
+                                    (calc_82.input_82.value) ='',
+                                    (calc_83.input_83.value) ='',
+                                    (calc_84.input_84.value) ='',
+                                    (calc_85.input_85.value) ='',
+                                    (calc_86.input_86.value) ='',
+                                    (calc_87.input_87.value) ='',
+                                    (calc_88.input_88.value) ='',
+                                    (calc_89.input_89.value) ='',
+                                    (calc_90.input_90.value) ='',
+                                    (calc_91.input_91.value) ='',
+                                    (calc_92.input_92.value) ='',
+                                    (calc_93.input_93.value) ='',
+                                    (calc_94.input_94.value) ='',
+                                    (calc_95.input_95.value) ='',
+                                    (calc_96.input_96.value) ='',
+                                    (calc_97.input_97.value) ='',
+                                    (calc_98.input_98.value) ='',
+                                    (calc_99.input_99.value) ='',
+                                    (calc_100.input_100.value) ='',
                                     (calc_1.amount.value) = '0',
                                     (calc_2.amount.value) = '0',
                                     (calc_3.amount.value) = '0',
@@ -941,6 +1533,48 @@
                                     (calc_56.amount.value) = '0',
                                     (calc_57.amount.value) = '0',
                                     (calc_58.amount.value) = '0',
+                                    (calc_59.amount.value) = '0',
+                                    (calc_60.amount.value) = '0',
+                                    (calc_61.amount.value) = '0',
+                                    (calc_62.amount.value) = '0',
+                                    (calc_63.amount.value) = '0',
+                                    (calc_64.amount.value) = '0',
+                                    (calc_65.amount.value) = '0',
+                                    (calc_66.amount.value) = '0',
+                                    (calc_67.amount.value) = '0',
+                                    (calc_68.amount.value) = '0',
+                                    (calc_69.amount.value) = '0',
+                                    (calc_70.amount.value) = '0',
+                                    (calc_71.amount.value) = '0',
+                                    (calc_72.amount.value) = '0',
+                                    (calc_73.amount.value) = '0',
+                                    (calc_74.amount.value) = '0',
+                                    (calc_75.amount.value) = '0',
+                                    (calc_76.amount.value) = '0',
+                                    (calc_77.amount.value) = '0',
+                                    (calc_78.amount.value) = '0',
+                                    (calc_79.amount.value) = '0',
+                                    (calc_80.amount.value) = '0',
+                                    (calc_81.amount.value) = '0',
+                                    (calc_82.amount.value) = '0',
+                                    (calc_83.amount.value) = '0',
+                                    (calc_84.amount.value) = '0',
+                                    (calc_85.amount.value) = '0',
+                                    (calc_86.amount.value) = '0',
+                                    (calc_87.amount.value) = '0',
+                                    (calc_88.amount.value) = '0',
+                                    (calc_89.amount.value) = '0',
+                                    (calc_90.amount.value) = '0',
+                                    (calc_91.amount.value) = '0',
+                                    (calc_92.amount.value) = '0',
+                                    (calc_93.amount.value) = '0',
+                                    (calc_94.amount.value) = '0',
+                                    (calc_95.amount.value) = '0',
+                                    (calc_96.amount.value) = '0',
+                                    (calc_97.amount.value) = '0',
+                                    (calc_98.amount.value) = '0',
+                                    (calc_99.amount.value) = '0',
+                                    (calc_100.amount.value) = '0',
                                     amount.value = 'C', input.value = ' ' )">
                                 </td>
                             </tr>
