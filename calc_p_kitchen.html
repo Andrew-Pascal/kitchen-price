@@ -592,6 +592,30 @@
 
                 <tr><td class="group-in-table" colspan="3">ДРУГИЕ УСЛУГИ</td></tr>
 
+                <form name="calc_101">
+                    <tr>
+                        <td>Установка настенной полки</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_101.input_101.value = (--amount.value, calc_101.input_101.value - 250)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_101.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_101.input_101.value = (++amount.value * 250)">
+                        </td>
+                        <td><input type="text" name="input_101" value=" " size="7"></td>
+                    </tr>
+                </form>
+
+                <form name="calc_102">
+                    <tr>
+                        <td>Установка гофры на вытяжку</td>
+                        <td class="nowrap">
+                            <input type="button" name="down" value="◄" OnClick="calc_102.input_102.value = (--amount.value, calc_102.input_102.value - 300)">
+                            <input type="button" name="amount" value="0" OnClick="amount.value = '0', input_102.value = ' '">
+                            <input type="button" name="up" value="►" OnClick="calc_102.input_102.value = (++amount.value * 300)">
+                        </td>
+                        <td><input type="text" name="input_102" value=" " size="7"></td>
+                    </tr>
+                </form>
+
                 <form name="calc_46">
                     <tr>
                         <td>Монтаж пластикового короба при подключении вытяжки</td>
@@ -640,7 +664,7 @@
                     </tr>
                 </form>
 
-                <form name="calc_50"> <!--ОШИБКА-->
+                <form name="calc_50">
                     <tr>
                         <td>Установка рейлинга в плитку / керамогранит</td>
                         <td class="nowrap">
@@ -664,7 +688,7 @@
                     </tr>
                 </form>
 
-                <form name="calc_52">
+                <!--<form name="calc_52">
                     <tr>
                         <td>Перенос стойки углового шкафа</td>
                         <td class="nowrap">
@@ -674,9 +698,9 @@
                         </td>
                         <td><input type="text" name="input_52" value=" " size="7"></td>
                     </tr>
-                </form>
+                </form>-->
 
-                <form name="calc_53">
+                <!--<form name="calc_53">
                     <tr>
                         <td>Установка балюстрады (распил включен)</td>
                         <td class="nowrap">
@@ -686,9 +710,9 @@
                         </td>
                         <td><input type="text" name="input_53" value=" " size="7"></td>
                     </tr>
-                </form>
+                </form>-->
 
-                <form name="calc_54">
+                <!--<form name="calc_54">
                     <tr>
                         <td>Установка барной трубы (включая распил трубы) с аксессуарами</td>
                         <td class="nowrap">
@@ -698,9 +722,9 @@
                         </td>
                         <td><input type="text" name="input_54" value=" " size="7"></td>
                     </tr>
-                </form>
+                </form>-->
 
-                <form name="calc_55">
+                <!--<form name="calc_55">
                     <tr>
                         <td>Установка пилястры с закладными деталями и распилом (при необходимости)</td>
                         <td class="nowrap">
@@ -710,9 +734,9 @@
                         </td>
                         <td><input type="text" name="input_55" value=" " size="7"></td>
                     </tr>
-                </form>
+                </form>-->
 
-                <form name="calc_56">
+                <!--<form name="calc_56">
                     <tr>
                         <td>Установка менсолы</td>
                         <td class="nowrap">
@@ -722,7 +746,7 @@
                         </td>
                         <td><input type="text" name="input_56" value=" " size="7"></td>
                     </tr>
-                </form>
+                </form>-->
 
                 <form name="calc_57">
                     <tr>
@@ -1322,11 +1346,6 @@
                                     Number(calc_49.input_49.value) +
                                     Number(calc_50.input_50.value) +
                                     Number(calc_51.input_51.value) +
-                                    Number(calc_52.input_52.value) +
-                                    Number(calc_53.input_53.value) +
-                                    Number(calc_54.input_54.value) +
-                                    Number(calc_55.input_55.value) +
-                                    Number(calc_56.input_56.value) +
                                     Number(calc_57.input_57.value) +
                                     Number(calc_58.input_58.value) +
                                     Number(calc_59.input_59.value) +
@@ -1370,7 +1389,9 @@
                                     Number(calc_97.input_97.value) +
                                     Number(calc_98.input_98.value) +
                                     Number(calc_99.input_99.value) +
-                                    Number(calc_100.input_100.value))">
+                                    Number(calc_100.input_100.value) +
+                                    Number(calc_101.input_101.value) +
+                                    Number(calc_102.input_102.value))">
                                 </td>
                                 <td><input type="text" name="input" value=" " size="7"></td></td>
                                 <td><input type="button" name="amount" value="C" OnClick="amount.value = 'C', input.value = ' '"></td>
@@ -1426,11 +1447,6 @@
                                     (calc_49.input_49.value) ='',
                                     (calc_50.input_50.value) ='',
                                     (calc_51.input_51.value) ='',
-                                    (calc_52.input_52.value) ='',
-                                    (calc_53.input_53.value) ='',
-                                    (calc_54.input_54.value) ='',
-                                    (calc_55.input_55.value) ='',
-                                    (calc_56.input_56.value) ='',
                                     (calc_57.input_57.value) ='',
                                     (calc_58.input_58.value) ='',
                                     (calc_59.input_59.value) ='',
@@ -1475,6 +1491,8 @@
                                     (calc_98.input_98.value) ='',
                                     (calc_99.input_99.value) ='',
                                     (calc_100.input_100.value) ='',
+                                    (calc_101.input_101.value) ='',
+                                    (calc_102.input_102.value) ='',
                                     (calc_1.amount.value) = '0',
                                     (calc_2.amount.value) = '0',
                                     (calc_3.amount.value) = '0',
@@ -1526,11 +1544,6 @@
                                     (calc_49.amount.value) = '0',
                                     (calc_50.amount.value) = '0',
                                     (calc_51.amount.value) = '0',
-                                    (calc_52.amount.value) = '0',
-                                    (calc_53.amount.value) = '0',
-                                    (calc_54.amount.value) = '0',
-                                    (calc_55.amount.value) = '0',
-                                    (calc_56.amount.value) = '0',
                                     (calc_57.amount.value) = '0',
                                     (calc_58.amount.value) = '0',
                                     (calc_59.amount.value) = '0',
@@ -1575,6 +1588,8 @@
                                     (calc_98.amount.value) = '0',
                                     (calc_99.amount.value) = '0',
                                     (calc_100.amount.value) = '0',
+                                    (calc_101.amount.value) = '0',
+                                    (calc_102.amount.value) = '0',
                                     amount.value = 'C', input.value = ' ' )">
                                 </td>
                             </tr>
