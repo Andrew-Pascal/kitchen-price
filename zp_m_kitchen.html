@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,  initial-scale=1">
+    <title>Kitchen Price</title>
+    <link rel="stylesheet" href="style.css">
+
+
+
+</head>
+<body>
+    
+    <div>
+        <input type="text" id="amountInput">
+    </div>
+
+    <div>
+        <input type="text" id="lengthInput">
+    </div>
+
+
+    <div>
+        <button id="resultButton">ИТОГ</button>
+    </div>
+    
+    <div><span id="textResult"></span></div>
+
+    <script> 
+        const modularKitchen = (amount, length) => {
+            const a = length * 1500;
+            const a1 = a - a / 100 * 40;
+            const b = amount - a;
+            const b1 = b - b / 100 * 14;
+            return a1 + b1;
+        };
+
+        const projectKitchen = (amount, length) => {
+            const a = length * 2500;
+            const a1 = a - a / 100 * 40;
+            const b = amount - a;
+            const b1 = b - b / 100 * 14;
+            return a1 + b1;
+        };
+
+
+        resultButton.onclick = function() {
+            var amountInput = document.getElementById('amountInput').value;
+            var lengthInput = document.getElementById('lengthInput').value;
+            const result = modularKitchen(amountInput, lengthInput);
+            document.getElementById('textResult').innerHTML=result;
+        };
+
+    </script>
+    
+</body>
+</html>
+
+
+
+
+
+    
+   
