@@ -10,6 +10,8 @@
 
 </head>
 <body>
+
+    <h2>Модульная Кухня</h2>
     
     <div>
         <input type="text" id="amountInput">
@@ -25,6 +27,25 @@
     </div>
     
     <div><span id="textResult"></span></div>
+
+    
+    
+    <h2>Проектная Кухня</h2>
+    
+    <div>
+        <input type="text" id="amountInput_2">
+    </div>
+
+    <div>
+        <input type="text" id="lengthInput_2">
+    </div>
+
+
+    <div>
+        <button id="resultButton_2">ИТОГ</button>
+    </div>
+    
+    <div><span id="textResult_2"></span></div>
 
     <script> 
         const modularKitchen = (amount, length) => {
@@ -49,6 +70,13 @@
             var lengthInput = document.getElementById('lengthInput').value;
             const result = modularKitchen(amountInput, lengthInput);
             document.getElementById('textResult').innerHTML=result;
+        };
+
+        resultButton_2.onclick = function() {
+            var amountInput_2 = document.getElementById('amountInput_2').value;
+            var lengthInput_2 = document.getElementById('lengthInput_2').value;
+            const result = projectKitchen(amountInput_2, lengthInput_2);
+            document.getElementById('textResult_2').innerHTML=result;
         };
 
     </script>
