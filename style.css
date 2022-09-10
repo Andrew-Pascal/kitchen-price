@@ -224,3 +224,14 @@ button[name="result_2"] { /* Итог Проектная Кухня */
   border: 0px;
 
 }
+
+button[name="result_3"] { /* СБРОС */
+  font-family:'Times New Roman', Times, serif;
+  font-size: 15px;
+  text-align: center;
+  color: rgb(14, 0, 174);
+  font-weight: bolder;
+  background-color: rgb(184, 194, 216); 
+  border: 0px;
+
+}

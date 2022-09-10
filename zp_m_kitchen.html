@@ -15,14 +15,6 @@
     
     <p><button onclick="window.location.href='index.html'" class="fontstyle-2">главная</button></p>
     
-    <div>
-        <input type="button" name="allclear" value="СБРОС" OnClick="amountInput.value ='', 
-                                                                 lengthInput.value = '', 
-                                                                 amountInput_2.value = '', 
-                                                                 lengthInput_2.value = '', 
-                                                                 textResult.value = '', 
-                                                                 textResult_2.value = ''">
-    </div>
     <h2 class="text-h1">МОДУЛЬНАЯ КУХНЯ</h2>
     
     <div>
@@ -54,43 +46,54 @@
     <div>
         <span id="textResult_2"></span>
     </div>
-    
-    
-    
-    
-    <script> 
-        const modularKitchen = (amount, length) => {
-            const a = length * 1500;
-            const a1 = a - a / 100 * 40;
-            const b = amount - a;
-            const b1 = b - b / 100 * 14;
-            return a1 + b1;
-        };
 
-        const projectKitchen = (amount, length) => {
-            const a = length * 2500;
-            const a1 = a - a / 100 * 40;
-            const b = amount - a;
-            const b1 = b - b / 100 * 14;
-            return a1 + b1;
-        };
+    <div>
+        <button name = result_3 id="resultButton_3">СБРОС</button>
+    </div>
+    
+    <script>
+    
+    const modularKitchen = (amount, length) => {
+        const a = length * 1500;
+        const a1 = a - a / 100 * 40;
+        const b = amount - a;
+        const b1 = b - b / 100 * 14;
+        return a1 + b1;
+    };
 
-
-        resultButton.onclick = function() {
-            var amountInput = document.getElementById('amountInput').value;
-            var lengthInput = document.getElementById('lengthInput').value;
-            var result = modularKitchen(amountInput, lengthInput);
-            document.getElementById('textResult').innerHTML=result;
-        };
+    const projectKitchen = (amount, length) => {
+        const a = length * 2500;
+        const a1 = a - a / 100 * 40;
+        const b = amount - a;
+        const b1 = b - b / 100 * 14;
+        return a1 + b1;
+    };
+    
+    resultButton.onclick = function() {
+        var amountInput = document.getElementById('amountInput').value;
+        var lengthInput = document.getElementById('lengthInput').value;
+        var result = modularKitchen(amountInput, lengthInput);
+        document.getElementById('textResult').innerHTML=result;
+    };
         
-        resultButton_2.onclick = function() {
-            var amountInput_2 = document.getElementById('amountInput_2').value;
-            var lengthInput_2 = document.getElementById('lengthInput_2').value;
-            var result = projectKitchen(amountInput_2, lengthInput_2);
-            document.getElementById('textResult_2').innerHTML=result;
-        };
+    resultButton_2.onclick = function() {
+        var amountInput_2 = document.getElementById('amountInput_2').value;
+        var lengthInput_2 = document.getElementById('lengthInput_2').value;
+        var result = projectKitchen(amountInput_2, lengthInput_2);
+        document.getElementById('textResult_2').innerHTML=result;
+    };
 
-        </script>
+    resultButton_3.onclick = function() {
+        var result = '';
+        document.getElementById('amountInput').value=result;
+        document.getElementById('lengthInput').value=result;
+        document.getElementById('amountInput_2').value=result;
+        document.getElementById('lengthInput_2').value=result;
+        document.getElementById('textResult_2').innerHTML=result;
+        document.getElementById('textResult').innerHTML=result;
+    };
+        
+    </script>
 
 
 </body>
