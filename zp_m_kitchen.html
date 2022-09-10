@@ -6,15 +6,23 @@
     <title>Kitchen Price</title>
     <link rel="stylesheet" href="style.css">
 
-
-
+    
+    
 </head>
 <body>
-
+    
     <script src="script.js"></script>
-
+    
     <p><button onclick="window.location.href='index.html'" class="fontstyle-2">главная</button></p>
-
+    
+    <div>
+        <input type="button" name="allclear" value="СБРОС" OnClick="amountInput.value ='', 
+                                                                 lengthInput.value = '', 
+                                                                 amountInput_2.value = '', 
+                                                                 lengthInput_2.value = '', 
+                                                                 textResult.value = '', 
+                                                                 textResult_2.value = ''">
+    </div>
     <h2 class="text-h1">МОДУЛЬНАЯ КУХНЯ</h2>
     
     <div>
@@ -26,7 +34,9 @@
         <button name = result id="resultButton">ИТОГ</button>
     </div>
     
-    <div><span id="textResult"></span></div>
+    <div>
+        <span id="textResult"></span>
+    </div>
 
     
     
@@ -41,8 +51,13 @@
         <button name = result_2 id="resultButton_2">ИТОГ</button>
     </div>
     
-    <div><span id="textResult_2"></span></div>
-
+    <div>
+        <span id="textResult_2"></span>
+    </div>
+    
+    
+    
+    
     <script> 
         const modularKitchen = (amount, length) => {
             const a = length * 1500;
@@ -64,19 +79,20 @@
         resultButton.onclick = function() {
             var amountInput = document.getElementById('amountInput').value;
             var lengthInput = document.getElementById('lengthInput').value;
-            const result = modularKitchen(amountInput, lengthInput);
+            var result = modularKitchen(amountInput, lengthInput);
             document.getElementById('textResult').innerHTML=result;
         };
-
+        
         resultButton_2.onclick = function() {
             var amountInput_2 = document.getElementById('amountInput_2').value;
             var lengthInput_2 = document.getElementById('lengthInput_2').value;
-            const result = projectKitchen(amountInput_2, lengthInput_2);
+            var result = projectKitchen(amountInput_2, lengthInput_2);
             document.getElementById('textResult_2').innerHTML=result;
         };
 
-    </script>
-    
+        </script>
+
+
 </body>
 </html>
 
