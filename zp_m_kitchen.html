@@ -24,13 +24,8 @@
 
     <div>
         <button name = result id="resultButton">ИТОГ</button>
-    </div>
-    
-    <div>
         <span id="textResult"></span>
     </div>
-
-    
     
     <h2 class="text-h1">ПРОЕКТНАЯ КУХНЯ</h2>
     
@@ -41,9 +36,6 @@
 
     <div>
         <button name = result_2 id="resultButton_2">ИТОГ</button>
-    </div>
-    
-    <div>
         <span id="textResult_2"></span>
     </div>
 
@@ -70,27 +62,27 @@
     };
     
     resultButton.onclick = function() {
-        var amountInput = document.getElementById('amountInput').value;
-        var lengthInput = document.getElementById('lengthInput').value;
-        var result = modularKitchen(amountInput, lengthInput);
-        document.getElementById('textResult').innerHTML=result;
+        let amountInput = document.getElementById('amountInput').value;
+        let lengthInput = document.getElementById('lengthInput').value;
+        let result = modularKitchen(amountInput, lengthInput);
+        document.getElementById('textResult').innerHTML = result;
     };
         
     resultButton_2.onclick = function() {
-        var amountInput_2 = document.getElementById('amountInput_2').value;
-        var lengthInput_2 = document.getElementById('lengthInput_2').value;
-        var result = projectKitchen(amountInput_2, lengthInput_2);
-        document.getElementById('textResult_2').innerHTML=result;
+        let amountInput_2 = document.getElementById('amountInput_2').value;
+        let lengthInput_2 = document.getElementById('lengthInput_2').value;
+        let result = projectKitchen(amountInput_2, lengthInput_2);
+        document.getElementById('textResult_2').innerHTML = result;
     };
 
     resultButton_3.onclick = function() {
         var result = '';
-        document.getElementById('amountInput').value=result;
-        document.getElementById('lengthInput').value=result;
-        document.getElementById('amountInput_2').value=result;
-        document.getElementById('lengthInput_2').value=result;
-        document.getElementById('textResult_2').innerHTML=result;
-        document.getElementById('textResult').innerHTML=result;
+        document.getElementById('amountInput').value = result;
+        document.getElementById('lengthInput').value = result;
+        document.getElementById('amountInput_2').value = result;
+        document.getElementById('lengthInput_2').value = result;
+        document.getElementById('textResult_2').innerHTML = result;
+        document.getElementById('textResult').innerHTML = result;
     };
         
     </script>
