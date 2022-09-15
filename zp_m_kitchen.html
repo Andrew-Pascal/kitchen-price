@@ -132,6 +132,12 @@
 
     <!--***************************************************************-->
 
+        <!--Кнопка ОБЩИЙ ИТОГ-->
+        <div>
+            <button name = result id="main_resultButton">ОБЩИЙ ИТОГ</button>
+            <span id="main_textResult"></span>
+        </div>
+
     <script>
     
     const modularKitchen = (amount, length) => {
@@ -287,7 +293,7 @@
 
         document.getElementById('pk_amountInput_2').value = result;
         document.getElementById('pk_lengthInput_2').value = result;
-
+        
         document.getElementById('pk_amountInput_3').value = result;
         document.getElementById('pk_lengthInput_3').value = result;
 
@@ -302,8 +308,26 @@
         document.getElementById('pk_textResult_3').innerHTML = result;
         document.getElementById('pk_textResult_4').innerHTML = result;
         document.getElementById('pk_textResult_5').innerHTML = result;
+        /*Общий Сброс*/
+        document.getElementById('main_textResult').innerHTML = result;
     };
+    
+    main_resultButton.onclick = function() {
+        let result = 
+        Number(document.getElementById('mk_textResult_1').innerHTML) + 
+        Number(document.getElementById('mk_textResult_2').innerHTML) +  
+        Number(document.getElementById('mk_textResult_3').innerHTML) + 
+        Number(document.getElementById('mk_textResult_4').innerHTML) + 
+        Number(document.getElementById('mk_textResult_5').innerHTML) +
+        Number(document.getElementById('pk_textResult_1').innerHTML) + 
+        Number(document.getElementById('pk_textResult_2').innerHTML) +  
+        Number(document.getElementById('pk_textResult_3').innerHTML) + 
+        Number(document.getElementById('pk_textResult_4').innerHTML) + 
+        Number(document.getElementById('pk_textResult_5').innerHTML);
         
+        document.getElementById('main_textResult').innerHTML = result;
+    };
+
     </script>
 
 
