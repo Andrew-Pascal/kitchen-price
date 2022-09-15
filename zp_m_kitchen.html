@@ -125,18 +125,20 @@
 
     <!--***************************************************************-->
 
+    <!--Кнопка ОБЩИЙ ИТОГ-->
+    <div>
+        <button name = result id="main_resultButton">ОБЩИЙ ИТОГ</button>
+        <span id="main_textResult"></span>
+    </div>
+
+    <!--***************************************************************-->
+
     <!--Кнопка СБРОС-->
     <div>
         <button name = result id="mk_resultButton_6">СБРОС</button>
     </div>
 
-    <!--***************************************************************-->
 
-        <!--Кнопка ОБЩИЙ ИТОГ-->
-        <div>
-            <button name = result id="main_resultButton">ОБЩИЙ ИТОГ</button>
-            <span id="main_textResult"></span>
-        </div>
 
     <script>
     
@@ -158,127 +160,90 @@
 
     /*Модульная кухня*/
     /*кнопки*/
-    
     mk_resultButton_1.onclick = function() {
-
         let amountInput = document.getElementById('mk_amountInput_1').value;
         let lengthInput = document.getElementById('mk_lengthInput_1').value;
-
         let result = modularKitchen(amountInput, lengthInput);
-
         document.getElementById('mk_textResult_1').innerHTML = result;
     };
         
     mk_resultButton_2.onclick = function() {
-
         let amountInput_2 = document.getElementById('mk_amountInput_2').value;
         let lengthInput_2 = document.getElementById('mk_lengthInput_2').value;
-
         let result = modularKitchen(amountInput_2, lengthInput_2);
-
         document.getElementById('mk_textResult_2').innerHTML = result;
     };
 
     mk_resultButton_3.onclick = function() {
-
         let amountInput_3 = document.getElementById('mk_amountInput_3').value;
         let lengthInput_3 = document.getElementById('mk_lengthInput_3').value;
-
         let result = modularKitchen(amountInput_3, lengthInput_3);
-
         document.getElementById('mk_textResult_3').innerHTML = result;
     };
 
     mk_resultButton_4.onclick = function() {
-
         let amountInput_4 = document.getElementById('mk_amountInput_4').value;
         let lengthInput_4 = document.getElementById('mk_lengthInput_4').value;
-
         let result = modularKitchen(amountInput_4, lengthInput_4);
-
         document.getElementById('mk_textResult_4').innerHTML = result;
     };
 
     mk_resultButton_5.onclick = function() {
-
         let amountInput_5 = document.getElementById('mk_amountInput_5').value;
         let lengthInput_5 = document.getElementById('mk_lengthInput_5').value;
-
         let result = modularKitchen(amountInput_5, lengthInput_5);
-
         document.getElementById('mk_textResult_5').innerHTML = result;
     };
 
     /*Проектная кухня*/
     /*кнопки*/
-
     pk_resultButton_1.onclick = function() {
-
         let amountInput = document.getElementById('pk_amountInput_1').value;
         let lengthInput = document.getElementById('pk_lengthInput_1').value;
-
         let result = projectKitchen(amountInput, lengthInput);
-
         document.getElementById('pk_textResult_1').innerHTML = result;
     };
 
     pk_resultButton_2.onclick = function() {
-
         let amountInput_2 = document.getElementById('pk_amountInput_2').value;
         let lengthInput_2 = document.getElementById('pk_lengthInput_2').value;
-
         let result = projectKitchen(amountInput_2, lengthInput_2);
-
         document.getElementById('pk_textResult_2').innerHTML = result;
     };
 
     pk_resultButton_3.onclick = function() {
-
         let amountInput_3 = document.getElementById('pk_amountInput_3').value;
         let lengthInput_3 = document.getElementById('pk_lengthInput_3').value;
-
         let result = projectKitchen(amountInput_3, lengthInput_3);
-
         document.getElementById('pk_textResult_3').innerHTML = result;
     };
 
     pk_resultButton_4.onclick = function() {
-
         let amountInput_4 = document.getElementById('pk_amountInput_4').value;
         let lengthInput_4 = document.getElementById('pk_lengthInput_4').value;
-
         let result = projectKitchen(amountInput_4, lengthInput_4);
-
         document.getElementById('pk_textResult_4').innerHTML = result;
     };
 
     pk_resultButton_5.onclick = function() {
-
         let amountInput_5 = document.getElementById('pk_amountInput_5').value;
         let lengthInput_5 = document.getElementById('pk_lengthInput_5').value;
-
         let result = projectKitchen(amountInput_5, lengthInput_5);
-
         document.getElementById('pk_textResult_5').innerHTML = result;
     };
 
     /*Кнопка СБРОС*/
-    
     mk_resultButton_6.onclick = function() {
         let result = '';
         /*поля ввода - Модульная кухня*/
         document.getElementById('mk_amountInput_1').value = result;
         document.getElementById('mk_lengthInput_1').value = result;
-
         document.getElementById('mk_amountInput_2').value = result;
         document.getElementById('mk_lengthInput_2').value = result;
-
         document.getElementById('mk_amountInput_3').value = result;
         document.getElementById('mk_lengthInput_3').value = result;
-
         document.getElementById('mk_amountInput_4').value = result;
         document.getElementById('mk_lengthInput_4').value = result;
-
         document.getElementById('mk_amountInput_5').value = result;
         document.getElementById('mk_lengthInput_5').value = result;
         /*результат - Модульная кухня*/
@@ -290,16 +255,12 @@
         /*поля ввода - Проектная кухня*/
         document.getElementById('pk_amountInput_1').value = result;
         document.getElementById('pk_lengthInput_1').value = result;
-
         document.getElementById('pk_amountInput_2').value = result;
         document.getElementById('pk_lengthInput_2').value = result;
-        
         document.getElementById('pk_amountInput_3').value = result;
         document.getElementById('pk_lengthInput_3').value = result;
-
         document.getElementById('pk_amountInput_4').value = result;
         document.getElementById('pk_lengthInput_4').value = result;
-
         document.getElementById('pk_amountInput_5').value = result;
         document.getElementById('pk_lengthInput_5').value = result;
         /*результат - Проектная кухня*/
@@ -311,7 +272,7 @@
         /*Общий Сброс*/
         document.getElementById('main_textResult').innerHTML = result;
     };
-    
+    /*Общий Итог*/
     main_resultButton.onclick = function() {
         let result = 
         Number(document.getElementById('mk_textResult_1').innerHTML) + 
