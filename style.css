@@ -194,7 +194,7 @@ input[name="allclear"] { /* AC */
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
-
+  
 }
 
 input[name="input"] { /* итоговая сумма */
@@ -211,7 +211,7 @@ button[name="result"] { /* Итог Модульная Кухня */
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
-
+  
 }
 
 button[name="result_2"] { /* Итог Проектная Кухня */
@@ -234,4 +234,29 @@ button[name="result_3"] { /* СБРОС */
   background-color: rgb(184, 194, 216); 
   border: 0px;
 
+}
+
+
+/* Кнопки КАЛЬКУЛЯТОР З.П */
+.zp-style-button {
+  font-family: 'Times New Roman', Times, serif;
+  text-align: center;
+  font-weight: bolder;
+  background-color: #00ff6a;
+  border-radius: 1px;
+  font-size: 15px;
+  border: 0px solid  #5bf17c;
+  text-decoration: none;
+
+  display: inline-table;
+  color: rgb(0, 38, 255);
+  
+
+
+
+}
+
+.zp-style-button:hover {box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.15);
+  background-color: #45e1a8;
+  color: red;
 }

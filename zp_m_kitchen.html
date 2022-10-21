@@ -24,8 +24,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 1-->
     <div>
-        <button name = result id="mk_resultButton_1">ИТОГ</button>
-        <span id="mk_textResult_1"></span>
+        <button class="zp-style-button" name = result_zp id="mk_resultButton_1">ИТОГ</button>
+        <span  id="mk_textResult_zp_1"></span>
     </div>
     <!--Поле для ввода 2-->
     <div>
@@ -34,8 +34,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 2-->
     <div>
-        <button name = result id="mk_resultButton_2">ИТОГ</button>
-        <span id="mk_textResult_2"></span>
+        <button class="zp-style-button" name = result_zp id="mk_resultButton_2">ИТОГ</button>
+        <span id="mk_textResult_zp_2"></span>
     </div>
     <!--Поле для ввода 3-->
     <div>
@@ -44,8 +44,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 3-->
     <div>
-        <button name = result id="mk_resultButton_3">ИТОГ</button>
-        <span id="mk_textResult_3"></span>
+        <button class="zp-style-button" name = result_zp id="mk_resultButton_3">ИТОГ</button>
+        <span id="mk_textResult_zp_3"></span>
     </div>
     <!--Поле для ввода 4-->
     <div>
@@ -54,8 +54,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 4-->
     <div>
-        <button name = result id="mk_resultButton_4">ИТОГ</button>
-        <span id="mk_textResult_4"></span>
+        <button class="zp-style-button" name = result_zp id="mk_resultButton_4">ИТОГ</button>
+        <span id="mk_textResult_zp_4"></span>
     </div>
     <!--Поле для ввода 5-->
     <div>
@@ -64,8 +64,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 5-->
     <div>
-        <button name = result id="mk_resultButton_5">ИТОГ</button>
-        <span id="mk_textResult_5"></span>
+        <button class="zp-style-button" name = result_zp id="mk_resultButton_5">ИТОГ</button>
+        <span id="mk_textResult_zp_5"></span>
     </div>
 
     <!--***************************************************************-->
@@ -79,8 +79,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 1-->
     <div>
-        <button name = result id="pk_resultButton_1">ИТОГ</button>
-        <span id="pk_textResult_1"></span>
+        <button class="zp-style-button" name = result_zp id="pk_resultButton_1">ИТОГ</button>
+        <span id="pk_textResult_zp_1"></span>
     </div>
     <!--Поле для ввода 2-->
     <div>
@@ -89,8 +89,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 2-->
     <div>
-        <button name = result id="pk_resultButton_2">ИТОГ</button>
-        <span id="pk_textResult_2"></span>
+        <button class="zp-style-button" name = result_zp id="pk_resultButton_2">ИТОГ</button>
+        <span id="pk_textResult_zp_2"></span>
     </div>
     <!--Поле для ввода 3-->
     <div>
@@ -99,8 +99,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 3-->
     <div>
-        <button name = result id="pk_resultButton_3">ИТОГ</button>
-        <span id="pk_textResult_3"></span>
+        <button class="zp-style-button" name = result_zp id="pk_resultButton_3">ИТОГ</button>
+        <span id="pk_textResult_zp_3"></span>
     </div>
     <!--Поле для ввода 4-->
     <div>
@@ -109,8 +109,8 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 4-->
     <div>
-        <button name = result id="pk_resultButton_4">ИТОГ</button>
-        <span id="pk_textResult_4"></span>
+        <button class="zp-style-button" name = result_zp id="pk_resultButton_4">ИТОГ</button>
+        <span id="pk_textResult_zp_4"></span>
     </div>
     <!--Поле для ввода 5-->
     <div>
@@ -119,23 +119,23 @@
     </div>
     <!--Кнопка ИТОГ. Вывод результата. Для 5-->
     <div>
-        <button name = result id="pk_resultButton_5">ИТОГ</button>
-        <span id="pk_textResult_5"></span>
+        <button class="zp-style-button" name = result_zp id="pk_resultButton_5">ИТОГ</button>
+        <span id="pk_textResult_zp_5"></span>
     </div>
 
     <!--***************************************************************-->
 
     <!--Кнопка ОБЩИЙ ИТОГ-->
     <div>
-        <button name = result id="main_resultButton">ОБЩИЙ ИТОГ</button>
-        <span id="main_textResult"></span>
+        <button class="zp-style-button" name = result_zp id="main_resultButton">ОБЩИЙ ИТОГ</button>
+        <span id="main_textResult_zp"></span>
     </div>
 
     <!--***************************************************************-->
 
     <!--Кнопка СБРОС-->
     <div>
-        <button name = result id="mk_resultButton_6">СБРОС</button>
+        <button class="zp-style-button" name = result_zp id="mk_resultButton_6">СБРОС</button>
     </div>
 
 
@@ -163,36 +163,36 @@
     mk_resultButton_1.onclick = function() {
         let amountInput = document.getElementById('mk_amountInput_1').value;
         let lengthInput = document.getElementById('mk_lengthInput_1').value;
-        let result = modularKitchen(amountInput, lengthInput);
-        document.getElementById('mk_textResult_1').innerHTML = result;
+        let result_zp = modularKitchen(amountInput, lengthInput);
+        document.getElementById('mk_textResult_zp_1').innerHTML = result_zp;
     };
         
     mk_resultButton_2.onclick = function() {
         let amountInput_2 = document.getElementById('mk_amountInput_2').value;
         let lengthInput_2 = document.getElementById('mk_lengthInput_2').value;
-        let result = modularKitchen(amountInput_2, lengthInput_2);
-        document.getElementById('mk_textResult_2').innerHTML = result;
+        let result_zp = modularKitchen(amountInput_2, lengthInput_2);
+        document.getElementById('mk_textResult_zp_2').innerHTML = result_zp;
     };
 
     mk_resultButton_3.onclick = function() {
         let amountInput_3 = document.getElementById('mk_amountInput_3').value;
         let lengthInput_3 = document.getElementById('mk_lengthInput_3').value;
-        let result = modularKitchen(amountInput_3, lengthInput_3);
-        document.getElementById('mk_textResult_3').innerHTML = result;
+        let result_zp = modularKitchen(amountInput_3, lengthInput_3);
+        document.getElementById('mk_textResult_zp_3').innerHTML = result_zp;
     };
 
     mk_resultButton_4.onclick = function() {
         let amountInput_4 = document.getElementById('mk_amountInput_4').value;
         let lengthInput_4 = document.getElementById('mk_lengthInput_4').value;
-        let result = modularKitchen(amountInput_4, lengthInput_4);
-        document.getElementById('mk_textResult_4').innerHTML = result;
+        let result_zp = modularKitchen(amountInput_4, lengthInput_4);
+        document.getElementById('mk_textResult_zp_4').innerHTML = result_zp;
     };
 
     mk_resultButton_5.onclick = function() {
         let amountInput_5 = document.getElementById('mk_amountInput_5').value;
         let lengthInput_5 = document.getElementById('mk_lengthInput_5').value;
-        let result = modularKitchen(amountInput_5, lengthInput_5);
-        document.getElementById('mk_textResult_5').innerHTML = result;
+        let result_zp = modularKitchen(amountInput_5, lengthInput_5);
+        document.getElementById('mk_textResult_zp_5').innerHTML = result_zp;
     };
 
     /*Проектная кухня*/
@@ -200,93 +200,93 @@
     pk_resultButton_1.onclick = function() {
         let amountInput = document.getElementById('pk_amountInput_1').value;
         let lengthInput = document.getElementById('pk_lengthInput_1').value;
-        let result = projectKitchen(amountInput, lengthInput);
-        document.getElementById('pk_textResult_1').innerHTML = result;
+        let result_zp = projectKitchen(amountInput, lengthInput);
+        document.getElementById('pk_textResult_zp_1').innerHTML = result_zp;
     };
 
     pk_resultButton_2.onclick = function() {
         let amountInput_2 = document.getElementById('pk_amountInput_2').value;
         let lengthInput_2 = document.getElementById('pk_lengthInput_2').value;
-        let result = projectKitchen(amountInput_2, lengthInput_2);
-        document.getElementById('pk_textResult_2').innerHTML = result;
+        let result_zp = projectKitchen(amountInput_2, lengthInput_2);
+        document.getElementById('pk_textResult_zp_2').innerHTML = result_zp;
     };
 
     pk_resultButton_3.onclick = function() {
         let amountInput_3 = document.getElementById('pk_amountInput_3').value;
         let lengthInput_3 = document.getElementById('pk_lengthInput_3').value;
-        let result = projectKitchen(amountInput_3, lengthInput_3);
-        document.getElementById('pk_textResult_3').innerHTML = result;
+        let result_zp = projectKitchen(amountInput_3, lengthInput_3);
+        document.getElementById('pk_textResult_zp_3').innerHTML = result_zp;
     };
 
     pk_resultButton_4.onclick = function() {
         let amountInput_4 = document.getElementById('pk_amountInput_4').value;
         let lengthInput_4 = document.getElementById('pk_lengthInput_4').value;
-        let result = projectKitchen(amountInput_4, lengthInput_4);
-        document.getElementById('pk_textResult_4').innerHTML = result;
+        let result_zp = projectKitchen(amountInput_4, lengthInput_4);
+        document.getElementById('pk_textResult_zp_4').innerHTML = result_zp;
     };
 
     pk_resultButton_5.onclick = function() {
         let amountInput_5 = document.getElementById('pk_amountInput_5').value;
         let lengthInput_5 = document.getElementById('pk_lengthInput_5').value;
-        let result = projectKitchen(amountInput_5, lengthInput_5);
-        document.getElementById('pk_textResult_5').innerHTML = result;
+        let result_zp = projectKitchen(amountInput_5, lengthInput_5);
+        document.getElementById('pk_textResult_zp_5').innerHTML = result_zp;
     };
 
     /*Кнопка СБРОС*/
     mk_resultButton_6.onclick = function() {
-        let result = '';
+        let result_zp = '';
         /*поля ввода - Модульная кухня*/
-        document.getElementById('mk_amountInput_1').value = result;
-        document.getElementById('mk_lengthInput_1').value = result;
-        document.getElementById('mk_amountInput_2').value = result;
-        document.getElementById('mk_lengthInput_2').value = result;
-        document.getElementById('mk_amountInput_3').value = result;
-        document.getElementById('mk_lengthInput_3').value = result;
-        document.getElementById('mk_amountInput_4').value = result;
-        document.getElementById('mk_lengthInput_4').value = result;
-        document.getElementById('mk_amountInput_5').value = result;
-        document.getElementById('mk_lengthInput_5').value = result;
+        document.getElementById('mk_amountInput_1').value = result_zp;
+        document.getElementById('mk_lengthInput_1').value = result_zp;
+        document.getElementById('mk_amountInput_2').value = result_zp;
+        document.getElementById('mk_lengthInput_2').value = result_zp;
+        document.getElementById('mk_amountInput_3').value = result_zp;
+        document.getElementById('mk_lengthInput_3').value = result_zp;
+        document.getElementById('mk_amountInput_4').value = result_zp;
+        document.getElementById('mk_lengthInput_4').value = result_zp;
+        document.getElementById('mk_amountInput_5').value = result_zp;
+        document.getElementById('mk_lengthInput_5').value = result_zp;
         /*результат - Модульная кухня*/
-        document.getElementById('mk_textResult_1').innerHTML = result;
-        document.getElementById('mk_textResult_2').innerHTML = result;
-        document.getElementById('mk_textResult_3').innerHTML = result;
-        document.getElementById('mk_textResult_4').innerHTML = result;
-        document.getElementById('mk_textResult_5').innerHTML = result;
+        document.getElementById('mk_textResult_zp_1').innerHTML = result_zp;
+        document.getElementById('mk_textResult_zp_2').innerHTML = result_zp;
+        document.getElementById('mk_textResult_zp_3').innerHTML = result_zp;
+        document.getElementById('mk_textResult_zp_4').innerHTML = result_zp;
+        document.getElementById('mk_textResult_zp_5').innerHTML = result_zp;
         /*поля ввода - Проектная кухня*/
-        document.getElementById('pk_amountInput_1').value = result;
-        document.getElementById('pk_lengthInput_1').value = result;
-        document.getElementById('pk_amountInput_2').value = result;
-        document.getElementById('pk_lengthInput_2').value = result;
-        document.getElementById('pk_amountInput_3').value = result;
-        document.getElementById('pk_lengthInput_3').value = result;
-        document.getElementById('pk_amountInput_4').value = result;
-        document.getElementById('pk_lengthInput_4').value = result;
-        document.getElementById('pk_amountInput_5').value = result;
-        document.getElementById('pk_lengthInput_5').value = result;
+        document.getElementById('pk_amountInput_1').value = result_zp;
+        document.getElementById('pk_lengthInput_1').value = result_zp;
+        document.getElementById('pk_amountInput_2').value = result_zp;
+        document.getElementById('pk_lengthInput_2').value = result_zp;
+        document.getElementById('pk_amountInput_3').value = result_zp;
+        document.getElementById('pk_lengthInput_3').value = result_zp;
+        document.getElementById('pk_amountInput_4').value = result_zp;
+        document.getElementById('pk_lengthInput_4').value = result_zp;
+        document.getElementById('pk_amountInput_5').value = result_zp;
+        document.getElementById('pk_lengthInput_5').value = result_zp;
         /*результат - Проектная кухня*/
-        document.getElementById('pk_textResult_1').innerHTML = result;
-        document.getElementById('pk_textResult_2').innerHTML = result;
-        document.getElementById('pk_textResult_3').innerHTML = result;
-        document.getElementById('pk_textResult_4').innerHTML = result;
-        document.getElementById('pk_textResult_5').innerHTML = result;
+        document.getElementById('pk_textResult_zp_1').innerHTML = result_zp;
+        document.getElementById('pk_textResult_zp_2').innerHTML = result_zp;
+        document.getElementById('pk_textResult_zp_3').innerHTML = result_zp;
+        document.getElementById('pk_textResult_zp_4').innerHTML = result_zp;
+        document.getElementById('pk_textResult_zp_5').innerHTML = result_zp;
         /*Общий Сброс*/
-        document.getElementById('main_textResult').innerHTML = result;
+        document.getElementById('main_textResult_zp').innerHTML = result_zp;
     };
     /*Общий Итог*/
     main_resultButton.onclick = function() {
-        let result = 
-        Number(document.getElementById('mk_textResult_1').innerHTML) + 
-        Number(document.getElementById('mk_textResult_2').innerHTML) +  
-        Number(document.getElementById('mk_textResult_3').innerHTML) + 
-        Number(document.getElementById('mk_textResult_4').innerHTML) + 
-        Number(document.getElementById('mk_textResult_5').innerHTML) +
-        Number(document.getElementById('pk_textResult_1').innerHTML) + 
-        Number(document.getElementById('pk_textResult_2').innerHTML) +  
-        Number(document.getElementById('pk_textResult_3').innerHTML) + 
-        Number(document.getElementById('pk_textResult_4').innerHTML) + 
-        Number(document.getElementById('pk_textResult_5').innerHTML);
+        let result_zp = 
+        Number(document.getElementById('mk_textResult_zp_1').innerHTML) + 
+        Number(document.getElementById('mk_textResult_zp_2').innerHTML) +  
+        Number(document.getElementById('mk_textResult_zp_3').innerHTML) + 
+        Number(document.getElementById('mk_textResult_zp_4').innerHTML) + 
+        Number(document.getElementById('mk_textResult_zp_5').innerHTML) +
+        Number(document.getElementById('pk_textResult_zp_1').innerHTML) + 
+        Number(document.getElementById('pk_textResult_zp_2').innerHTML) +  
+        Number(document.getElementById('pk_textResult_zp_3').innerHTML) + 
+        Number(document.getElementById('pk_textResult_zp_4').innerHTML) + 
+        Number(document.getElementById('pk_textResult_zp_5').innerHTML);
         
-        document.getElementById('main_textResult').innerHTML = result;
+        document.getElementById('main_textResult_zp').innerHTML = result_zp;
     };
 
     </script>
