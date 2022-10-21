@@ -194,7 +194,6 @@ input[name="allclear"] { /* AC */
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
-  
 }
 
 input[name="input"] { /* итоговая сумма */
@@ -211,7 +210,6 @@ button[name="result"] { /* Итог Модульная Кухня */
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
-  
 }
 
 button[name="result_2"] { /* Итог Проектная Кухня */
@@ -222,7 +220,6 @@ button[name="result_2"] { /* Итог Проектная Кухня */
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
-
 }
 
 button[name="result_3"] { /* СБРОС */
@@ -233,30 +230,41 @@ button[name="result_3"] { /* СБРОС */
   font-weight: bolder;
   background-color: rgb(184, 194, 216); 
   border: 0px;
-
 }
 
 
-/* Кнопки КАЛЬКУЛЯТОР З.П */
-.zp-style-button {
+/* Кнопки "ИТОГ", "ОБЩИЙ ИТОГ", "СБРОС" - КАЛЬКУЛЯТОР З.П */
+button[name="result_zp"] {
   font-family: 'Times New Roman', Times, serif;
   text-align: center;
   font-weight: bolder;
   background-color: #00ff6a;
-  border-radius: 1px;
-  font-size: 15px;
-  border: 0px solid  #5bf17c;
-  text-decoration: none;
-
+  border-radius: 2px;
+  font-size: 13px;
+  border: 0.2px solid  rgba(99, 122, 251, 0.548);
+  margin-bottom: -10px;
+  margin-top: 5px;
   display: inline-table;
   color: rgb(0, 38, 255);
-  
-
-
-
 }
-
-.zp-style-button:hover {box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.15);
+button[name="result_zp"]:hover {box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.15);
   background-color: #45e1a8;
   color: red;
+}
+
+/* Поле для ввода КАЛЬКУЛЯТОР З.П*/
+div input[type="text"] {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-size: 15px;
+  border-radius: 3px;
+  background-color:  #c0bfbf;
+  outline: none;
+  width: 100px;
+}
+
+/* Итогавая сумма КАЛЬКУЛЯТОР З.П */
+span[name="but_res"] {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  color: rgb(255, 0, 0);
+  font-size: 18px;
 }
