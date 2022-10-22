@@ -235,36 +235,39 @@ button[name="result_3"] { /* СБРОС */
 
 /* Кнопки "ИТОГ", "ОБЩИЙ ИТОГ", "СБРОС" - КАЛЬКУЛЯТОР З.П */
 button[name="result_zp"] {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   text-align: center;
   font-weight: bolder;
+  width: 90px;
   background-color: #00ff6a;
-  border-radius: 2px;
-  font-size: 13px;
-  border: 0.2px solid  rgba(99, 122, 251, 0.548);
-  margin-bottom: -10px;
+  border-radius: 5px;
+  font-size: 10px;
+  border: 0.1px solid  rgba(0, 38, 255, 0.397);
   margin-top: 5px;
+  margin-bottom: 1px;
   display: inline-table;
   color: rgb(0, 38, 255);
 }
-button[name="result_zp"]:hover {box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.15);
-  background-color: #45e1a8;
+/* button[name="result_zp"]:hover {box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.15);
+  background-color: #97f3d1;
   color: red;
-}
+} */
 
 /* Поле для ввода КАЛЬКУЛЯТОР З.П*/
 div input[type="text"] {
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  font-size: 15px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: bolder;
   border-radius: 3px;
-  background-color:  #c0bfbf;
+  background-color:  #b9d4ff5d;
   outline: none;
   width: 100px;
 }
 
 /* Итогавая сумма КАЛЬКУЛЯТОР З.П */
 span[name="but_res"] {
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  color: rgb(255, 0, 0);
-  font-size: 18px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  font-weight: bolder;
+  color: rgb(0, 30, 255);
 }
